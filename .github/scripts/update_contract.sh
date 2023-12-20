@@ -22,7 +22,7 @@ while IFS= read -r line; do
         # Extract the dependency name for logging purposes
         dependency_name=$(echo $line | grep -oP '(?<=\").+?(?=\")' | head -1)
         # Update the tag
-        sed -i "s/\($dependency_name.*tag=\"\)[^\"]*/\1$version_tag/" $nargo_file_path
+        sed -i "s|\($dependency_name.*tag=\"\)[^\"]*|\1$version_tag|" $nargo_file_path
         echo "Updated tag for $dependency_name to $version_tag"
     fi
 done < <(
