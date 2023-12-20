@@ -17,6 +17,7 @@ fi
 
 # Update the tag in the Nargo.toml file
 while IFS= read -r line; do
+    echo "$line"
     if [[ $line == *tag=* ]]; then
         # Extract the dependency name for logging purposes
         dependency_name=$(echo $line | grep -oP '(?<=\").+?(?=\")' | head -1)
@@ -24,7 +25,9 @@ while IFS= read -r line; do
         sed -i "s/\($dependency_name.*tag=\"\)[^\"]*/\1$version_tag/" $nargo_file_path
         echo "Updated tag for $dependency_name to $version_tag"
     fi
-done < <(find $copy_to_file_path -type f -name "Nargo.toml")
+done < <(
+    sed -n '/^\[dependencies\]/,/^$/p' $nargo_file_path | grep -v '^\[dependencies\]' | awk NF
+)
 
 # Extract the value of the 'name' field
 name_value=$(grep "^name\s*=" "$nargo_file_path" | sed 's/name\s*=\s*"\(.*\)"/\1/')
