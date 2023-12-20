@@ -1,0 +1,40 @@
+name: Update Contract
+
+on:
+  schedule:
+    # Runs at 05:00 UTC every day
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      input1:
+        description: "Just run it."
+        required: false
+
+permissions: write-all
+
+jobs:
+  update_contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get version
+        id: versions_step
+        run: |
+          version_tag=$(node ./.github/scripts/fetchRelease.js)
+          echo "::set-output name=version_tag::$version_tag"
+          echo "Output from Node.js script: $version_tag"
+
+      - name: Check and update tutorials
+        run: sudo chown $USER ./src && bash ./.github/scripts/update_contract.sh ${{ steps.versions_step.outputs.version_tag }}
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "jc@joshcrites.com"
+          git config --global user.name "Josh"
+          git add .
+          git commit -m "Github Action: Update contract" -a || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

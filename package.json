@@ -1,0 +1,28 @@
+{
+  "name": "private_voting_codespace",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/critesjosh/private_voting_codespace.git",
+  "author": "Josh Crites <jc@joshcrites.com>",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "aztec-cli compile --typescript ./src/artifacts .",
+    "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
+    "update": "./.github/scripts/update_contract.sh $(grep -oP 'tag=\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
+  },
+  "dependencies": {
+    "@aztec/aztec.js": "^0.16.9"
+  },
+  "devDependencies": {
+    "@aztec/noir-contracts": "^0.16.9",
+    "@types/jest": "^29.5.11",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  },
+  "jest": {
+    "testTimeout": 20000
+  }
+}
