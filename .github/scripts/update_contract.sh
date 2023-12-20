@@ -17,7 +17,6 @@ fi
 
 # Update the tag in the Nargo.toml file
 while IFS= read -r line; do
-    echo "$line"
     if [[ $line == *tag=* ]]; then
         # Extract the dependency name for logging purposes
         dependency_name=$(echo $line | grep -oP '(?<=\").+?(?=\")' | head -1)
