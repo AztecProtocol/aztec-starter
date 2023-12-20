@@ -15,6 +15,17 @@ if [ ! -f "$nargo_file_path" ]; then
     exit 1
 fi
 
+# Update the tag in the Nargo.toml file
+while IFS= read -r line; do
+    if [[ $line == *tag=* ]]; then
+        # Extract the dependency name for logging purposes
+        dependency_name=$(echo $line | grep -oP '(?<=\").+?(?=\")' | head -1)
+        # Update the tag
+        sed -i "s/\($dependency_name.*tag=\"\)[^\"]*/\1$version_tag/" $nargo_file_path
+        echo "Updated tag for $dependency_name to $NEW_TAG"
+    fi
+done < <(grep -Pzo '(?s)\[dependencies\].*\[' $nargo_file_path)
+
 # Extract the value of the 'name' field
 name_value=$(grep "^name\s*=" "$nargo_file_path" | sed 's/name\s*=\s*"\(.*\)"/\1/')
 
@@ -25,6 +36,7 @@ else
     echo "The value of the 'name' field is: $name_value"
 fi
 
+# Check if this is running as a GitHub action
 if [ "$GITHUB_ACTIONS" == "true" ]; then
     tmp_dir="$GITHUB_WORKSPACE/tmp"
 else
