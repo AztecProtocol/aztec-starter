@@ -4,7 +4,7 @@ This repo is meant to be a starting point for writing Aztec contracts and tests.
 
 You can find the Easy Private Voting contract in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`, you can run it (after installing packages) with:
 
-````bash
+```bash
 yarn install && yarn test
 ```
 
@@ -18,7 +18,7 @@ Get and run the sandbox with this command:
 
 ```bash
 /bin/bash -c "$(curl -fsSL 'https://sandbox.aztec.network')"
-````
+```
 
 ## Install packages
 
