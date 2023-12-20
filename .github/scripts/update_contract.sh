@@ -22,9 +22,9 @@ while IFS= read -r line; do
         dependency_name=$(echo $line | grep -oP '(?<=\").+?(?=\")' | head -1)
         # Update the tag
         sed -i "s/\($dependency_name.*tag=\"\)[^\"]*/\1$version_tag/" $nargo_file_path
-        echo "Updated tag for $dependency_name to $NEW_TAG"
+        echo "Updated tag for $dependency_name to $version_tag"
     fi
-done < <(grep -Pzo '(?s)\[dependencies\].*\[' $nargo_file_path)
+done < <(find $copy_to_file_path -type f -name "Nargo.toml")
 
 # Extract the value of the 'name' field
 name_value=$(grep "^name\s*=" "$nargo_file_path" | sed 's/name\s*=\s*"\(.*\)"/\1/')
