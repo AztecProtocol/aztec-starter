@@ -10,10 +10,16 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
-Get and run the sandbox with this command:
+Get the sandbox, aztec-cli and other tooling with this command:
 
 ```bash
-/bin/bash -c "$(curl -fsSL 'https://sandbox.aztec.network')"
+bash -i <(curl -s install.aztec.network)
+```
+
+Start the sandbox with:
+
+```bash
+aztec-sandbox
 ```
 
 ## Install packages
@@ -61,6 +67,8 @@ Get the contract code from the monorepo. The script will look at the versions de
 ```bash
 yarn update
 ```
+
+You may need to manually update the aztec packages in `./package.json` to the latest version.
 
 You may need to update permissions with:
 
