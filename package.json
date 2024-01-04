@@ -8,6 +8,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "clean": "rm -rf ./src/artifacts ./target",
     "compile": "aztec-cli compile --typescript ./src/artifacts .",
     "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
     "update": "./.github/scripts/update_contract.sh $(grep -oP 'tag=\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
