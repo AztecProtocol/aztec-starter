@@ -31,7 +31,7 @@ yarn install
 ## Compile
 
 ```bash
-aztec-cli compile . --typescript ./src/artifacts
+aztec-nargo compile
 ```
 
 or
@@ -40,16 +40,24 @@ or
 yarn compile
 ```
 
+## Codegen
+
+Generate the contract artifact json and typescript interface
+
+```bash
+yarn codegen
+```
+
 ## Deploy
 
 Add `ADMIN` to your environment.
 
 ```bash
-ADMIN=0x1d30d4de97657983408587c7a91ba6587774b30f0e70224a0658f0357092f495
+ADMIN="0x1d30d4de97657983408587c7a91ba6587774b30f0e70224a0658f0357092f495"
 ```
 
 ```bash
-aztec-cli deploy ./target/EasyPrivateVoting.json --args $ADMIN
+aztec-cli deploy src/artifacts/EasyPrivateVoting.json --args $ADMIN
 ```
 
 ## Test
@@ -60,6 +68,12 @@ yarn test
 
 ## Error resolution
 
+### Update Nodejs and Noir dependencies
+
+```bash
+aztec-cli update
+```
+
 ### Update Contract
 
 Get the contract code from the monorepo. The script will look at the versions defined in `./Nargo.toml` and fetch that version of the code from the monorepo.
@@ -67,8 +81,6 @@ Get the contract code from the monorepo. The script will look at the versions de
 ```bash
 yarn update
 ```
-
-You may need to manually update the aztec packages in `./package.json` to the latest version.
 
 You may need to update permissions with:
 
