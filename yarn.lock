@@ -29,6 +29,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@aztec/accounts@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "@aztec/accounts@npm:0.17.0"
+  dependencies:
+    "@aztec/aztec.js": "npm:0.17.0"
+    "@aztec/circuits.js": "npm:0.17.0"
+    "@aztec/ethereum": "npm:0.17.0"
+    "@aztec/foundation": "npm:0.17.0"
+    "@aztec/types": "npm:0.17.0"
+    tslib: "npm:^2.4.0"
+  checksum: 59ffd7f9d380f1ece3b93b0686aee0b6722eba19e328034647f5ca31cecb94c785c7b81959d910f1ec9a81be026bdd0f38b53c08f445e37cf5c82ecf4333cdda
+  languageName: node
+  linkType: hard
+
 "@aztec/aztec.js@npm:0.17.0":
   version: 0.17.0
   resolution: "@aztec/aztec.js@npm:0.17.0"
@@ -4497,6 +4511,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "private_voting_codespace@workspace:."
   dependencies:
+    "@aztec/accounts": "npm:^0.17.0"
     "@aztec/aztec.js": "npm:0.17.0"
     "@aztec/noir-contracts": "npm:0.17.0"
     "@types/jest": "npm:^29.5.11"

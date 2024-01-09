@@ -18,6 +18,7 @@
     "@aztec/aztec.js": "0.17.0"
   },
   "devDependencies": {
+    "@aztec/accounts": "0.17.0",
     "@aztec/noir-contracts": "0.17.0",
     "@types/jest": "^29.5.11",
     "jest": "^29.7.0",

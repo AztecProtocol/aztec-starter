@@ -1,5 +1,6 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, Contract, ContractDeployer, DeployMethod, Fr, PXE, TxStatus, createAccount, createPXEClient, getContractDeploymentInfo, getSandboxAccountsWallets, waitForSandbox } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress,  ContractDeployer, Fr, PXE, TxStatus, createPXEClient, getContractDeploymentInfo, waitForSandbox } from "@aztec/aztec.js";
+import { getSandboxAccountsWallets } from "@aztec/accounts/testing"
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
