@@ -1,9 +1,9 @@
 contract EasyPrivateVoting {
-    use dep::protocol_types::{
-        abis::function_selector::FunctionSelector,
-        address::AztecAddress,
-    };
     use dep::aztec::{
+        protocol_types::{
+            abis::function_selector::FunctionSelector,
+            address::AztecAddress,
+        },
         context::{PrivateContext, Context},
         oracle::get_secret_key::get_secret_key, // used to compute nullifier
         state_vars::{ map::Map, public_state::PublicState,}, 
@@ -15,7 +15,7 @@ contract EasyPrivateVoting {
     };
     struct Storage {
         admin: PublicState<AztecAddress, AZTEC_ADDRESS_SERIALIZED_LEN>, // admin can end vote
-        tally: Map<PublicState<Field, FIELD_SERIALIZED_LEN>>, // we will store candidate as key and number of votes as value
+        tally: Map<Field, PublicState<Field, FIELD_SERIALIZED_LEN>>, // we will store candidate as key and number of votes as value
         voteEnded: PublicState<bool, BOOL_SERIALIZED_LEN>, // voteEnded is boolean
     }
     impl Storage {
