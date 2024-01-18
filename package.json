@@ -27,6 +27,5 @@
   },
   "jest": {
     "testTimeout": 20000
-  },
-  "packageManager": "yarn@4.0.2"
+  }
 }
