@@ -4,7 +4,7 @@
     "outDir": "dest",
     "tsBuildInfoFile": ".tsbuildinfo",
     "target": "es2020",
-    "lib": ["esnext", "dom", "DOM.Iterable"],
+    "lib": ["esnext", "dom", "es2017.object"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
