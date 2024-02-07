@@ -1,5 +1,5 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress,  ContractDeployer, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractDeploymentInfo } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, ContractDeployer, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams } from "@aztec/aztec.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
 
 const setupSandbox = async () => {
@@ -27,7 +27,7 @@ describe("Voting", () => {
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
         const deployArgs = accounts[0].address
 
-        const deploymentData = getContractDeploymentInfo(VotingContractArtifact, [deployArgs], salt, publicKey);
+        const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact, [deployArgs], salt, publicKey);
         const deployer = new ContractDeployer(VotingContractArtifact, pxe, publicKey);
         const tx = deployer.deploy(deployArgs).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
@@ -45,7 +45,7 @@ describe("Voting", () => {
             expect.objectContaining({
                 status: TxStatus.MINED,
                 error: '',
-                contractAddress: deploymentData.completeAddress.address,
+                contractAddress: deploymentData.address,
             }),
         );
     })
