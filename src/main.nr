@@ -1,11 +1,7 @@
 contract EasyPrivateVoting {
     use dep::aztec::{
-        protocol_types::{
-            abis::function_selector::FunctionSelector,
-            address::AztecAddress
-        },
-        context::{PrivateContext, Context},
-        state_vars::{ map::Map, public_state::PublicState}, 
+        protocol_types::{abis::function_selector::FunctionSelector, address::AztecAddress},
+        context::{PrivateContext, Context}, state_vars::{map::Map, public_state::PublicState}
     };
     struct Storage {
         admin: PublicState<AztecAddress>, // admin can end vote
@@ -51,13 +47,16 @@ contract EasyPrivateVoting {
         assert(storage.admin.read().eq(context.msg_sender()), "Only admin can end votes"); // assert that caller is admin
         storage.voteEnded.write(true);
     }
+
     unconstrained fn get_vote(candidate: Field) -> pub Field {
         storage.tally.at(candidate).read()
     }
+
     unconstrained fn compute_note_hash_and_nullifier(
         contract_address: AztecAddress,
         nonce: Field,
         storage_slot: Field,
+        note_type_id: Field,
         serialized_note: [Field; 0]
     ) -> pub [Field; 4] {
         [0, 0, 0, 0]
