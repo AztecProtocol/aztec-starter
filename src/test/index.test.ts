@@ -28,26 +28,26 @@ describe("Voting", () => {
         const deployArgs = accounts[0].address
 
         const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact, [deployArgs], salt, publicKey);
-        const deployer = new ContractDeployer(VotingContractArtifact, pxe, publicKey);
+        const deployer = new ContractDeployer(VotingContractArtifact, wallets[0], publicKey);
         const tx = deployer.deploy(deployArgs).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
 
         expect(receipt).toEqual(
             expect.objectContaining({
                 status: TxStatus.PENDING,
-                error: '',
+                error: ''
             }),
         );
 
         const receiptAfterMined = await tx.wait();
 
+        console.log(receiptAfterMined)
         expect(receiptAfterMined).toEqual(
             expect.objectContaining({
                 status: TxStatus.MINED,
-                error: '',
-                contractAddress: deploymentData.address,
             }),
         );
+        expect(receiptAfterMined.contract.address).toEqual(deploymentData.address)
     })
 
     it("It casts a vote", async () => {

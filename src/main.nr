@@ -10,23 +10,13 @@ contract EasyPrivateVoting {
         voteEnded: PublicMutable<bool>, // voteEnded is boolean
     }
 
-    #[aztec(private)]
-    #[aztec(initializer)] // annotation to mark function as private and expose private context
-    fn constructor(admin: AztecAddress) { // called when contract is deployed
-        context.call_public_function(
-            // we cannot update public state directly from private function but we can call public function (which queues it)
-            context.this_address(),// contract address whose method we want to call
-            FunctionSelector::from_signature("_initialize((Field))"), // function selector
-            [admin.to_field()] // parameters
-        );
-    }
-    #[aztec(public)] // annotation to mark function as public and expose public context
-    #[aztec(internal)] // internal - can only be called by contract
-    #[aztec(noinitcheck)]
-    fn _initialize(admin: AztecAddress) { 
+    #[aztec(public)]
+    #[aztec(initializer)] // annotation to mark function as a constructor
+    fn constructor(admin: AztecAddress) {
         storage.admin.write(admin);
         storage.voteEnded.write(false);
     }
+
     #[aztec(private)] // annotation to mark function as private and expose private context
     fn cast_vote(candidate: Field) {
         let secret = context.request_nullifier_secret_key(context.msg_sender()); // get secret key of caller of function

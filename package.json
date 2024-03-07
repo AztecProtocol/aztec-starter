@@ -15,11 +15,11 @@
     "update": "aztec-cli update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.26.3"
+    "@aztec/aztec.js": "0.26.5"
   },
   "devDependencies": {
-    "@aztec/accounts": "0.26.3",
-    "@aztec/noir-contracts.js": "0.26.3",
+    "@aztec/accounts": "0.26.5",
+    "@aztec/noir-contracts.js": "0.26.5",
     "@types/jest": "^29.5.11",
     "@types/mocha": "^10.0.6",
     "jest": "^29.7.0",
