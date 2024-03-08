@@ -41,7 +41,6 @@ describe("Voting", () => {
 
         const receiptAfterMined = await tx.wait();
 
-        console.log(receiptAfterMined)
         expect(receiptAfterMined).toEqual(
             expect.objectContaining({
                 status: TxStatus.MINED,
