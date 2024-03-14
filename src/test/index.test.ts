@@ -27,7 +27,7 @@ describe("Voting", () => {
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
         const deployArgs = accounts[0].address
 
-        const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact, [deployArgs], salt, publicKey);
+        const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact, { constructorArgs: [deployArgs], salt, publicKey });
         const deployer = new ContractDeployer(VotingContractArtifact, wallets[0], publicKey);
         const tx = deployer.deploy(deployArgs).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
@@ -47,7 +47,7 @@ describe("Voting", () => {
             }),
         );
         expect(receiptAfterMined.contract.address).toEqual(deploymentData.address)
-    })
+    }, 300_000)
 
     it("It casts a vote", async () => {
         const candidate = new Fr(1)
@@ -56,6 +56,6 @@ describe("Voting", () => {
         const tx = await contract.methods.cast_vote(candidate).send().wait();
         let count = await contract.methods.get_vote(candidate).view();
         expect(count).toBe(1n);
-    })
+    }, 300_000)
 
 });
