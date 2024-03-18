@@ -27,7 +27,11 @@ describe("Voting", () => {
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
         const deployArgs = accounts[0].address
 
-        const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact, { constructorArgs: [deployArgs], salt, publicKey });
+        const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact, 
+            { constructorArgs: [deployArgs], 
+                salt, 
+                publicKey, 
+                deployer: wallets[0].getAddress() });
         const deployer = new ContractDeployer(VotingContractArtifact, wallets[0], publicKey);
         const tx = deployer.deploy(deployArgs).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
@@ -39,14 +43,17 @@ describe("Voting", () => {
             }),
         );
 
-        const receiptAfterMined = await tx.wait();
+        const receiptAfterMined = await tx.wait({ wallet: wallets[0] });
 
+        expect(await pxe.getContractInstance(deploymentData.address)).toBeDefined();
+        expect(await pxe.isContractPubliclyDeployed(deploymentData.address)).toBeDefined();
         expect(receiptAfterMined).toEqual(
             expect.objectContaining({
                 status: TxStatus.MINED,
             }),
         );
-        expect(receiptAfterMined.contract.address).toEqual(deploymentData.address)
+
+        expect(receiptAfterMined.contract.instance.address).toEqual(deploymentData.address)
     }, 300_000)
 
     it("It casts a vote", async () => {
