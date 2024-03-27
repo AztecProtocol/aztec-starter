@@ -7,14 +7,14 @@ contract EasyPrivateVoting {
     struct Storage {
         admin: PublicMutable<AztecAddress>, // admin can end vote
         tally: Map<Field, PublicMutable<Field>>, // we will store candidate as key and number of votes as value
-        voteEnded: PublicMutable<bool>, // voteEnded is boolean
+        vote_ended: PublicMutable<bool>, // vote_ended is boolean
     }
 
     #[aztec(public)]
     #[aztec(initializer)] // annotation to mark function as a constructor
     fn constructor(admin: AztecAddress) {
         storage.admin.write(admin);
-        storage.voteEnded.write(false);
+        storage.vote_ended.write(false);
     }
 
     #[aztec(private)] // annotation to mark function as private and expose private context
@@ -32,7 +32,7 @@ contract EasyPrivateVoting {
     #[aztec(public)]
     #[aztec(internal)]
     fn add_to_tally_public(candidate: Field) {
-        assert(storage.voteEnded.read() == false, "Vote has ended"); // assert that vote has not ended
+        assert(storage.vote_ended.read() == false, "Vote has ended"); // assert that vote has not ended
         let new_tally = storage.tally.at(candidate).read() + 1;
         storage.tally.at(candidate).write(new_tally);
     }
@@ -40,7 +40,7 @@ contract EasyPrivateVoting {
     #[aztec(public)] 
     fn end_vote() {
         assert(storage.admin.read().eq(context.msg_sender()), "Only admin can end votes"); // assert that caller is admin
-        storage.voteEnded.write(true);
+        storage.vote_ended.write(true);
     }
     unconstrained fn get_vote(candidate: Field) -> pub Field {
         storage.tally.at(candidate).read()
