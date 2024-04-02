@@ -22,6 +22,12 @@ Modify the toolkit version to match the version (`x.x.x`) specified in Nargo.tom
 aztec-up x.x.x
 ```
 
+or update to the latest version with:
+
+```bash
+aztec-up
+```
+
 Start the sandbox with:
 
 ```bash
