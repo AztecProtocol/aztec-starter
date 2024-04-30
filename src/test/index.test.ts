@@ -23,16 +23,18 @@ describe("Voting", () => {
 
     it("Deploys the contract", async () => {
         const salt = Fr.random();
-        const publicKey = accounts[0].publicKey
+        const publicKeysHash = wallets[0].getPublicKeysHash()
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
-        const deployArgs = accounts[0].address
+        const deployArgs = wallets[0].getCompleteAddress().address
 
-        const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact, 
-            { constructorArgs: [deployArgs], 
-                salt, 
-                publicKey, 
-                deployer: wallets[0].getAddress() });
-        const deployer = new ContractDeployer(VotingContractArtifact, wallets[0], publicKey);
+        const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact,
+            {
+                constructorArgs: [deployArgs],
+                salt,
+                publicKeysHash,
+                deployer: wallets[0].getAddress()
+            });
+        const deployer = new ContractDeployer(VotingContractArtifact, wallets[0], publicKeysHash);
         const tx = deployer.deploy(deployArgs).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
 
