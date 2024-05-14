@@ -1,5 +1,5 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, ContractDeployer, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, deriveKeys } from "@aztec/aztec.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
 
 const setupSandbox = async () => {
@@ -23,7 +23,8 @@ describe("Voting", () => {
 
     it("Deploys the contract", async () => {
         const salt = Fr.random();
-        const publicKeysHash = accounts[0].publicKeys.hash();
+        const secretKey = Fr.random();
+        const publicKeysHash = deriveKeys(secretKey).publicKeys.hash();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
         const deployArgs = wallets[0].getCompleteAddress().address
 
