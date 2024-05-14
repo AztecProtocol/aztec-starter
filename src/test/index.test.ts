@@ -23,8 +23,6 @@ describe("Voting", () => {
 
     it("Deploys the contract", async () => {
         const salt = Fr.random();
-        const secretKey = Fr.random();
-        const publicKeysHash = deriveKeys(secretKey).publicKeys.hash();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
         const deployArgs = wallets[0].getCompleteAddress().address
 
@@ -32,10 +30,9 @@ describe("Voting", () => {
             {
                 constructorArgs: [deployArgs],
                 salt,
-                publicKeysHash,
                 deployer: wallets[0].getAddress()
             });
-        const deployer = new ContractDeployer(VotingContractArtifact, wallets[0], publicKeysHash);
+        const deployer = new ContractDeployer(VotingContractArtifact, wallets[0]);
         const tx = deployer.deploy(deployArgs).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
 
