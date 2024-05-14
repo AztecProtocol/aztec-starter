@@ -23,7 +23,7 @@ describe("Voting", () => {
 
     it("Deploys the contract", async () => {
         const salt = Fr.random();
-        const publicKeysHash = wallets[0].getPublicKeysHash()
+        const publicKeysHash = accounts[0].publicKeys.hash();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
         const deployArgs = wallets[0].getCompleteAddress().address
 
