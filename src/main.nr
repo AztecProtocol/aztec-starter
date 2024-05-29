@@ -10,12 +10,14 @@ contract EasyPrivateVoting {
         tally: Map<Field, PublicMutable<Field>>, // we will store candidate as key and number of votes as value
         vote_ended: PublicMutable<bool>, // vote_ended is boolean
     }
+
     #[aztec(public)]
     #[aztec(initializer)] // annotation to mark function as a constructor
     fn constructor(admin: AztecAddress) {
         storage.admin.write(admin);
         storage.vote_ended.write(false);
     }
+
     #[aztec(private)] // annotation to mark function as private and expose private context
     fn cast_vote(candidate: Field) {
         let msg_sender_npk_m_hash = get_npk_m_hash(&mut context, context.msg_sender());
