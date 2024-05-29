@@ -1,6 +1,7 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
 import { AccountWallet, CompleteAddress, ContractDeployer, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, deriveKeys } from "@aztec/aztec.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
+import { TokenContract } from "@aztec/noir-contracts.js";
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -19,6 +20,9 @@ describe("Voting", () => {
 
         wallets = await getInitialTestAccountsWallets(pxe);
         accounts = wallets.map(w => w.getCompleteAddress())
+
+        const tokenContract = await TokenContract.deploy(wallets[0], wallets[0].getAddress(), "USD Coin", "USDC", 6).send().deployed();
+        console.log("token contract deploye", tokenContract.address)
     })
 
     it("Deploys the contract", async () => {
