@@ -20,9 +20,6 @@ describe("Voting", () => {
 
         wallets = await getInitialTestAccountsWallets(pxe);
         accounts = wallets.map(w => w.getCompleteAddress())
-
-        const tokenContract = await TokenContract.deploy(wallets[0], wallets[0].getAddress(), "USD Coin", "USDC", 6).send().deployed();
-        console.log("token contract deploye", tokenContract.address)
     })
 
     it("Deploys the contract", async () => {

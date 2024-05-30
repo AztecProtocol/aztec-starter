@@ -60,18 +60,6 @@ Generate the contract artifact json and typescript interface
 yarn codegen
 ```
 
-## Deploy
-
-Add `ADMIN` to your environment.
-
-```bash
-ADMIN="0x1d30d4de97657983408587c7a91ba6587774b30f0e70224a0658f0357092f495"
-```
-
-```bash
-aztec-cli deploy src/artifacts/EasyPrivateVoting.json --args $ADMIN
-```
-
 ## Test
 
 ```bash
@@ -83,7 +71,7 @@ yarn test
 ### Update Nodejs and Noir dependencies
 
 ```bash
-aztec-cli update
+yarn update
 ```
 
 ### Update Contract
