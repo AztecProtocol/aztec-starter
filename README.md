@@ -4,7 +4,7 @@ This repo is meant to be a starting point for writing Aztec contracts and tests.
 
 You can find the Easy Private Voting contract in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`.
 
-The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/dev_docs/tutorials/writing_private_voting_contract).
+The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/tutorials/contract_tutorials/private_voting_contract).
 
 ## Getting Started
 
