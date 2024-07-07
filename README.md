@@ -57,6 +57,12 @@ yarn compile
 Generate the contract artifact json and typescript interface
 
 ```bash
+aztec-builder codegen target -o src/artifacts
+```
+
+or
+
+```bash
 yarn codegen
 ```
 

@@ -9,18 +9,18 @@
   "type": "module",
   "scripts": {
     "clean": "rm -rf ./src/artifacts ./target",
-    "codegen": "aztec-builder codegen target --outdir src/artifacts",
+    "codegen": "aztec-builder codegen target -o src/artifacts",
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
     "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
     "update": "aztec-builder update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.41.0"
+    "@aztec/aztec.js": "0.45.1"
   },
   "devDependencies": {
-    "@aztec/accounts": "0.41.0",
-    "@aztec/builder": "0.41.0",
-    "@aztec/noir-contracts.js": "0.41.0",
+    "@aztec/accounts": "0.45.1",
+    "@aztec/builder": "0.45.1",
+    "@aztec/noir-contracts.js": "0.45.1",
     "@types/jest": "^29.5.11",
     "@types/mocha": "^10.0.6",
     "jest": "^29.7.0",

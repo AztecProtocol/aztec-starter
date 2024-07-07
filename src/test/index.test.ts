@@ -43,17 +43,17 @@ describe("Voting", () => {
             }),
         );
 
-        const receiptAfterMined = await tx.wait({ wallet: wallets[0] });
+        const receiptAfterSuccess = await tx.wait({ wallet: wallets[0] });
 
         expect(await pxe.getContractInstance(deploymentData.address)).toBeDefined();
         expect(await pxe.isContractPubliclyDeployed(deploymentData.address)).toBeDefined();
-        expect(receiptAfterMined).toEqual(
+        expect(receiptAfterSuccess).toEqual(
             expect.objectContaining({
-                status: TxStatus.MINED,
+                status: TxStatus.SUCCESS,
             }),
         );
 
-        expect(receiptAfterMined.contract.instance.address).toEqual(deploymentData.address)
+        expect(receiptAfterSuccess.contract.instance.address).toEqual(deploymentData.address)
     }, 300_000)
 
     it("It casts a vote", async () => {
