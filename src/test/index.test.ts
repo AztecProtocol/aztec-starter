@@ -49,7 +49,7 @@ describe("Voting", () => {
         expect(await pxe.isContractPubliclyDeployed(deploymentData.address)).toBeDefined();
         expect(receiptAfterMined).toEqual(
             expect.objectContaining({
-                status: TxStatus.MINED,
+                status: TxStatus.SUCCESS,
             }),
         );
 
