@@ -2,3 +2,5 @@ node_modules
 target/
 src/artifacts/
 log/
+.vscode
+codegenCache.js
