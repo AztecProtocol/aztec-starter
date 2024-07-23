@@ -31,7 +31,7 @@ aztec-up
 Start the sandbox with:
 
 ```bash
-aztec-sandbox
+aztec start --sandbox
 ```
 
 ## Install packages
