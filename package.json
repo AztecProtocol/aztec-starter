@@ -12,15 +12,15 @@
     "codegen": "aztec codegen target --outdir src/artifacts",
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
     "test": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
-    "update": "aztec-builder update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
+    "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.46.7"
+    "@aztec/aztec.js": "0.47.0"
   },
   "devDependencies": {
-    "@aztec/accounts": "0.46.7",
-    "@aztec/builder": "0.46.7",
-    "@aztec/noir-contracts.js": "0.46.7",
+    "@aztec/accounts": "0.47.0",
+    "@aztec/builder": "0.47.0",
+    "@aztec/noir-contracts.js": "0.47.0",
     "@types/jest": "^29.5.11",
     "@types/mocha": "^10.0.6",
     "jest": "^29.7.0",
