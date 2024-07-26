@@ -1,3 +1,4 @@
+mod test;
 contract EasyPrivateVoting {
     use dep::aztec::prelude::{
         AztecAddress, FunctionSelector, NoteHeader, NoteInterface, NoteGetterOptions, PrivateContext,
@@ -14,6 +15,14 @@ contract EasyPrivateVoting {
     #[aztec(public)]
     #[aztec(initializer)] // annotation to mark function as a constructor
     fn constructor(admin: AztecAddress) {
+        storage.admin.write(admin);
+        storage.vote_ended.write(false);
+        storage.active_at_block.initialize(context.block_number() as u32);
+    }
+
+    #[aztec(public)]
+    #[aztec(initializer)]
+    fn initialize(admin: AztecAddress) {
         storage.admin.write(admin);
         storage.vote_ended.write(false);
         storage.active_at_block.initialize(context.block_number() as u32);
@@ -49,3 +58,4 @@ contract EasyPrivateVoting {
         storage.tally.at(candidate).read()
     }
 }
+
