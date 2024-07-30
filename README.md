@@ -8,6 +8,8 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 ## Getting Started
 
+Use node version 18.
+
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
 Get the sandbox, aztec-cli and other tooling with this command:
