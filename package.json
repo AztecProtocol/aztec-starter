@@ -15,7 +15,7 @@
     "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.47.0"
+    "@aztec/aztec.js": "^0.47.0"
   },
   "devDependencies": {
     "@aztec/accounts": "0.47.0",

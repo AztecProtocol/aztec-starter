@@ -34,7 +34,7 @@
     "@aztec/types" "0.47.0"
     tslib "^2.4.0"
 
-"@aztec/aztec.js@0.47.0":
+"@aztec/aztec.js@0.47.0", "@aztec/aztec.js@^0.47.0":
   version "0.47.0"
   resolved "https://registry.yarnpkg.com/@aztec/aztec.js/-/aztec.js-0.47.0.tgz#ede58ae35529c680e60115e795b97dc8f93a2271"
   integrity sha512-dB6jZpdgckJkA72q9mpkBL5qqwOLlQXHGLkHl1cgmnXNA3jYzpEbH7CDK8ZFsNorx8uhrDs1z7dP/MR5zNh4Cg==
