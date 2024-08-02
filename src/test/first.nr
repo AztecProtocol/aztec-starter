@@ -55,6 +55,18 @@ unconstrained fn test_end_vote() {
     assert(vote_ended_expected == vote_ended_read, "Vote ended should be true");
 }
 
+// this test is currently failing. I am debugging
+#[test]
+unconstrained fn test_cast_vote() {
+    let (env, voting_contract_address, admin, _) = utils::setup();
+    let alice = env.create_account();
+
+    let candidate = 1;
+    env.advance_block_by(6);
+    let call_interface = EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate);
+    env.call_private_void(call_interface);
+}
+
 #[test(should_fail)]
 unconstrained fn test_end_vote_fail() {
     let (env, voting_contract_address, admin, _) = utils::setup();
