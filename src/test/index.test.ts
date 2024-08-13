@@ -1,5 +1,5 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, deriveKeys } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger } from "@aztec/aztec.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
 
 const setupSandbox = async () => {
@@ -13,8 +13,12 @@ describe("Voting", () => {
     let pxe: PXE;
     let wallets: AccountWallet[] = [];
     let accounts: CompleteAddress[] = [];
+    let logger: DebugLogger;
 
     beforeAll(async () => {
+        logger = createDebugLogger('aztec:aztec-starter');
+        logger.info("Aztec-Starter tests running.")
+
         pxe = await setupSandbox();
 
         wallets = await getInitialTestAccountsWallets(pxe);
