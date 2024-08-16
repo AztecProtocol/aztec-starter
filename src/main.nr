@@ -1,9 +1,7 @@
 mod test;
+
 contract EasyPrivateVoting {
-    use dep::aztec::prelude::{
-        AztecAddress, FunctionSelector, NoteHeader, NoteInterface, NoteGetterOptions, PrivateContext,
-        Map, PublicMutable, SharedImmutable
-    };
+    use dep::aztec::prelude::{AztecAddress, FunctionSelector, PrivateContext, Map, PublicMutable, SharedImmutable};
     #[aztec(storage)]
     struct Storage {
         admin: PublicMutable<AztecAddress>, // admin can end vote
@@ -20,14 +18,6 @@ contract EasyPrivateVoting {
         storage.active_at_block.initialize(context.block_number() as u32);
     }
 
-    #[aztec(public)]
-    #[aztec(initializer)]
-    fn initialize(admin: AztecAddress) {
-        storage.admin.write(admin);
-        storage.vote_ended.write(false);
-        storage.active_at_block.initialize(context.block_number() as u32);
-    }
-
     #[aztec(private)] // annotation to mark function as private and expose private context
     fn cast_vote(candidate: Field) {
         // Below, we make sure to get our nullifier public key at a specific block. By pinning the nullifier public key at a specific block,
@@ -37,7 +27,7 @@ contract EasyPrivateVoting {
 
         let secret = context.request_nsk_app(msg_sender_npk_m_hash); // get secret key of caller of function
         let nullifier = std::hash::pedersen_hash([context.msg_sender().to_field(), secret]); // derive nullifier from sender and secret
-        context.push_nullifier(nullifier, 0); // push nullifier
+        context.push_nullifier(nullifier);
         EasyPrivateVoting::at(context.this_address()).add_to_tally_public(candidate).enqueue(&mut context);
     }
 
@@ -58,4 +48,3 @@ contract EasyPrivateVoting {
         storage.tally.at(candidate).read()
     }
 }
-

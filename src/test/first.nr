@@ -4,6 +4,8 @@ use dep::aztec::test::{helpers::{cheatcodes, test_environment::TestEnvironment}}
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 use dep::aztec::note::note_getter::{MAX_NOTES_PER_PAGE, view_notes};
 use dep::aztec::note::note_viewer_options::NoteViewerOptions;
+use dep::aztec::hash::compute_secret_hash;
+
 use dep::aztec::{oracle::{execution::{get_block_number, get_contract_address}, unsafe_rand::unsafe_rand, storage::storage_read}};
 
 use crate::EasyPrivateVoting;
@@ -19,6 +21,9 @@ unconstrained fn test_initializer() -> Field {
 
     std::println("hello world");
     std::println(alice);
+
+    let s = compute_secret_hash(0x01);
+    std::println(s);
 
     1
 }

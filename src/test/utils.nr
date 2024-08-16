@@ -13,10 +13,8 @@ pub fn setup() -> (&mut TestEnvironment, AztecAddress, AztecAddress) {
 
     let admin = env.create_account();
 
-    let initializer_call_interface = EasyPrivateVoting::interface().initialize(admin);
+    let initializer_call_interface = EasyPrivateVoting::interface().constructor(admin);
     let voting_contract = env.deploy_self("EasyPrivateVoting").with_public_initializer(initializer_call_interface);
-
     // std::println(voting_contract);
-
     (&mut env, voting_contract.to_address(), admin)
 }
