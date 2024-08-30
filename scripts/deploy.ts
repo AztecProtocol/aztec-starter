@@ -29,6 +29,7 @@ async function main() {
     let tx = await schnorrAccount.deploy();
 
     console.log(tx)
+    console.log(await tx.wait())
 }
 
 main();
