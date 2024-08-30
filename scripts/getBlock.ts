@@ -21,7 +21,6 @@ async function main() {
     let block = await pxe.getBlock(1);
     console.log(block)
     console.log(block?.hash())
-
 }
 
 main();
