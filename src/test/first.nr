@@ -53,6 +53,7 @@ unconstrained fn test_end_vote() {
 
     let vote_ended_expected = true;
 
+    // need to impersonate the contract to correctly read the storage
     env.impersonate(voting_contract_address);
     let block_number = get_block_number();
     let status_slot = EasyPrivateVoting::storage().vote_ended.slot;
@@ -65,6 +66,7 @@ unconstrained fn test_end_vote() {
 unconstrained fn test_cast_vote() {
     let (env, voting_contract_address, admin, _) = utils::setup();
     let alice = env.create_account();
+    env.impersonate(alice);
 
     let candidate = 1;
     env.advance_block_by(6);
