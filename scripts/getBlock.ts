@@ -1,8 +1,8 @@
-import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger } from "@aztec/aztec.js";
+import { PXE, waitForPXE, createPXEClient } from "@aztec/aztec.js";
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
-    const pxe = createPXEClient(PXE_URL);
+    const pxe = await createPXEClient(PXE_URL);
     await waitForPXE(pxe);
     return pxe;
 };
@@ -10,12 +10,6 @@ const setupSandbox = async () => {
 async function main() {
 
     let pxe: PXE;
-    let wallets: AccountWallet[] = [];
-    let accounts: CompleteAddress[] = [];
-    let logger: DebugLogger;
-
-    logger = createDebugLogger('aztec:aztec-starter');
-
     pxe = await setupSandbox();
 
     let block = await pxe.getBlock(1);
