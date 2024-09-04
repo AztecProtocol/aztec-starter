@@ -64,9 +64,19 @@ yarn codegen
 
 ## Test
 
+Make sure the sandbox is running before running tests.
+
+```bash
+aztec start --sandbox
+```
+
+Then test with:
+
 ```bash
 yarn test
 ```
+
+Testing will run the Typescript tests defined in `index.test.ts` file in the `./src/test` directory, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/guides/developer_guides/smart_contracts/testing_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (and imported at the top of the contract file with `mod test;`).
 
 ## Error resolution
 
