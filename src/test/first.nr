@@ -61,7 +61,6 @@ unconstrained fn test_end_vote() {
     assert(vote_ended_expected == vote_ended_read, "Vote ended should be true");
 }
 
-// this test is currently failing. I am debugging
 #[test]
 unconstrained fn test_cast_vote() {
     let (env, voting_contract_address, admin, _) = utils::setup();
@@ -72,7 +71,16 @@ unconstrained fn test_cast_vote() {
     env.advance_block_by(6);
     let call_interface = EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate);
     env.call_private_void(call_interface);
+
+    // Read vote count from storage
+    let block_number = get_block_number();
+    let tally_slot = EasyPrivateVoting::storage().tally.slot;
+    let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate);
+    let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number);
+
+    assert(vote_count == 1, "Vote should be incremented");
 }
+
 
 #[test(should_fail)]
 unconstrained fn test_end_vote_fail() {
