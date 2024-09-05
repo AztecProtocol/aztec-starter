@@ -28,16 +28,17 @@ describe("Voting", () => {
     it("Deploys the contract", async () => {
         const salt = Fr.random();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
-        const deployArgs = wallets[0].getCompleteAddress().address
+        const [deployerWallet, adminWallet] = wallets; // using first account as deployer and second as contract admin
+        const adminAddress = adminWallet.getCompleteAddress().address;
 
         const deploymentData = getContractInstanceFromDeployParams(VotingContractArtifact,
             {
-                constructorArgs: [deployArgs],
+                constructorArgs: [adminAddress],
                 salt,
-                deployer: wallets[0].getAddress()
+                deployer: deployerWallet.getAddress()
             });
-        const deployer = new ContractDeployer(VotingContractArtifact, wallets[0]);
-        const tx = deployer.deploy(deployArgs).send({ contractAddressSalt: salt })
+        const deployer = new ContractDeployer(VotingContractArtifact, deployerWallet);
+        const tx = deployer.deploy(adminAddress).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
 
         expect(receipt).toEqual(
@@ -47,10 +48,10 @@ describe("Voting", () => {
             }),
         );
 
-        const receiptAfterMined = await tx.wait({ wallet: wallets[0] });
+        const receiptAfterMined = await tx.wait({ wallet: deployerWallet });
 
         expect(await pxe.getContractInstance(deploymentData.address)).toBeDefined();
-        expect(await pxe.isContractPubliclyDeployed(deploymentData.address)).toBeDefined();
+        expect(await pxe.isContractPubliclyDeployed(deploymentData.address)).toBeTruthy();
         expect(receiptAfterMined).toEqual(
             expect.objectContaining({
                 status: TxStatus.SUCCESS,
