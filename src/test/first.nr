@@ -75,7 +75,7 @@ unconstrained fn test_cast_vote() {
     let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate);
     let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number);
 
-    assert(vote_count == 1, "Vote should be incremented");
+    assert(vote_count == 1, "vote tally should be incremented");
 }
 
 #[test]
@@ -102,5 +102,23 @@ unconstrained fn test_cast_vote_with_separate_accounts() {
     let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate);
     let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number);
 
-    assert(vote_count == 2, "Vote count be 2");
+    assert(vote_count == 2, "vote tally should be 2");
+}
+
+#[test(should_fail)]
+unconstrained fn test_fail_vote_twice() {
+    let (env, voting_contract_address, _) = utils::setup();
+    let alice = env.create_account();
+
+    let candidate = 101;
+    
+    env.impersonate(alice);
+    env.advance_block_by(1);
+    let call_interface = EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate);
+    env.call_private_void(call_interface);
+
+    // Vote again as alice
+    env.advance_block_by(1);
+    let call_interface = EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate);
+    env.call_private_void(call_interface);
 }
