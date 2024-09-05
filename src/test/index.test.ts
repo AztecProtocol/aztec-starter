@@ -69,4 +69,18 @@ describe("Voting", () => {
         expect(count).toBe(1n);
     }, 300_000)
 
+    it("It should fail when trying to vote twice", async () => {
+        const candidate = new Fr(1)
+
+        const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
+        await contract.methods.cast_vote(candidate).send().wait();
+
+        const secondVoteReceipt = await contract.methods.cast_vote(candidate).send().getReceipt();
+        expect(secondVoteReceipt).toEqual(
+            expect.objectContaining({
+                status: TxStatus.DROPPED,
+            }),
+        );
+    }, 300_000)
+
 });
