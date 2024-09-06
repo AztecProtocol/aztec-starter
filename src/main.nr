@@ -1,9 +1,6 @@
-mod test;
-
 contract EasyPrivateVoting {
     use dep::aztec::prelude::{AztecAddress, FunctionSelector, PrivateContext, Map, PublicMutable, SharedImmutable};
     use dep::aztec::keys::getters::get_historical_public_keys;
-    
     #[aztec(storage)]
     struct Storage {
         admin: PublicMutable<AztecAddress>, // admin can end vote
@@ -46,7 +43,6 @@ contract EasyPrivateVoting {
         assert(storage.admin.read().eq(context.msg_sender()), "Only admin can end votes"); // assert that caller is admin
         storage.vote_ended.write(true);
     }
-
     unconstrained fn get_vote(candidate: Field) -> pub Field {
         storage.tally.at(candidate).read()
     }
