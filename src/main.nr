@@ -1,3 +1,5 @@
+mod test;
+
 contract EasyPrivateVoting {
     use dep::aztec::prelude::{AztecAddress, FunctionSelector, PrivateContext, Map, PublicMutable, SharedImmutable};
     use dep::aztec::keys::getters::get_historical_public_keys;
