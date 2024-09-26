@@ -15,7 +15,7 @@ unconstrained fn test_initializer() {
     let (_, voting_contract_address, admin) = utils::setup();
 
     let block_number = get_block_number();
-    let admin_slot = EasyPrivateVoting::storage().admin.slot;
+    let admin_slot = EasyPrivateVoting::storage_layout().admin.slot;
     let admin_storage_value = storage_read(voting_contract_address, admin_slot, block_number);
     assert(admin_storage_value == admin, "Vote ended should be false");
 }
@@ -27,7 +27,7 @@ unconstrained fn test_check_vote_status() {
     let vote_ended_expected: bool = false;
 
     let block_number = get_block_number();
-    let status_slot = EasyPrivateVoting::storage().vote_ended.slot;
+    let status_slot = EasyPrivateVoting::storage_layout().vote_ended.slot;
     let vote_ended_read: bool = storage_read(voting_contract_address, status_slot, block_number);
     assert(vote_ended_expected == vote_ended_read, "Vote ended should be false");
 }
@@ -43,7 +43,7 @@ unconstrained fn test_end_vote() {
     let vote_ended_expected = true;
 
     let block_number = get_block_number();
-    let status_slot = EasyPrivateVoting::storage().vote_ended.slot;
+    let status_slot = EasyPrivateVoting::storage_layout().vote_ended.slot;
     let vote_ended_read: bool = storage_read(voting_contract_address, status_slot, block_number);
     assert(vote_ended_expected == vote_ended_read, "Vote ended should be true");
 }
@@ -71,7 +71,7 @@ unconstrained fn test_cast_vote() {
 
     // Read vote count from storage
     let block_number = get_block_number();
-    let tally_slot = EasyPrivateVoting::storage().tally.slot;
+    let tally_slot = EasyPrivateVoting::storage_layout().tally.slot;
     let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate);
     let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number);
 
@@ -98,7 +98,7 @@ unconstrained fn test_cast_vote_with_separate_accounts() {
 
     // Read vote count from storage
     let block_number = get_block_number();
-    let tally_slot = EasyPrivateVoting::storage().tally.slot;
+    let tally_slot = EasyPrivateVoting::storage_layout().tally.slot;
     let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate);
     let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number);
 

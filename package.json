@@ -17,12 +17,12 @@
     "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1)"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.55.0",
-    "@aztec/noir-contracts.js": "0.55.0",
+    "@aztec/aztec.js": "0.56.0",
+    "@aztec/noir-contracts.js": "0.56.0",
     "@types/node": "^22.5.1"
   },
   "devDependencies": {
-    "@aztec/accounts": "0.55.0",
+    "@aztec/accounts": "0.56.0",
     "@types/jest": "^29.5.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^22.5.1",

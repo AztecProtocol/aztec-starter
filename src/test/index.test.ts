@@ -65,7 +65,7 @@ describe("Voting", () => {
         const candidate = new Fr(1)
 
         const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        const tx = await contract.methods.cast_vote(candidate).send().wait();
+        const tx = await contract.methods.cast_vote(candidate, new Fr(1)).send().wait();
         let count = await contract.methods.get_vote(candidate).simulate();
         expect(count).toBe(1n);
     }, 300_000)
@@ -74,9 +74,9 @@ describe("Voting", () => {
         const candidate = new Fr(1)
 
         const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        await contract.methods.cast_vote(candidate).send().wait();
+        await contract.methods.cast_vote(candidate, new Fr(1)).send().wait();
 
-        const secondVoteReceipt = await contract.methods.cast_vote(candidate).send().getReceipt();
+        const secondVoteReceipt = await contract.methods.cast_vote(candidate, new Fr(1)).send().getReceipt();
         expect(secondVoteReceipt).toEqual(
             expect.objectContaining({
                 status: TxStatus.DROPPED,
