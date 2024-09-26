@@ -4,3 +4,4 @@ src/artifacts/
 log/
 .vscode
 codegenCache.js
+.DS_Store
