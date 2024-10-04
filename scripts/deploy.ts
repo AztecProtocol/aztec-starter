@@ -27,13 +27,12 @@ async function main() {
     let secretKey = Fr.random();
     let salt = Fr.random();
 
-
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
     const { address, publicKeys, partialAddress } = schnorrAccount.getCompleteAddress();
-    let tx = await schnorrAccount.deploy();
-    let wallet = await schnorrAccount.register();
-
-    await EasyPrivateVotingContract.deploy(wallets[0], address).send().deployed()
+    let tx = await schnorrAccount.deploy().wait();
+    let wallet = await schnorrAccount.getWallet();
+    
+    await EasyPrivateVotingContract.deploy(wallet, address).send().deployed()
     // let token = await TokenContract.deploy(wallet, wallet.getAddress(), "Test", "TST", 18).send().deployed();
     // await token.methods.mint_private(wallet.getAddress(), 100).send().wait();
 }
