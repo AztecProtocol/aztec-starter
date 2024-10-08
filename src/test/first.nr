@@ -6,7 +6,7 @@ use dep::aztec::note::note_getter::{MAX_NOTES_PER_PAGE, view_notes};
 use dep::aztec::note::note_viewer_options::NoteViewerOptions;
 use dep::aztec::hash::compute_secret_hash;
 
-use dep::aztec::{oracle::{execution::{get_block_number, get_contract_address}, unsafe_rand::unsafe_rand, storage::storage_read}};
+use dep::aztec::{oracle::{execution::{get_block_number, get_contract_address}, storage::storage_read}};
 
 use crate::EasyPrivateVoting;
 
