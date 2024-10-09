@@ -15,7 +15,7 @@ Use node version 18.
 Get the sandbox, aztec-cli and other tooling with this command:
 
 ```bash
-bash -i <(curl -s install.aztec.network)
+bash -i <(curl -s https://install.aztec.network)
 ```
 
 Modify the toolkit version to match the version (`x.x.x`) specified in Nargo.toml with:
