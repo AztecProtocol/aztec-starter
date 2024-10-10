@@ -8,6 +8,8 @@ contract EasyPrivateVoting {
         keys::getters::get_public_keys,
         macros::{storage::storage, functions::{public, initializer, private, internal}}
     };
+        use dep::aztec::oracle::debug_log::debug_log;
+
     #[storage]
     struct Storage<Context> {
         admin: PublicMutable<AztecAddress, Context>, // admin can end vote
@@ -19,6 +21,8 @@ contract EasyPrivateVoting {
     #[public]
     #[initializer] // annotation to mark function as a constructor
     fn constructor(admin: AztecAddress) {
+        debug_log("here!!!!");
+
         storage.admin.write(admin);
         storage.vote_ended.write(false);
         storage.active_at_block.initialize(context.block_number() as u32);
@@ -26,6 +30,8 @@ contract EasyPrivateVoting {
 
     #[private] // annotation to mark function as private and expose private context
     fn cast_vote(candidate: Field) {
+        debug_log("here");
+
         let msg_sender_npk_m_hash = get_public_keys(context.msg_sender()).npk_m.hash();
 
         let secret = context.request_nsk_app(msg_sender_npk_m_hash); // get secret key of caller of function
