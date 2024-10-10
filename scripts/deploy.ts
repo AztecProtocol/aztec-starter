@@ -32,7 +32,8 @@ async function main() {
     let tx = await schnorrAccount.deploy().wait();
     let wallet = await schnorrAccount.getWallet();
     
-    await EasyPrivateVotingContract.deploy(wallet, address).send().deployed()
+    const contract = await EasyPrivateVotingContract.deploy(wallet, address).send().deployed()
+    await contract.methods.cast_vote(new Fr(1)).send().wait()
     // let token = await TokenContract.deploy(wallet, wallet.getAddress(), "Test", "TST", 18).send().deployed();
     // await token.methods.mint_private(wallet.getAddress(), 100).send().wait();
 }
