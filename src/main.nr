@@ -17,14 +17,16 @@ contract EasyPrivateVoting {
     }
 
     #[public]
-    #[initializer] // annotation to mark function as a constructor
+    #[initializer]
+    // annotation to mark function as a constructor
     fn constructor(admin: AztecAddress) {
         storage.admin.write(admin);
         storage.vote_ended.write(false);
         storage.active_at_block.initialize(context.block_number() as u32);
     }
 
-    #[private] // annotation to mark function as private and expose private context
+    #[private]
+    // annotation to mark function as private and expose private context
     fn cast_vote(candidate: Field) {
         let msg_sender_npk_m_hash = get_public_keys(context.msg_sender()).npk_m.hash();
 
