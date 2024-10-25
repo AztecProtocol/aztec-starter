@@ -32,9 +32,8 @@ async function main() {
     let tx = await schnorrAccount.deploy().wait();
     let wallet = await schnorrAccount.getWallet();
     
-    await EasyPrivateVotingContract.deploy(wallet, address).send().deployed()
-    // let token = await TokenContract.deploy(wallet, wallet.getAddress(), "Test", "TST", 18).send().deployed();
-    // await token.methods.mint_private(wallet.getAddress(), 100).send().wait();
+    const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send().deployed();
+    logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 
 main();
