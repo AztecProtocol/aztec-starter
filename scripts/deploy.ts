@@ -1,40 +1,35 @@
-import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger } from "@aztec/aztec.js";
+import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js";
+import { AccountWallet, Fr, PXE, createPXEClient, waitForPXE, getContractInstanceFromDeployParams, createDebugLogger } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-import { AztecAddress, deriveSigningKey } from '@aztec/circuits.js';
-import { TokenContract } from "@aztec/noir-contracts.js";
+import { deriveSigningKey } from '@aztec/circuits.js';
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
 
-const setupSandbox = async () => {
+const setupPXE = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
     const pxe = await createPXEClient(PXE_URL);
     await waitForPXE(pxe);
     return pxe;
 };
 
+const deployVotingContract = async (wallet, address) => {
+    return await EasyPrivateVotingContract.deploy(wallet, address).send().deployed();
+};
+
 async function main() {
-
-    let pxe: PXE;
-    let wallets: AccountWallet[] = [];
-    let accounts: CompleteAddress[] = [];
-    let logger: DebugLogger;
-
-    logger = createDebugLogger('aztec:aztec-starter');
-
-    pxe = await setupSandbox();
-    wallets = await getInitialTestAccountsWallets(pxe);
-
-    let secretKey = Fr.random();
-    let salt = Fr.random();
-
-    let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
-    const { address, publicKeys, partialAddress } = schnorrAccount.getCompleteAddress();
-    let tx = await schnorrAccount.deploy().wait();
-    let wallet = await schnorrAccount.getWallet();
+    const logger = createDebugLogger('aztec:optimized');
+    const pxe = await setupPXE();
+    const wallets = await getInitialTestAccountsWallets(pxe);
     
-    await EasyPrivateVotingContract.deploy(wallet, address).send().deployed()
-    // let token = await TokenContract.deploy(wallet, wallet.getAddress(), "Test", "TST", 18).send().deployed();
-    // await token.methods.mint_private(wallet.getAddress(), 100).send().wait();
+    const secretKey = Fr.random();
+    const salt = Fr.random();
+    const schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
+    const { address } = schnorrAccount.getCompleteAddress();
+    
+    await schnorrAccount.deploy().wait();
+    const wallet = await schnorrAccount.getWallet();
+
+    const votingContract = await deployVotingContract(wallet, address);
+    logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 
 main();
