@@ -3,11 +3,11 @@ use dep::aztec::macros::aztec;
 
 #[aztec]
 contract EasyPrivateVoting {
-    use dep::aztec::prelude::{AztecAddress, Map, PublicMutable, SharedImmutable};
     use dep::aztec::{
         keys::getters::get_public_keys,
-        macros::{storage::storage, functions::{public, initializer, private, internal}},
+        macros::{functions::{initializer, internal, private, public}, storage::storage},
     };
+    use dep::aztec::prelude::{AztecAddress, Map, PublicMutable, SharedImmutable};
     #[storage]
     struct Storage<Context> {
         admin: PublicMutable<AztecAddress, Context>, // admin can end vote
