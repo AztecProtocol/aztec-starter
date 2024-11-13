@@ -22,6 +22,7 @@ describe("Voting", () => {
         pxe = await setupSandbox();
 
         wallets = await getInitialTestAccountsWallets(pxe);
+
         accounts = wallets.map(w => w.getCompleteAddress())
     })
 
@@ -63,20 +64,30 @@ describe("Voting", () => {
 
     it("It casts a vote", async () => {
         const candidate = new Fr(1)
+        const [deployerWallet, bobWallet] = wallets; // using first account as deployer and second as bob
 
-        const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        const tx = await contract.methods.cast_vote(candidate).send().wait();
+        const contract = await EasyPrivateVotingContract.deploy(deployerWallet, deployerWallet.getAddress()).send().deployed();
+        const receipt = await contract.methods.cast_vote(candidate, bobWallet.getAddress()).send().wait({ debug: true });
+
+        console.log(receipt);
+        const { visibleIncomingNotes, visibleOutgoingNotes } = receipt.debugInfo!
+        console.log("Visible Incoming Notes:");
+        console.log(visibleIncomingNotes);
+        console.log("Visible Outgoing Notes:");
+        console.log(visibleOutgoingNotes);
+
         let count = await contract.methods.get_vote(candidate).simulate();
         expect(count).toBe(1n);
     }, 300_000)
 
     it("It should fail when trying to vote twice", async () => {
         const candidate = new Fr(1)
+        const [deployerWallet, bobWallet] = wallets; // using first account as deployer and second as bob
 
-        const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        await contract.methods.cast_vote(candidate).send().wait();
+        const contract = await EasyPrivateVotingContract.deploy(deployerWallet, deployerWallet.getAddress()).send().deployed();
+        await contract.methods.cast_vote(candidate, bobWallet.getAddress()).send().wait();
 
-        const secondVoteReceipt = await contract.methods.cast_vote(candidate).send().getReceipt();
+        const secondVoteReceipt = await contract.methods.cast_vote(candidate, bobWallet.getAddress()).send().getReceipt();
         expect(secondVoteReceipt).toEqual(
             expect.objectContaining({
                 status: TxStatus.DROPPED,
