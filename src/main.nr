@@ -1,12 +1,15 @@
 mod test;
+mod types;
 use dep::aztec::macros::aztec;
 
 #[aztec]
 contract EasyPrivateVoting {
+    use crate::types::shared_note::{SHARED_NOTE_LEN, SharedNote};
     use dep::aztec::{
         encrypted_logs::encrypted_note_emission::encode_and_encrypt_note,
         keys::getters::get_public_keys,
         macros::{functions::{initializer, internal, private, public}, storage::storage},
+        oracle::random::random,
     };
     use dep::aztec::prelude::{AztecAddress, Map, PrivateSet, PublicMutable, SharedImmutable};
     use dep::value_note::value_note::ValueNote;
@@ -17,7 +20,7 @@ contract EasyPrivateVoting {
         tally: Map<Field, PublicMutable<Field, Context>, Context>, // we will store candidate as key and number of votes as value
         vote_ended: PublicMutable<bool, Context>, // vote_ended is boolean
         active_at_block: SharedImmutable<u32, Context>, // when people can start voting
-        set: PrivateSet<ValueNote, Context>,
+        set: PrivateSet<SharedNote, Context>,
     }
 
     #[public]
@@ -41,10 +44,10 @@ contract EasyPrivateVoting {
             &mut context,
         );
         //
-        let mut value_note = ValueNote::new(candidate, context.msg_sender());
+        let mut shared_note = SharedNote::new(context.msg_sender(), bob, random());
         let owner_ovpk = get_public_keys(context.msg_sender()).ovpk_m;
 
-        let n = storage.set.insert(&mut value_note);
+        let n = storage.set.insert(&mut shared_note);
 
         n.emit(encode_and_encrypt_note(
             &mut context,
