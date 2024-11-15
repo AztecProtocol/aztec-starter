@@ -64,11 +64,15 @@ unconstrained fn test_cast_vote() {
     let (env, voting_contract_address, _) = utils::setup();
     let alice = env.create_account();
     let bob = env.create_account();
+    let charlie = env.create_account();
+
     env.impersonate(alice);
 
     let candidate = 1;
     env.advance_block_by(6);
-    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob).call(&mut env.private());
+    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob, charlie).call(
+        &mut env.private(),
+    );
 
     // Read vote count from storage
     let block_number = get_block_number();
@@ -84,16 +88,21 @@ unconstrained fn test_cast_vote_with_separate_accounts() {
     let (env, voting_contract_address, _) = utils::setup();
     let alice = env.create_account();
     let bob = env.create_account();
+    let charlie = env.create_account();
 
     let candidate = 101;
 
     env.impersonate(alice);
     env.advance_block_by(1);
-    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob).call(&mut env.private());
+    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob, charlie).call(
+        &mut env.private(),
+    );
 
     env.impersonate(bob);
     env.advance_block_by(1);
-    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob).call(&mut env.private());
+    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob, charlie).call(
+        &mut env.private(),
+    );
 
     // Read vote count from storage
     let block_number = get_block_number();
@@ -109,14 +118,19 @@ unconstrained fn test_fail_vote_twice() {
     let (env, voting_contract_address, _) = utils::setup();
     let alice = env.create_account();
     let bob = env.create_account();
+    let charlie = env.create_account();
 
     let candidate = 101;
 
     env.impersonate(alice);
     env.advance_block_by(1);
-    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob).call(&mut env.private());
+    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob, charlie).call(
+        &mut env.private(),
+    );
 
     // Vote again as alice
     env.advance_block_by(1);
-    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob).call(&mut env.private());
+    EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate, bob, charlie).call(
+        &mut env.private(),
+    );
 }

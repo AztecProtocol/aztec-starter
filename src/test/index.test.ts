@@ -64,10 +64,10 @@ describe("Voting", () => {
 
     it("It casts a vote", async () => {
         const candidate = new Fr(1)
-        const [deployerWallet, bobWallet] = wallets; // using first account as deployer and second as bob
+        const [deployerWallet, bobWallet, charlieWallet] = wallets; // using first account as deployer and second as bob
 
         const contract = await EasyPrivateVotingContract.deploy(deployerWallet, deployerWallet.getAddress()).send().deployed();
-        const receipt = await contract.methods.cast_vote(candidate, bobWallet.getAddress()).send().wait({ debug: true });
+        const receipt = await contract.methods.cast_vote(candidate, bobWallet.getAddress(), charlieWallet.getAddress()).send().wait({ debug: true });
 
         console.log(receipt);
         const { visibleIncomingNotes, visibleOutgoingNotes } = receipt.debugInfo!
@@ -82,12 +82,12 @@ describe("Voting", () => {
 
     it("It should fail when trying to vote twice", async () => {
         const candidate = new Fr(1)
-        const [deployerWallet, bobWallet] = wallets; // using first account as deployer and second as bob
+        const [deployerWallet, bobWallet, charlieWallet] = wallets; // using first account as deployer and second as bob
 
         const contract = await EasyPrivateVotingContract.deploy(deployerWallet, deployerWallet.getAddress()).send().deployed();
-        await contract.methods.cast_vote(candidate, bobWallet.getAddress()).send().wait();
+        await contract.methods.cast_vote(candidate, bobWallet.getAddress(), charlieWallet.getAddress()).send().wait();
 
-        const secondVoteReceipt = await contract.methods.cast_vote(candidate, bobWallet.getAddress()).send().getReceipt();
+        const secondVoteReceipt = await contract.methods.cast_vote(candidate, bobWallet.getAddress(), charlieWallet.getAddress()).send().getReceipt();
         expect(secondVoteReceipt).toEqual(
             expect.objectContaining({
                 status: TxStatus.DROPPED,
