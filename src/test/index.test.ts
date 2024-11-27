@@ -1,5 +1,5 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger, Contract } from "@aztec/aztec.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
 
 const setupSandbox = async () => {
@@ -14,12 +14,15 @@ describe("Voting", () => {
     let wallets: AccountWallet[] = [];
     let accounts: CompleteAddress[] = [];
     let logger: DebugLogger;
+    let contract: Contract
+    let candidate: Fr
 
     beforeAll(async () => {
         logger = createDebugLogger('aztec:aztec-starter');
         logger.info("Aztec-Starter tests running.")
 
         pxe = await setupSandbox();
+        candidate = new Fr(1);
 
         wallets = await getInitialTestAccountsWallets(pxe);
         accounts = wallets.map(w => w.getCompleteAddress())
@@ -40,6 +43,7 @@ describe("Voting", () => {
         const deployer = new ContractDeployer(VotingContractArtifact, deployerWallet);
         const tx = deployer.deploy(adminAddress).send({ contractAddressSalt: salt })
         const receipt = await tx.getReceipt();
+        contract = await tx.deployed();
 
         expect(receipt).toEqual(
             expect.objectContaining({
@@ -62,20 +66,12 @@ describe("Voting", () => {
     }, 300_000)
 
     it("It casts a vote", async () => {
-        const candidate = new Fr(1)
-
-        const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
         const tx = await contract.methods.cast_vote(candidate).send().wait();
         let count = await contract.methods.get_vote(candidate).simulate();
         expect(count).toBe(1n);
     }, 300_000)
 
     it("It should fail when trying to vote twice", async () => {
-        const candidate = new Fr(1)
-
-        const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        await contract.methods.cast_vote(candidate).send().wait();
-
         const secondVoteReceipt = await contract.methods.cast_vote(candidate).send().getReceipt();
         expect(secondVoteReceipt).toEqual(
             expect.objectContaining({
