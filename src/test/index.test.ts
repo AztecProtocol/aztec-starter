@@ -76,12 +76,14 @@ describe("Voting", () => {
         const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
         await contract.methods.cast_vote(candidate).send().wait();
 
-        const secondVoteReceipt = await contract.methods.cast_vote(candidate).send().getReceipt();
-        expect(secondVoteReceipt).toEqual(
-            expect.objectContaining({
-                status: TxStatus.DROPPED,
-            }),
-        );
+      // We try voting again, but our TX is dropped due to trying to emit duplicate nullifiers
+      // first confirm that it fails simulation
+      await expect(contract.methods.cast_vote(candidate).send().wait()).rejects.toThrow(/Nullifier collision/);
+      // if we skip simulation, tx is dropped
+      await expect(
+        contract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
+      ).rejects.toThrow('Reason: Tx dropped by P2P node.');
+
     }, 300_000)
 
 });
