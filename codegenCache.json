@@ -1,3 +1,7 @@
 {
-  "easy_private_voting_contract-EasyPrivateVoting.json": "4662c1c3f60516d75a615dd7f04c52b2c8536e641e8ad3d3f25a052a48d7ed40"
+  "easy_private_voting_contract-EasyPrivateVoting.json": "4662c1c3f60516d75a615dd7f04c52b2c8536e641e8ad3d3f25a052a48d7ed40",
+  "easy_private_voting_contract-SimpleLogging.json": {
+    "contractName": "SimpleLogging",
+    "hash": "a361ba82f4a7d6127cda21ffd064aedf2fbb278004211e8f037f8171d9639f40"
+  }
 }
