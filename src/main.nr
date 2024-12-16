@@ -89,7 +89,7 @@ contract EasyPrivateVoting {
         let secret = context.request_nsk_app(msg_sender_npk_m_hash); // get secret key of caller of function
         let nullifier = std::hash::pedersen_hash([context.msg_sender().to_field(), secret]); // derive nullifier from sender and secret
         context.push_nullifier(nullifier);
-        EasyPrivateVoting::at(context.this_address()).add_to_tally_public(candidate).enqueue(
+        EasyPrivateVoting::at(context.this_address()).add_to_tally_public(candidate, 1).enqueue(
             &mut context,
         );
     }
@@ -104,23 +104,23 @@ contract EasyPrivateVoting {
         context.push_nullifier(nullifier);
 
         let mut delegation = DelegateNote::new(context.msg_sender(), delegatee, randomness);
-        let owner_ovpk_m = get_public_keys(context.msg_sender()).ovpk_m;
         storage.delegations.insert(&mut delegation).emit(encode_and_encrypt_note(
             &mut context,
-            context.msg_sender(),
             delegatee,
+            context.msg_sender(),
         ));
     }
 
     #[private]
-    fn cast_delegated_vote(delegator: AztecAddress, candidate: Field) {
+    fn cast_delegated_vote(candidate: Field) {
         let mut options = NoteGetterOptions::new();
         options = options
-            .select(DelegateNote::properties().delegator, Comparator.EQ, delegator)
             .select(DelegateNote::properties().delegatee, Comparator.EQ, context.msg_sender())
-            .set_limit(1);
-        storage.delegations.pop_notes(options);
-        EasyPrivateVoting::at(context.this_address()).add_to_tally_public(candidate).enqueue(
+            .set_limit(3); // low limit for testing purposes
+        let popped_notes = storage.delegations.pop_notes(options);
+        let num_delegated_votes = popped_notes.len() as Field;
+        
+        EasyPrivateVoting::at(context.this_address()).add_to_tally_public(candidate, num_delegated_votes).enqueue(
             &mut context,
         );
     }
@@ -129,9 +129,11 @@ contract EasyPrivateVoting {
     #[public]
     #[internal]
     // TODO: modify `add_to_tally_public` to input an amount, and support casting multiple delegated votes
-    fn add_to_tally_public(candidate: Field) {
+    fn add_to_tally_public(candidate: Field, amount: Field) {
         assert(storage.vote_ended.read() == false, "Vote has ended"); // assert that vote has not ended
-        let new_tally = storage.tally.at(candidate).read() + 1;
+        let num_amount = amount;
+        
+        let new_tally = storage.tally.at(candidate).read() + num_amount;
         storage.tally.at(candidate).write(new_tally);
     }
 

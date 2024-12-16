@@ -100,7 +100,7 @@ describe("Voting", () => {
         const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
         await contract.methods.delegate_vote(delegatee, random).send().wait();
         
-        const tx = await contract.withWallet(wallets[1]).methods.cast_delegated_vote(accounts[0].address, candidate).send().wait();
+        const tx = await contract.withWallet(wallets[1]).methods.cast_delegated_vote(candidate).send().wait();
         let count = await contract.methods.get_vote(candidate).simulate();
         expect(count).toBe(1n);
     }, 300_000)
