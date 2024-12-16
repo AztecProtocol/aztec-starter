@@ -107,7 +107,6 @@ contract EasyPrivateVoting {
         let owner_ovpk_m = get_public_keys(context.msg_sender()).ovpk_m;
         storage.delegations.insert(&mut delegation).emit(encode_and_encrypt_note(
             &mut context,
-            owner_ovpk_m,
             context.msg_sender(),
             delegatee,
         ));
