@@ -128,7 +128,6 @@ contract EasyPrivateVoting {
 
     #[public]
     #[internal]
-    // TODO: modify `add_to_tally_public` to input an amount, and support casting multiple delegated votes
     fn add_to_tally_public(candidate: Field, amount: Field) {
         assert(storage.vote_ended.read() == false, "Vote has ended"); // assert that vote has not ended
         let num_amount = amount;
