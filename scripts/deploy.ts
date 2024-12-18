@@ -1,5 +1,5 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, Logger } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { AztecAddress, deriveSigningKey } from '@aztec/circuits.js';
 import { TokenContract } from "@aztec/noir-contracts.js";
@@ -17,9 +17,9 @@ async function main() {
     let pxe: PXE;
     let wallets: AccountWallet[] = [];
     let accounts: CompleteAddress[] = [];
-    let logger: DebugLogger;
+    let logger: Logger;
 
-    logger = createDebugLogger('aztec:aztec-starter');
+    logger = createLogger('aztec:aztec-starter');
 
     pxe = await setupSandbox();
     wallets = await getInitialTestAccountsWallets(pxe);
