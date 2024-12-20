@@ -1,5 +1,5 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, Logger } from "@aztec/aztec.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
 
 const setupSandbox = async () => {
@@ -13,10 +13,10 @@ describe("Voting", () => {
     let pxe: PXE;
     let wallets: AccountWallet[] = [];
     let accounts: CompleteAddress[] = [];
-    let logger: DebugLogger;
+    let logger: Logger;
 
     beforeAll(async () => {
-        logger = createDebugLogger('aztec:aztec-starter');
+        logger = createLogger('aztec:aztec-starter');
         logger.info("Aztec-Starter tests running.")
 
         pxe = await setupSandbox();
@@ -76,13 +76,13 @@ describe("Voting", () => {
         const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
         await contract.methods.cast_vote(candidate).send().wait();
 
-      // We try voting again, but our TX is dropped due to trying to emit duplicate nullifiers
-      // first confirm that it fails simulation
-      await expect(contract.methods.cast_vote(candidate).send().wait()).rejects.toThrow(/Nullifier collision/);
-      // if we skip simulation, tx is dropped
-      await expect(
-        contract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
-      ).rejects.toThrow('Reason: Tx dropped by P2P node.');
+        // We try voting again, but our TX is dropped due to trying to emit duplicate nullifiers
+        // first confirm that it fails simulation
+        await expect(contract.methods.cast_vote(candidate).send().wait()).rejects.toThrow(/Nullifier collision/);
+        // if we skip simulation, tx is dropped
+        await expect(
+            contract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
+        ).rejects.toThrow('Reason: Tx dropped by P2P node.');
 
     }, 300_000)
 
