@@ -2,8 +2,8 @@ import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js
 import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, createPXEClient, Logger } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/circuits.js';
-import { TokenContract } from "@aztec/noir-contracts.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
+import { TokenContract } from "@aztec/noir-contracts.js/Token"
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
