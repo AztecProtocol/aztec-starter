@@ -22,7 +22,7 @@ unconstrained fn test_check_vote_status() {
 
     let block_number = get_block_number();
     let status_slot = EasyPrivateVoting::storage_layout().vote_ended.slot;
-    let vote_ended_read: bool = storage_read(voting_contract_address, status_slot, block_number);
+    let vote_ended_read: Field = storage_read(voting_contract_address, status_slot, block_number);
     assert(vote_ended_expected == vote_ended_read, "Vote ended should be false");
 }
 
