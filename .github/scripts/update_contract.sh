@@ -67,15 +67,6 @@ if [ $? -eq 0 ]; then
 
             echo "Comments removed from $file"
         done
-
-        # Add 'mod test;' to the top of main.nr
-        main_nr_file="$copy_to_file_path/src/main.nr"
-        if [ -f "$main_nr_file" ]; then
-            sed -i '1imod test;' "$main_nr_file"
-            echo "Added 'mod test;' to the top of main.nr"
-        else
-            echo "main.nr not found in $copy_to_file_path/src/"
-        fi
     else
         echo "Directory not found: $name_value"
     fi

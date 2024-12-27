@@ -1,9 +1,9 @@
-import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, createDebugLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, DebugLogger } from "@aztec/aztec.js";
+import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
+import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, createPXEClient, Logger } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-import { AztecAddress, deriveSigningKey } from '@aztec/circuits.js';
-import { TokenContract } from "@aztec/noir-contracts.js";
+import { deriveSigningKey } from '@aztec/circuits.js';
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
+import { TokenContract } from "@aztec/noir-contracts.js/Token"
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -17,9 +17,9 @@ async function main() {
     let pxe: PXE;
     let wallets: AccountWallet[] = [];
     let accounts: CompleteAddress[] = [];
-    let logger: DebugLogger;
+    let logger: Logger;
 
-    logger = createDebugLogger('aztec:aztec-starter');
+    logger = createLogger('aztec:aztec-starter');
 
     pxe = await setupSandbox();
     wallets = await getInitialTestAccountsWallets(pxe);
@@ -31,7 +31,7 @@ async function main() {
     const { address, publicKeys, partialAddress } = schnorrAccount.getCompleteAddress();
     let tx = await schnorrAccount.deploy().wait();
     let wallet = await schnorrAccount.getWallet();
-    
+
     const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send().deployed();
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }

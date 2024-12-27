@@ -1,9 +1,9 @@
 name: Update Contract
 
 on:
-  schedule:
+  # schedule:
     # Runs at 05:00 UTC every day
-    - cron: "0 5 * * *"
+    # - cron: "0 5 * * *"
   workflow_dispatch:
     inputs:
       input1:

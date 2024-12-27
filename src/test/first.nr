@@ -1,12 +1,6 @@
 use crate::test::utils;
-
-use dep::aztec::{
-    protocol_types::storage::map::derive_storage_slot_in_map,
-    oracle::{
-        execution::get_block_number, 
-        storage::storage_read
-        }
-    };
+use dep::aztec::oracle::{execution::get_block_number, storage::storage_read};
+use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 
 use crate::EasyPrivateVoting;
 
@@ -82,7 +76,7 @@ unconstrained fn test_cast_vote_with_separate_accounts() {
     let bob = env.create_account();
 
     let candidate = 101;
-    
+
     env.impersonate(alice);
     env.advance_block_by(1);
     EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate).call(&mut env.private());
@@ -183,7 +177,7 @@ unconstrained fn test_fail_vote_twice() {
     let alice = env.create_account();
 
     let candidate = 101;
-    
+
     env.impersonate(alice);
     env.advance_block_by(1);
     EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate).call(&mut env.private());
