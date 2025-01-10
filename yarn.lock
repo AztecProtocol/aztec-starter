@@ -41,6 +41,7 @@
     "@aztec/l1-artifacts" "0.69.1"
     "@aztec/protocol-contracts" "0.69.1"
     "@aztec/types" "0.69.1"
+
     axios "^1.7.2"
     tslib "^2.4.0"
     viem "^2.7.15"
