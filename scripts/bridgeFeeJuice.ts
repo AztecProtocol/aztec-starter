@@ -41,6 +41,8 @@ async function main() {
     wallets = await getInitialTestAccountsWallets(pxe);
     const l1ContractAddresses = (await pxe.getNodeInfo()).l1ContractAddresses;
 
+    const feeJuiceReceipient = wallets[0].getAddress()
+
     const feeJuicePortalManager = new L1FeeJuicePortalManager(
         l1ContractAddresses.feeJuicePortalAddress,
         l1ContractAddresses.feeJuiceAddress,
@@ -50,9 +52,9 @@ async function main() {
     );
 
     let feeJuiceTokenManager = feeJuicePortalManager.getTokenManager()
-    await feeJuicePortalManager.bridgeTokensPublic(wallets[0].getAddress(), amount, true);
+    await feeJuicePortalManager.bridgeTokensPublic(feeJuiceReceipient, amount, true);
 
-    logger.info("Fee Juice minted on L2.")
+    logger.info(`Fee Juice minted to ${feeJuiceReceipient} on L2.`)
 }
 
 main();
