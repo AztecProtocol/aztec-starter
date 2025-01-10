@@ -1,9 +1,10 @@
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, createPXEClient, Logger } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, createLogger, AztecNode, Fr, PXE, waitForPXE, createPXEClient, Logger } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/circuits.js';
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
+
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -23,6 +24,8 @@ async function main() {
 
     pxe = await setupSandbox();
     wallets = await getInitialTestAccountsWallets(pxe);
+
+    pxe.getL1ToL2MembershipWitness
 
     let secretKey = Fr.random();
     let salt = Fr.random();
