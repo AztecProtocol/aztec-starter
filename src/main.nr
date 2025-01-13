@@ -41,10 +41,10 @@ contract EasyPrivateVoting {
     #[public]
     #[internal]
     fn add_to_tally_public(candidate: Field) {
-        assert(storage.vote_ended.read() == false, "Vote has ended"); // assert that vote has not ended
-        let new_tally = storage.tally.at(candidate).read() + 1;
-        storage.tally.at(candidate).write(new_tally);
-    }
+    assert(!storage.vote_ended.read(), "Vote has ended"); // Assert vote is still ongoing
+    storage.tally.at(candidate).update(|tally| tally + 1); // Increment tally atomically
+}
+
 
     #[public]
     fn end_vote() {
