@@ -5,6 +5,7 @@ import { deriveSigningKey } from '@aztec/circuits.js';
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
 
+
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
     const pxe = await createPXEClient(PXE_URL);
