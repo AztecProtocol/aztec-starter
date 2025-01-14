@@ -1,0 +1,45 @@
+on:
+    push:
+      branches:
+        - main
+    pull_request:
+      branches:
+        - main
+        - dev
+  
+jobs:
+    setup-and-run:
+      runs-on: ubuntu-latest
+  
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+  
+        - name: Set up Docker
+          uses: docker/setup-buildx-action@v2
+  
+        - name: Install Aztec CLI
+          run: |
+            curl -s https://install.aztec.network > tmp.sh
+            bash tmp.sh <<< yes "yes"
+  
+        - name: Update path
+          run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
+  
+        - name: Set Aztec version and start sandbox
+          run: |
+            VERSION=0.69.1 aztec-up
+            aztec start --sandbox &
+  
+        - name: Install project dependencies
+          run: yarn
+  
+        - name: Compile, generate code, and run tests
+          run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
+  
+        - name: Codegen
+          run: script -e -c "aztec codegen target --outdir src/artifacts"
+  
+        - name: Run tests
+          run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
+  
