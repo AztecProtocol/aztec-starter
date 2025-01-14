@@ -5,6 +5,7 @@ on:
     pull_request:
       branches:
         - main
+        - dev
   
 jobs:
     setup-and-run:
@@ -27,7 +28,7 @@ jobs:
   
         - name: Set Aztec version and start sandbox
           run: |
-            VERSION=0.68.0 aztec-up
+            VERSION=0.69.1 aztec-up
             aztec start --sandbox &
   
         - name: Install project dependencies
