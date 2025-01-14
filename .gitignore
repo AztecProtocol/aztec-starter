@@ -5,3 +5,4 @@ log/
 .vscode
 codegenCache.js
 .DS_Store
+codegenCache.json
