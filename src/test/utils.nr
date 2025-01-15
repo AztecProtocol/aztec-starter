@@ -8,9 +8,9 @@ use dep::aztec::{
 use crate::EasyPrivateVoting;
 
 pub fn setup() -> (&mut TestEnvironment, AztecAddress, AztecAddress) {
-    let mut env = TestEnvironment::new();
+    let mut env = unsafe { TestEnvironment::new() };
 
-    let admin = env.create_account();
+    let admin = unsafe { env.create_account() };
 
     let initializer_call_interface = EasyPrivateVoting::interface().constructor(admin);
     let voting_contract = env.deploy_self("EasyPrivateVoting").with_public_void_initializer(
