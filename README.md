@@ -18,16 +18,10 @@ Get the sandbox, aztec-cli and other tooling with this command:
 bash -i <(curl -s https://install.aztec.network)
 ```
 
-Modify the toolkit version to match the version (`x.x.x`) specified in Nargo.toml with:
-
-```
-aztec-up x.x.x
-```
-
-or update to the latest version with:
+Install the correct version of the toolkit with:
 
 ```bash
-aztec-up
+aztec-up 0.69.1
 ```
 
 Start the sandbox with:

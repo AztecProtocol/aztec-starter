@@ -16,7 +16,8 @@
     "test": "yarn test:js && yarn test:nr",
     "test:js": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
     "test:nr": "aztec test",
-    "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1) && yarn"
+    "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1) && yarn && update-readme-version",
+    "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
     "@aztec/accounts": "0.69.1",
