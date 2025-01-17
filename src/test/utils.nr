@@ -7,7 +7,7 @@ use dep::aztec::{
 
 use crate::EasyPrivateVoting;
 
-pub fn setup() -> (&mut TestEnvironment, AztecAddress, AztecAddress) {
+pub unconstrained fn setup() -> (&mut TestEnvironment, AztecAddress, AztecAddress) {
     let mut env = TestEnvironment::new();
 
     let admin = env.create_account();
