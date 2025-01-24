@@ -14,10 +14,10 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 <div align="center">
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/AztecProtocol/aztec-packages?logo=github&color=yellow)](https://github.com/AztecProtocol/aztec-packages/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/AztecProtocol/aztec-packages?logo=github&color=blue)](https://github.com/AztecProtocol/aztec-packages/network/members)
-[![GitHub last commit](https://img.shields.io/github/last-commit/AztecProtocol/aztec-packages?logo=git)](https://github.com/AztecProtocol/aztec-packages/commits/main)
-[![License](https://img.shields.io/github/license/AztecProtocol/aztec-packages?logo=open-source-initiative)](https://github.com/AztecProtocol/aztec-packages/blob/main/LICENSE)
+[![GitHub Repo stars](https://img.shields.io/github/stars/AztecProtocol/aztec-starter?logo=github&color=yellow)](https://github.com/AztecProtocol/aztec-starter/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/AztecProtocol/aztec-starter?logo=github&color=blue)](https://github.com/AztecProtocol/aztec-starter/network/members)
+[![GitHub last commit](https://img.shields.io/github/last-commit/AztecProtocol/aztec-starter?logo=git)](https://github.com/AztecProtocol/aztec-starter/commits/main)
+[![License](https://img.shields.io/github/license/AztecProtocol/aztec-starter?logo=open-source-initiative)](https://github.com/AztecProtocol/aztec-starter/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/924442927399313448?logo=discord&color=5865F2)](https://discord.gg/aztec)
 [![Twitter Follow](https://img.shields.io/twitter/follow/aztecnetwork?style=flat&logo=twitter)](https://x.com/aztecnetwork)
 
