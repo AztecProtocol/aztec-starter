@@ -28,7 +28,7 @@ async function main() {
     let salt = Fr.random();
 
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
-    const { address, publicKeys, partialAddress } = schnorrAccount.getCompleteAddress();
+    const { address, publicKeys, partialAddress } = await schnorrAccount.getCompleteAddress();
     let tx = await schnorrAccount.deploy().wait();
     let wallet = await schnorrAccount.getWallet();
 
