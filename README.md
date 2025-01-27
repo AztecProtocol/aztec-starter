@@ -33,36 +33,41 @@ Use **Node.js version 18**.
 
 Get the **sandbox, aztec-cli, and other tooling** with this command:
 
-```bash  
+```bash
 bash -i <(curl -s https://install.aztec.network)
 ```
+
 Install the correct version of the toolkit with:
 
-```bash  
-aztec-up 0.70.0
+```bash
+aztec-up 0.72.1
 ```
+
 Start the sandbox with:
 
-```bash  
+```bash
 aztec start --sandbox
 ```
+
 ---
 
 ## 📦 **Install Packages**
 
-```bash 
+```bash
 yarn install
 ```
+
 ---
 
 ## 🏗 **Compile**
 
-```bash  
-aztec-nargo compile  
+```bash
+aztec-nargo compile
 ```
-or  
 
-```bash  
+or
+
+```bash
 yarn compile
 ```
 
@@ -72,21 +77,23 @@ yarn compile
 
 Generate the **contract artifact JSON** and TypeScript interface:
 
-```bash  
+```bash
 yarn codegen
 ```
+
 ---
 
 ## 🧪 **Test**
 
-**Make sure the sandbox is running before running tests.**  
+**Make sure the sandbox is running before running tests.**
 
-```bash 
+```bash
 aztec start --sandbox
 ```
+
 Then test with:
 
-```bash  
+```bash
 yarn test
 ```
 
@@ -98,7 +105,7 @@ Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./s
 
 ### 🔄 **Update Node.js and Noir Dependencies**
 
-```bash  
+```bash
 yarn update
 ```
 
@@ -106,18 +113,18 @@ yarn update
 
 Get the **contract code from the monorepo**. The script will look at the versions defined in `./Nargo.toml` and fetch that version of the code from the monorepo.
 
-```bash  
+```bash
 yarn update
 ```
 
 You may need to update permissions with:
 
-```bash  
+```bash
 chmod +x update_contract.sh
 ```
 
-
 ### 💬 Join the Community:
+
 <p align="left">
   <a href="https://t.me/aztec_network](https://t.me/AztecAnnouncements_Official">
     <img src="https://img.shields.io/badge/Telegram-26A5E4?logo=telegram&logoColor=white&style=for-the-badge" alt="Telegram">
