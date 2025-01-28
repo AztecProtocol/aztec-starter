@@ -119,6 +119,7 @@ unconstrained fn test_mint_to_private() {
     let alice = env.create_account();
 
     Token::at(token_contract_address).mint_to_private(alice, alice, U128::from_integer(100)).call(&mut env.private());
+    env.advance_block_by(1);
 
     env.impersonate(alice);
     Token::at(token_contract_address).transfer(admin, U128::from_integer(1)).call(&mut env.private());
