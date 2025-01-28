@@ -1,8 +1,9 @@
 use crate::test::utils;
-use dep::aztec::oracle::{execution::get_block_number, storage::storage_read};
+use dep::aztec::oracle::{execution::get_block_number, storage::storage_read, debug_log};
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 
 use crate::EasyPrivateVoting;
+use dep::token::Token;
 
 #[test]
 unconstrained fn test_initializer() {
@@ -108,4 +109,17 @@ unconstrained fn test_fail_vote_twice() {
     // Vote again as alice
     env.advance_block_by(1);
     EasyPrivateVoting::at(voting_contract_address).cast_vote(candidate).call(&mut env.private());
+}
+
+#[test]
+unconstrained fn test_mint_to_private() {
+    let (env, _, admin, token_contract_address) = utils::setup();
+
+    env.impersonate(admin);
+    let alice = env.create_account();
+
+    Token::at(token_contract_address).mint_to_private(alice, alice, U128::from_integer(100)).call(&mut env.private());
+
+    env.impersonate(alice);
+    Token::at(token_contract_address).transfer(admin, U128::from_integer(1)).call(&mut env.private());
 }
