@@ -1,5 +1,5 @@
 use crate::test::utils;
-use dep::aztec::oracle::{execution::get_block_number, storage::storage_read, debug_log};
+use dep::aztec::oracle::{execution::get_block_number, storage::storage_read};
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 
 use crate::EasyPrivateVoting;
