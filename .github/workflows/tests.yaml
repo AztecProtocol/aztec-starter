@@ -40,5 +40,11 @@ jobs:
       - name: Codegen
         run: script -e -c "aztec codegen target --outdir src/artifacts"
 
+      - name: Compile dependencies
+        run: script -e -c "cd ~/nargo/github.com/AztecProtocol/aztec-packages/aztec-packages-v0.72.1/noir-projects/noir-contracts && aztec-nargo compile --package token_contract"
+
+      - name: Copy dependencies
+        run: script -e -c "cp ~/nargo/github.com/AztecProtocol/aztec-packages/aztec-packages-v0.72.1/noir-projects/noir-contracts/target/token_contract-Token.json ./target/token_contract-Token.json"
+
       - name: Run tests
         run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
