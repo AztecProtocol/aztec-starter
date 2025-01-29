@@ -8,6 +8,8 @@ contract EasyPrivateVoting {
         macros::{functions::{initializer, internal, private, public}, storage::storage},
     };
     use dep::aztec::prelude::{AztecAddress, Map, PublicImmutable, PublicMutable};
+    use dep::token::Token;
+
     #[storage]
     struct Storage<Context> {
         admin: PublicMutable<AztecAddress, Context>, // admin can end vote
@@ -23,6 +25,11 @@ contract EasyPrivateVoting {
         storage.admin.write(admin);
         storage.vote_ended.write(false);
         storage.active_at_block.initialize(context.block_number() as u32);
+    }
+
+    #[private]
+    fn do_transfer(token: AztecAddress, from: AztecAddress, amount: U128) {
+        Token::at(token).transfer_in_private(from, from, amount, 1).call(&mut context);
     }
 
     #[private]
