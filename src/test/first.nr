@@ -1,6 +1,6 @@
 use crate::test::utils;
 use dep::authwit::cheatcodes as authwit_cheatcodes;
-use dep::aztec::oracle::{execution::get_block_number, storage::storage_read};
+use dep::aztec::oracle::{debug_log, execution::get_block_number, storage::storage_read};
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 
 use crate::EasyPrivateVoting;
@@ -133,6 +133,7 @@ unconstrained fn test_mint_and_do_transfer() {
     env.impersonate(admin);
     // NOTE: need an account *contract* to respond to the authwit call
     let alice = env.create_account_contract(420);
+    env.advance_block_by(1);
 
     Token::at(token_contract_address).mint_to_private(alice, alice, U128::from_integer(100)).call(&mut env.private());
     env.advance_block_by(1);
@@ -150,4 +151,28 @@ unconstrained fn test_mint_and_do_transfer() {
     );
 
     EasyPrivateVoting::at(voting_contract_address).do_transfer(token_contract_address, alice, U128::from_integer(1)).call(&mut env.private());
+}
+
+#[test]
+unconstrained fn test_mint_to_account_contracts() {
+    let (env, _, admin, token_contract_address) = utils::setup();
+
+    env.impersonate(admin);
+    let alice = env.create_account();
+    let bob = env.create_account_contract(420);
+    env.advance_block_by(1);
+
+    Token::at(token_contract_address).mint_to_private(alice, alice, U128::from_integer(100)).call(&mut env.private());
+    env.advance_block_by(1);
+
+    Token::at(token_contract_address).mint_to_private(bob, bob, U128::from_integer(100)).call(&mut env.private());
+    env.advance_block_by(1);
+
+    let alice_balance = utils::get_private_balance(token_contract_address, alice);
+    debug_log::debug_log_format("alice_balance: {}", [alice_balance.to_field()]);
+
+    let bob_balance = utils::get_private_balance(token_contract_address, bob);
+    debug_log::debug_log_format("bob_balance: {}", [bob_balance.to_field()]);
+
+    assert(alice_balance == bob_balance);
 }
