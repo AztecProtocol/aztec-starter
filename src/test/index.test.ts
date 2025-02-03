@@ -49,9 +49,8 @@ describe("Voting", () => {
         );
 
         const receiptAfterMined = await tx.wait({ wallet: deployerWallet });
-
-        expect(await pxe.getContractInstance(deploymentData.address)).toBeDefined();
-        expect(await pxe.isContractPubliclyDeployed(deploymentData.address)).toBeTruthy();
+        expect(await pxe.getContractMetadata(deploymentData.address)).toBeDefined();
+        expect((await pxe.getContractMetadata(deploymentData.address)).contractInstance).toBeTruthy();
         expect(receiptAfterMined).toEqual(
             expect.objectContaining({
                 status: TxStatus.SUCCESS,
