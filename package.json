@@ -20,9 +20,9 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "0.72.1",
-    "@aztec/aztec.js": "0.72.1",
-    "@aztec/noir-contracts.js": "0.72.1",
+    "@aztec/accounts": "0.73.0",
+    "@aztec/aztec.js": "0.73.0",
+    "@aztec/noir-contracts.js": "0.73.0",
     "@types/node": "^22.5.1"
   },
   "devDependencies": {
