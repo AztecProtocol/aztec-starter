@@ -10,7 +10,7 @@ This repo is meant to be a starting point for writing Aztec contracts and tests.
 
 You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`.
 
-The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/tutorials/codealong/contract_tutorials/private_voting_contract).
+The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/developers/tutorials/codealong/contract_tutorials/private_voting_contract).
 
 <div align="center">
 
@@ -18,7 +18,7 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 [![GitHub forks](https://img.shields.io/github/forks/AztecProtocol/aztec-starter?logo=github&color=blue)](https://github.com/AztecProtocol/aztec-starter/network/members)
 [![GitHub last commit](https://img.shields.io/github/last-commit/AztecProtocol/aztec-starter?logo=git)](https://github.com/AztecProtocol/aztec-starter/commits/main)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit)
-[![Discord](https://img.shields.io/discord/924442927399313448?logo=discord&color=5865F2)](https://discord.gg/aztec)
+[![Discord](https://img.shields.io/badge/discord-join%20chat-5B5EA6)](https://discord.gg/aztec)
 [![Twitter Follow](https://img.shields.io/twitter/follow/aztecnetwork?style=flat&logo=twitter)](https://x.com/aztecnetwork)
 
 </div>
