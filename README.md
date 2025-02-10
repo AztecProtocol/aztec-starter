@@ -31,7 +31,7 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 - [🔧 **Codegen**](#-codegen)
 - [🧪 **Test**](#-test)
 - [❗ **Error Resolution**](#-error-resolution)
-- [💬 **Join the Community**:](#-join-the-community-)
+- [💬 **Join the Community**](#-join-the-community)
 
 ---  
     
@@ -133,7 +133,7 @@ You may need to update permissions with:
 chmod +x update_contract.sh
 ```
 
-## 💬 **Join the Community**:
+## 💬 **Join the Community**
 
 <p align="left">
   <a href="https://t.me/AztecAnnouncements_Official">
