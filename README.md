@@ -25,6 +25,7 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 ---
 
+# Table of Contents
 - [🚀 **Getting Started**](#-getting-started)
 - [📦 **Install Packages**](#-install-packages)
 - [🏗 **Compile**](#-compile)
