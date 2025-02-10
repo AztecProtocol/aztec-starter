@@ -25,6 +25,14 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 ---
 
+- [🚀 **Getting Started**](#-getting-started)
+- [📦 **Install Packages**](#-install-packages)
+- [🏗 **Compile**](#-compile)
+- [🔧 **Codegen**](#-codegen)
+- [🧪 **Test**](#-test)
+- [❗ **Error Resolution**](#-error-resolution)
+- [💬 **Join the Community**:](#-join0the-community-)
+    
 ## 🚀 **Getting Started**
 
 Use **Node.js version 18**.
@@ -123,7 +131,7 @@ You may need to update permissions with:
 chmod +x update_contract.sh
 ```
 
-### 💬 Join the Community:
+## 💬 **Join the Community**:
 
 <p align="left">
   <a href="https://t.me/AztecAnnouncements_Official">
