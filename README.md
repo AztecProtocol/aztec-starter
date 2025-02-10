@@ -31,7 +31,9 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 - [🔧 **Codegen**](#-codegen)
 - [🧪 **Test**](#-test)
 - [❗ **Error Resolution**](#-error-resolution)
-- [💬 **Join the Community**:](#-join0the-community-)
+- [💬 **Join the Community**:](#-join-the-community-)
+
+---  
     
 ## 🚀 **Getting Started**
 
