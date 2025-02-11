@@ -1,6 +1,64 @@
 mod test;
 use dep::aztec::macros::aztec;
 
+pub comptime fn some_macro(m: Module) -> Quoted {
+    let has_storage = m.structs().any(|s| s.has_named_attribute("storage"));
+
+    let methods = quote {
+        #[public]
+        fn some_method_1() {
+            // TODO: Implement
+        }
+
+        #[private]
+        fn some_method_2(amount: Field) {
+            // TODO: Implement
+        }
+    };
+
+    let imports = quote {
+        // NOTE: cannot be implemented in the macro module
+        // use dep::std::collections::vec::Vec;
+        // use dep::aztec::prelude::PublicMutable;
+    };
+
+    if !has_storage {
+        quote {
+            $imports
+
+            #[storage]
+            struct Storage<Context> {
+                some_item: PublicMutable<Field, Context>
+            }
+
+            $methods
+        }
+    } else {
+        // Find and modify existing storage struct
+        for storage_struct in m.structs().filter(|s| s.has_named_attribute("storage")) {
+            // Get current fields and create new fields array
+            let old_fields = storage_struct.fields_as_written();
+            let mut new_fields =
+                &[(quote { some_item }, quote { PublicMutable<Field, Context> }.as_type())];
+
+            // Add existing fields
+            for field in old_fields {
+                new_fields = new_fields.push_back(field);
+            }
+
+            // Update the struct with new fields
+            storage_struct.set_fields(new_fields);
+            break;
+        }
+
+        quote {
+            $imports
+            $methods
+        }
+    }
+}
+
+#[some_macro]
 #[aztec]
 pub contract EasyPrivateVoting {
     use dep::aztec::{
