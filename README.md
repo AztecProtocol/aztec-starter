@@ -126,6 +126,9 @@ chmod +x update_contract.sh
 ### 💬 Join the Community:
 
 <p align="left">
+  <a href="https://forum.aztec.network">
+    <img src="https://img.shields.io/badge/Aztec%20%20Forum-5C4C9F?style=for-the-badge&logo=startrek&logoColor=white" alt="Forum">
+  </a>  
   <a href="https://t.me/AztecAnnouncements_Official">
     <img src="https://img.shields.io/badge/Telegram-26A5E4?logo=telegram&logoColor=white&style=for-the-badge" alt="Telegram">
   </a>
