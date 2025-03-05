@@ -4,7 +4,7 @@ SHELL ["/bin/bash", "-c"]
 ENV NVM_DIR=/root/.nvm
 ENV NODE_VERSION=20.18.1
 
-RUN apt update && apt install -y curl bash git tar gzip libc++-dev jq
+RUN apt update && apt install -y curl bash git tar gzip libc++-dev jq python3 build-essential
 
 # Install nvm, node and npm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
