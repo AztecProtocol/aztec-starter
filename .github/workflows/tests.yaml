@@ -41,4 +41,4 @@ jobs:
         run: script -e -c "aztec codegen target --outdir src/artifacts"
 
       - name: Run tests
-        run: sudo script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
+        run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && sudo aztec test"
