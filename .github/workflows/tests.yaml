@@ -40,5 +40,8 @@ jobs:
       - name: Codegen
         run: script -e -c "aztec codegen target --outdir src/artifacts"
 
+      - name: Change ownership # to get around Docker issues
+        run: sudo chown -R $(whoami) ~/nargo && sudo chown -R $(whoami) ~/nargo/github.com
+
       - name: Run tests
-        run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && sudo aztec test"
+        run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
