@@ -1,7 +1,9 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, Logger } from "@aztec/aztec.js";
-import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
+import { AccountManager, AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, Logger } from "@aztec/aztec.js";
+import { getInitialTestAccountsWallets, generateSchnorrAccounts } from "@aztec/accounts/testing"
+import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
+import { SponsoredFeePaymentMethod } from './sponsored_fee_payment_method.js';
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -17,6 +19,7 @@ describe("Voting", () => {
     let accounts: CompleteAddress[] = [];
     let logger: Logger;
     let sandboxInstance;
+    let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
 
     beforeAll(async () => {
         sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
@@ -31,6 +34,7 @@ describe("Voting", () => {
 
         wallets = await getInitialTestAccountsWallets(pxe);
         accounts = wallets.map(w => w.getCompleteAddress())
+        sponsoredPaymentMethod = await SponsoredFeePaymentMethod.new(pxe);
     })
 
     afterAll(async () => {
@@ -40,8 +44,17 @@ describe("Voting", () => {
     it("Deploys the contract", async () => {
         const salt = Fr.random();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
-        const [deployerWallet, adminWallet] = wallets; // using first account as deployer and second as contract admin
-        const adminAddress = adminWallet.getCompleteAddress().address;
+        // const [deployerWallet, adminWallet] = wallets; // using first account as deployer and second as contract admin
+        const accounts = await Promise.all(
+            (await generateSchnorrAccounts(2)).map(
+                async a => await getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
+            )
+        );
+        await Promise.all(accounts.map(a => a.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } })));
+        const daWallets = await Promise.all(accounts.map(a => a.getWallet()));
+        const [deployerWallet, adminWallet] = daWallets;
+        const [deployerAddress, adminAddress] = daWallets.map(w => w.getAddress());
+        // const adminAddress = adminWallet.getCompleteAddress().address;
 
         const deploymentData = await getContractInstanceFromDeployParams(VotingContractArtifact,
             {
@@ -50,7 +63,10 @@ describe("Voting", () => {
                 deployer: deployerWallet.getAddress()
             });
         const deployer = new ContractDeployer(VotingContractArtifact, deployerWallet);
-        const tx = deployer.deploy(adminAddress).send({ contractAddressSalt: salt })
+        const tx = deployer.deploy(adminAddress).send({
+            contractAddressSalt: salt,
+            fee: { paymentMethod: sponsoredPaymentMethod } // without the sponsoredFPC the deployment fails, thus confirming it works
+        })
         const receipt = await tx.getReceipt();
 
         expect(receipt).toEqual(
