@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 
 // Read Nargo.toml
 const nargoContent = readFileSync('Nargo.toml', 'utf8');
-const versionMatch = nargoContent.match(/tag\s*=\s*"aztec-packages-v([^"]+)"/);
+const versionMatch = nargoContent.match(/tag\s*=\s*"v([^"]+)"/);
 const version = versionMatch ? versionMatch[1] : null;
 
 if (!version) {

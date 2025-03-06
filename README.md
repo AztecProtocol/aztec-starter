@@ -27,7 +27,7 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 ## 🚀 **Getting Started**
 
-Use **Node.js version 18**.
+Use **Node.js version 20.18.1**.
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
@@ -40,7 +40,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.76.4
+aztec-up 0.77.1
 ```
 
 Start the sandbox with:
@@ -98,6 +98,8 @@ yarn test
 ```
 
 Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/guides/developer_guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
+
+Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once once the TS tests are complete.
 
 ---
 

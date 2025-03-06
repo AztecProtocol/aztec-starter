@@ -8,6 +8,8 @@ pub contract EasyPrivateVoting {
         macros::{functions::{initializer, internal, private, public}, storage::storage},
     };
     use dep::aztec::prelude::{AztecAddress, Map, PublicImmutable, PublicMutable};
+    use dep::aztec::protocol_types::traits::{Hash, ToField};
+
     #[storage]
     struct Storage<Context> {
         admin: PublicMutable<AztecAddress, Context>, // admin can end vote
