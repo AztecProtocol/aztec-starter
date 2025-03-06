@@ -5,10 +5,20 @@ use dep::aztec::macros::aztec;
 pub contract EasyPrivateVoting {
     use dep::aztec::{
         keys::getters::get_public_keys,
-        macros::{functions::{initializer, internal, private, public}, storage::storage},
+        macros::{events::event, functions::{initializer, internal, private, public}, storage::storage},
+        unencrypted_logs::unencrypted_event_emission::encode_event,
+        protocol_types::traits::Serialize,
     };
     use dep::aztec::prelude::{AztecAddress, Map, PublicImmutable, PublicMutable};
     use dep::aztec::protocol_types::traits::{Hash, ToField};
+    use std::meta::derive;
+
+    #[derive(Serialize)]
+    #[event]
+    struct Ended {
+        ended: bool,
+        number: u128
+    }
 
     #[storage]
     struct Storage<Context> {
@@ -52,6 +62,8 @@ pub contract EasyPrivateVoting {
     fn end_vote() {
         assert(storage.admin.read().eq(context.msg_sender()), "Only admin can end votes"); // assert that caller is admin
         storage.vote_ended.write(true);
+
+        Ended { ended: true, number: 5 }.emit(encode_event(&mut context));
     }
     unconstrained fn get_vote(candidate: Field) -> pub Field {
         storage.tally.at(candidate).read()

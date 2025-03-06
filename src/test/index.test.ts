@@ -97,6 +97,11 @@ describe("Voting", () => {
             votingContract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
         ).rejects.toThrow(TxStatus.APP_LOGIC_REVERTED);
 
+        await votingContract.methods.end_vote().send().wait()
+        console.log("vote ended")
+        const logFilter = { contractAddress: votingContract.address }
+        let logs = await pxe.getPublicLogs(logFilter)
+        console.log(logs)
     }, 300_000)
 
 });
