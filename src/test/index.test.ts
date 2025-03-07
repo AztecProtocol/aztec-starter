@@ -1,7 +1,14 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, Logger } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, Logger, L1TokenPortalManager } from "@aztec/aztec.js";
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing"
 import { spawn } from 'child_process';
+import { type L2AmountClaim, createAztecNodeClient, L1FeeJuicePortalManager, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, AccountManager, AztecAddress } from "@aztec/aztec.js";
+import { generateSchnorrAccounts } from "@aztec/accounts/testing"
+import { getSchnorrAccount } from '@aztec/accounts/schnorr';
+import { createPublicClient, createWalletClient, http, fallback } from 'viem';
+import { foundry } from 'viem/chains';
+import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
+import { retryUntil } from '@aztec/foundation/retry';
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -18,6 +25,14 @@ describe("Voting", () => {
     let logger: Logger;
     let sandboxInstance;
 
+    let randomAccountManagers: AccountManager[] = [];
+    let randomWallets: AccountWallet[] = [];
+    let randomAddresses: AztecAddress[] = [];
+
+    let l1PortalManager: L1FeeJuicePortalManager;
+    let fundedAddressClaims: L2AmountClaim[] = [];
+    let feeJuiceAddress: AztecAddress;
+
     beforeAll(async () => {
         sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
             detached: true,
@@ -31,11 +46,72 @@ describe("Voting", () => {
 
         wallets = await getInitialTestAccountsWallets(pxe);
         accounts = wallets.map(w => w.getCompleteAddress())
+
+        // generate random accounts
+        const randomAccountManagers = await Promise.all(
+            (await generateSchnorrAccounts(5)).map(
+                a => getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
+            )
+        );
+        // get corresponding wallets
+        randomWallets = await Promise.all(randomAccountManagers.map(am => am.getWallet()));
+        // get corresponding addresses
+        randomAddresses = await Promise.all(randomWallets.map(async w => (await w.getCompleteAddress()).address));
+
+        // create default ethereum clients
+        const nodeInfo = await pxe.getNodeInfo();
+        const chain = createEthereumChain(['http://localhost:8545'], nodeInfo.l1ChainId);
+        const DefaultMnemonic = 'test test test test test test test test test test test junk';
+        const { publicClient, walletClient } = createL1Clients(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
+
+        feeJuiceAddress = nodeInfo.protocolContractAddresses.feeJuice;
+
+        // create portal manager
+        l1PortalManager = await L1FeeJuicePortalManager.new(
+            pxe,
+            publicClient,
+            walletClient, //getL1WalletClient(foundry.rpcUrls.default.http[0], 0),
+            createLogger('example:bridging-fee-juice'));
+
+        //
+        // fundedAddressClaims = await Promise.all(randomAddresses.map(ra =>
+        //     l1PortalManager.bridgeTokensPublic(ra, 10n ** 22n, true)
+        // ));
+
+        // // skip 2 blocks for bridging to complete
+        // const aztecNode = await createAztecNodeClient("http://localhost:8080");
+        // const initialBlockNumber = await aztecNode.getBlockNumber();
+        // await aztecNode!.flushTxs();
+        // await retryUntil(async () => (await aztecNode.getBlockNumber()) >= initialBlockNumber + 2);
+
     })
 
     afterAll(async () => {
         sandboxInstance!.kill();
     })
+
+    it.only("Creates accounts with fee juice", async () => {
+        // const claim = await l1PortalManager.bridgeTokensPublic(randomAddresses[0], 10n ** 22n, true);
+
+        // const isSynced = async () => await pxe.isL1ToL2MessageSynced(Fr.fromHexString(claim.messageHash));
+        // await retryUntil(isSynced, `message ${claim.messageHash} sync`, 24, 1);
+
+        // fundedAddressClaims = await Promise.all(randomAddresses.map(ra =>
+        //     l1PortalManager.bridgeTokensPublic(ra, 10n ** 22n, true)
+        // ));
+
+        // // skip 2 blocks for bridging to complete
+        // const aztecNode = await createAztecNodeClient("http://localhost:8080");
+        // const initialBlockNumber = await aztecNode.getBlockNumber();
+        // await aztecNode!.flushTxs();
+        // await retryUntil(async () => (await aztecNode.getBlockNumber()) >= initialBlockNumber + 2);
+
+
+        // const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomWallets[0], fundedAddressClaims[0]);
+        // const tx_acc = await randomAccountManagers[0].deploy({ fee: { paymentMethod } }).wait();
+
+        // await deployerManager.register();
+    });
 
     it("Deploys the contract", async () => {
         const salt = Fr.random();
