@@ -34,10 +34,13 @@ async function main() {
     await bridgeFeeJuice(pxe, address, FEE_FUNDING_FOR_TESTER_ACCOUNT)
     const paymentMethod = new FeeJuicePaymentMethod(address);
 
+    await EasyPrivateVotingContract.deploy(wallets[0], address).send().deployed();    
+    await EasyPrivateVotingContract.deploy(wallets[0], address).send().deployed();
+
     let tx = await schnorrAccount.deploy({fee: {paymentMethod}}).wait();
     let wallet = await schnorrAccount.getWallet();
 
-    // const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send().deployed();
+    // const votingContract = await EasyPrivateVotingContract.deploy(wallets[0], address).send().deployed();
     // logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 
