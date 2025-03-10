@@ -1,9 +1,11 @@
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
-import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, createPXEClient, Logger } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, createLogger, FeeJuicePaymentMethod, Fr, PXE, waitForPXE, createPXEClient, Logger } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
+import { bridgeFeeJuice } from '../utils/bridgeFeeJuice.js'
+import { FEE_FUNDING_FOR_TESTER_ACCOUNT } from '@aztec/constants';
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -28,12 +30,15 @@ async function main() {
     let salt = Fr.random();
 
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
-    const { address, publicKeys, partialAddress } = await schnorrAccount.getCompleteAddress()
-    let tx = await schnorrAccount.deploy().wait();
+    const { address, publicKeys, partialAddress } = await schnorrAccount.getCompleteAddress();
+    await bridgeFeeJuice(pxe, address, FEE_FUNDING_FOR_TESTER_ACCOUNT)
+    const paymentMethod = new FeeJuicePaymentMethod(address);
+
+    let tx = await schnorrAccount.deploy({fee: {paymentMethod}}).wait();
     let wallet = await schnorrAccount.getWallet();
 
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send().deployed();
-    logger.info(`Voting Contract deployed at: ${votingContract.address}`);
+    // const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send().deployed();
+    // logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 
 main();
