@@ -118,6 +118,12 @@ describe("Voting", () => {
         // await deployerManager.register();
     });
 
+    it.only("Deploys account with test fee juice", async () => {
+        const fundedAddress = (await wallets[0].getCompleteAddress()).address;
+        const paymentMethod = new FeeJuicePaymentMethod(fundedAddress);
+        const tx_acc = await randomAccountManagers[0].deploy({ fee: { paymentMethod } }).wait();
+    });
+
     it("Deploys the contract", async () => {
         const salt = Fr.random();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
