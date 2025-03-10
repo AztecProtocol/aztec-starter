@@ -46,7 +46,7 @@ describe("Voting", () => {
         pxe = await setupSandbox();
 
         wallets = await getInitialTestAccountsWallets(pxe);
-        accounts = wallets.map(w => w.getCompleteAddress())
+        accounts = wallets.map(w => w.getCompleteAddress());
         sponsoredPaymentMethod = await SponsoredFeePaymentMethod.new(pxe);
 
         // generate random accounts
@@ -118,10 +118,8 @@ describe("Voting", () => {
         // await deployerManager.register();
     });
 
-    it.only("Deploys account with test fee juice", async () => {
-        const fundedAddress = (await wallets[0].getCompleteAddress()).address;
-        const paymentMethod = new FeeJuicePaymentMethod(fundedAddress);
-        const tx_acc = await randomAccountManagers[0].deploy({ fee: { paymentMethod } }).wait();
+    it.only("Deploys first unfunded account from first funded account", async () => {
+        const tx_acc = await randomAccountManagers[0].deploy({ deployWallet: wallets[0] });
     });
 
     it("Deploys the contract", async () => {
