@@ -35,11 +35,11 @@ describe("Voting", () => {
     let feeJuiceAddress: AztecAddress;
 
     beforeAll(async () => {
-        sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
-            detached: true,
-            stdio: 'ignore'
-        })
-        sleep(15000)
+        // sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
+        //     detached: true,
+        //     stdio: 'ignore'
+        // })
+        // sleep(15000)
         logger = createLogger('aztec:aztec-starter');
         logger.info("Aztec-Starter tests running.")
 
@@ -73,12 +73,11 @@ describe("Voting", () => {
             pxe,
             publicClient,
             walletClient, //getL1WalletClient(foundry.rpcUrls.default.http[0], 0),
-            createLogger('example:bridging-fee-juice'));
+            logger
+        );
 
 
-        // Needs fix: https://github.com/AztecProtocol/aztec-packages/pull/12599
 
-        //
         // fundedAddressClaims = await Promise.all(randomAddresses.map(ra =>
         //     l1PortalManager.bridgeTokensPublic(ra, 10n ** 22n, true)
         // ));
@@ -91,34 +90,32 @@ describe("Voting", () => {
 
     })
 
-    afterAll(async () => {
-        sandboxInstance!.kill();
-    })
+    // afterAll(async () => {
+    //     sandboxInstance!.kill();
+    // })
 
-    it.skip("Creates accounts with fee juice", async () => {
-        // const claim = await l1PortalManager.bridgeTokensPublic(randomAddresses[0], 10n ** 22n, true);
+    it("Creates accounts with fee juice", async () => {
+        // bridge funds
+        const claimAmount = 10n ** 22n;
+        const claim = await l1PortalManager.bridgeTokensPublic(randomAddresses[0], claimAmount, true);
 
-        // const isSynced = async () => await pxe.isL1ToL2MessageSynced(Fr.fromHexString(claim.messageHash));
-        // await retryUntil(isSynced, `message ${claim.messageHash} sync`, 24, 1);
+        // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
+        await randomAccountManagers[2].deploy({ deployWallet: wallets[0] }).wait(); // deploy third unfunded account with first funded wallet
+        await EasyPrivateVotingContract.deploy(wallets[0], accounts[0]).send().deployed(); // deploy contract with first funded wallet
 
-        // fundedAddressClaims = await Promise.all(randomAddresses.map(ra =>
-        //     l1PortalManager.bridgeTokensPublic(ra, 10n ** 22n, true)
-        // ));
+        // claim and pay to deploy first unfunded account
+        const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomWallets[0], claim);
+        const tx_acc = await randomAccountManagers[0].deploy({ fee: { paymentMethod } }).wait();
 
-        // // skip 2 blocks for bridging to complete
-        // const aztecNode = await createAztecNodeClient("http://localhost:8080");
-        // const initialBlockNumber = await aztecNode.getBlockNumber();
-        // await aztecNode!.flushTxs();
-        // await retryUntil(async () => (await aztecNode.getBlockNumber()) >= initialBlockNumber + 2);
+        // random account funded to make regular transactions
+        await EasyPrivateVotingContract.deploy(randomWallets[0], randomAddresses[0])
+            .send()
+            .deployed()
+            ;
 
-
-        // const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomWallets[0], fundedAddressClaims[0]);
-        // const tx_acc = await randomAccountManagers[0].deploy({ fee: { paymentMethod } }).wait();
-
-        // await deployerManager.register();
     });
 
-    it.only("Deploys first unfunded account from first funded account", async () => {
+    it("Deploys first unfunded account from first funded account", async () => {
         const tx_acc = await randomAccountManagers[0].deploy({ deployWallet: wallets[0] });
     });
 
