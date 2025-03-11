@@ -2,7 +2,7 @@ FROM --platform=linux/amd64 node:lts-bookworm-slim
 SHELL ["/bin/bash", "-c"]
 
 ENV NVM_DIR=/root/.nvm
-ENV NODE_VERSION=20.18.1
+ENV NODE_VERSION=18.19.0
 
 RUN apt update && apt install -y curl bash git tar gzip libc++-dev jq python3 build-essential
 
