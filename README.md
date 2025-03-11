@@ -53,8 +53,10 @@ aztec start --sandbox
 
 ## 📦 **Install Packages**
 
+We need to ignore node version warnings (a temporary fix):
+
 ```bash
-yarn install
+YARN_IGNORE_ENGINES=true yarn install
 ```
 
 ---
