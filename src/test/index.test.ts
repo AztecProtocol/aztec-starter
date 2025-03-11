@@ -35,11 +35,11 @@ describe("Voting", () => {
     let feeJuiceAddress: AztecAddress;
 
     beforeAll(async () => {
-        // sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
-        //     detached: true,
-        //     stdio: 'ignore'
-        // })
-        // sleep(15000)
+        sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
+            detached: true,
+            stdio: 'ignore'
+        })
+        await sleep(15000);
         logger = createLogger('aztec:aztec-starter');
         logger.info("Aztec-Starter tests running.")
 
@@ -72,46 +72,44 @@ describe("Voting", () => {
         l1PortalManager = await L1FeeJuicePortalManager.new(
             pxe,
             publicClient,
-            walletClient, //getL1WalletClient(foundry.rpcUrls.default.http[0], 0),
+            walletClient,
             logger
         );
 
-
-
-        // fundedAddressClaims = await Promise.all(randomAddresses.map(ra =>
-        //     l1PortalManager.bridgeTokensPublic(ra, 10n ** 22n, true)
-        // ));
-
-        // // skip 2 blocks for bridging to complete
-        // const aztecNode = await createAztecNodeClient("http://localhost:8080");
-        // const initialBlockNumber = await aztecNode.getBlockNumber();
-        // await aztecNode!.flushTxs();
-        // await retryUntil(async () => (await aztecNode.getBlockNumber()) >= initialBlockNumber + 2);
-
     })
 
-    // afterAll(async () => {
-    //     sandboxInstance!.kill();
-    // })
+    afterAll(async () => {
+        sandboxInstance!.kill();
+    })
 
     it("Creates accounts with fee juice", async () => {
-        // bridge funds
+        // bridge funds to unfunded random addresses
         const claimAmount = 10n ** 22n;
-        const claim = await l1PortalManager.bridgeTokensPublic(randomAddresses[0], claimAmount, true);
 
+        let claims: L2AmountClaim[] = [];
+        // bridge sequentially to avoid l1 txs (nonces) being processed out of order
+        for (let i = 0; i < randomAddresses.length; i++) {
+            claims.push(await l1PortalManager.bridgeTokensPublic(randomAddresses[i], claimAmount, true));
+        }
         // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
-        await randomAccountManagers[2].deploy({ deployWallet: wallets[0] }).wait(); // deploy third unfunded account with first funded wallet
+        await EasyPrivateVotingContract.deploy(wallets[0], accounts[0]).send().deployed(); // deploy contract with first funded wallet
         await EasyPrivateVotingContract.deploy(wallets[0], accounts[0]).send().deployed(); // deploy contract with first funded wallet
 
-        // claim and pay to deploy first unfunded account
-        const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomWallets[0], claim);
-        const tx_acc = await randomAccountManagers[0].deploy({ fee: { paymentMethod } }).wait();
+        // claim and pay to deploy random accounts
+        let sentTxs = [];
+        for (let i = 0; i < randomWallets.length; i++) {
+            const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomWallets[i], claims[i]);
+            sentTxs.push(randomAccountManagers[i].deploy({ fee: { paymentMethod } }));
+        }
+        await Promise.all(sentTxs.map(stx => stx.wait()));
 
-        // random account funded to make regular transactions
-        await EasyPrivateVotingContract.deploy(randomWallets[0], randomAddresses[0])
-            .send()
-            .deployed()
-            ;
+        // random accounts funded to make regular transactions
+        for (let i = 0; i < randomWallets.length; i++) {
+            await EasyPrivateVotingContract.deploy(randomWallets[i], randomAddresses[i])
+                .send()
+                .deployed()
+                ;
+        }
 
     });
 
@@ -164,7 +162,7 @@ describe("Voting", () => {
         );
 
         expect(receiptAfterMined.contract.instance.address).toEqual(deploymentData.address)
-    }, 300_000)
+    })
 
     it("It casts a vote", async () => {
         const candidate = new Fr(1)
@@ -173,7 +171,7 @@ describe("Voting", () => {
         const tx = await contract.methods.cast_vote(candidate).send().wait();
         let count = await contract.methods.get_vote(candidate).simulate();
         expect(count).toBe(1n);
-    }, 300_000)
+    })
 
     it("It should fail when trying to vote twice", async () => {
         const candidate = new Fr(1)
@@ -191,6 +189,6 @@ describe("Voting", () => {
             votingContract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
         ).rejects.toThrow(TxStatus.APP_LOGIC_REVERTED);
 
-    }, 300_000)
+    })
 
 });
