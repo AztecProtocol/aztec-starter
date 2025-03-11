@@ -27,7 +27,7 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 ## 🚀 **Getting Started**
 
-Use **Node.js version 20.18.1**.
+Use **Node.js version 18.19.0**.
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
