@@ -24,15 +24,15 @@ async function main() {
     pxe = await setupSandbox();
     wallets = await getInitialTestAccountsWallets(pxe);
 
-    let secretKey = Fr.random();
-    let salt = Fr.random();
+    // let secretKey = Fr.random();
+    // let salt = Fr.random();
 
-    let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
-    const { address, publicKeys, partialAddress } = await schnorrAccount.getCompleteAddress()
-    let tx = await schnorrAccount.deploy().wait();
-    let wallet = await schnorrAccount.getWallet();
+    // let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
+    // const { address, publicKeys, partialAddress } = await schnorrAccount.getCompleteAddress()
+    // let tx = await schnorrAccount.deploy().wait();
+    // let wallet = await schnorrAccount.getWallet();
 
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send().deployed();
+    const votingContract = await EasyPrivateVotingContract.deploy(wallets[0], wallets[0].getAddress()).send().deployed();
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 
