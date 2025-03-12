@@ -27,7 +27,7 @@ The corresponding tutorial can be found in the [Aztec docs here](https://docs.az
 
 ## 🚀 **Getting Started**
 
-Use **Node.js version 20.18.1**.
+Use **Node.js version 18.19.0**.
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
@@ -40,7 +40,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.78.1
+aztec-up 0.79.0
 ```
 
 Start the sandbox with:
@@ -53,8 +53,10 @@ aztec start --sandbox
 
 ## 📦 **Install Packages**
 
+We need to ignore node version warnings (a temporary fix):
+
 ```bash
-yarn install
+YARN_IGNORE_ENGINES=true yarn install
 ```
 
 ---

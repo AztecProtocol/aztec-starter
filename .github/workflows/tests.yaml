@@ -28,7 +28,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=0.78.1 aztec-up
+          VERSION=0.79.0 aztec-up
           aztec start --sandbox &
 
       - name: Install project dependencies
@@ -45,3 +45,6 @@ jobs:
 
       - name: Run tests
         run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
+
+      - name: Run scripts
+        run: script -e -c "yarn deploy && yarn deploy-account"
