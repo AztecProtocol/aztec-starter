@@ -18,7 +18,7 @@ const setupSandbox = async () => {
 };
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-describe("Voting", () => {
+describe("Accounts", () => {
     let pxe: PXE;
     let wallets: AccountWallet[] = [];
     let accounts: CompleteAddress[] = [];
@@ -44,7 +44,6 @@ describe("Voting", () => {
             })
             await sleep(15000);
         }
-
         logger = createLogger('aztec:aztec-starter');
         logger.info("Aztec-Starter tests running.")
 
@@ -89,7 +88,42 @@ describe("Voting", () => {
         }
     })
 
-    it("Deploys the contract", async () => {
+    it("Creates accounts with fee juice", async () => {
+        // bridge funds to unfunded random addresses
+        const claimAmount = 10n ** 22n;
+
+        let claims: L2AmountClaim[] = [];
+        // bridge sequentially to avoid l1 txs (nonces) being processed out of order
+        for (let i = 0; i < randomAddresses.length; i++) {
+            claims.push(await l1PortalManager.bridgeTokensPublic(randomAddresses[i], claimAmount, true));
+        }
+        // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
+        await EasyPrivateVotingContract.deploy(wallets[0], accounts[0]).send().deployed(); // deploy contract with first funded wallet
+        await EasyPrivateVotingContract.deploy(wallets[0], accounts[0]).send().deployed(); // deploy contract with first funded wallet
+
+        // claim and pay to deploy random accounts
+        let sentTxs = [];
+        for (let i = 0; i < randomWallets.length; i++) {
+            const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomWallets[i], claims[i]);
+            sentTxs.push(randomAccountManagers[i].deploy({ fee: { paymentMethod } }));
+        }
+        await Promise.all(sentTxs.map(stx => stx.wait()));
+
+        // random accounts funded to make regular transactions
+        for (let i = 0; i < randomWallets.length; i++) {
+            await EasyPrivateVotingContract.deploy(randomWallets[i], randomAddresses[i])
+                .send()
+                .deployed()
+                ;
+        }
+
+    });
+
+    it("Deploys first unfunded account from first funded account", async () => {
+        const tx_acc = await randomAccountManagers[0].deploy({ deployWallet: wallets[0] });
+    });
+
+    it("Sponsored contract deployment", async () => {
         const salt = Fr.random();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
         // const [deployerWallet, adminWallet] = wallets; // using first account as deployer and second as contract admin
@@ -134,33 +168,6 @@ describe("Voting", () => {
         );
 
         expect(receiptAfterMined.contract.instance.address).toEqual(deploymentData.address)
-    })
-
-    it("It casts a vote", async () => {
-        const candidate = new Fr(1)
-
-        const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        const tx = await contract.methods.cast_vote(candidate).send().wait();
-        let count = await contract.methods.get_vote(candidate).simulate();
-        expect(count).toBe(1n);
-    })
-
-    it("It should fail when trying to vote twice", async () => {
-        const candidate = new Fr(1)
-
-        const votingContract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        await votingContract.methods.cast_vote(candidate).send().wait();
-        expect(await votingContract.methods.get_vote(candidate).simulate()).toBe(1n);
-
-        // We try voting again, but our TX is dropped due to trying to emit duplicate nullifiers
-        // first confirm that it fails simulation
-        await expect(votingContract.methods.cast_vote(candidate).send().wait()).rejects.toThrow(/Nullifier collision/);
-        // if we skip simulation before submitting the tx,
-        // tx will be included in a block but with app logic reverted
-        await expect(
-            votingContract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
-        ).rejects.toThrow(TxStatus.APP_LOGIC_REVERTED);
-
     })
 
 });
