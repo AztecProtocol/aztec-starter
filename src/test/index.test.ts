@@ -36,7 +36,7 @@ describe("Voting", () => {
     let skipSandbox: boolean;
 
     beforeAll(async () => {
-        skipSandbox = true;
+        skipSandbox = false;
         if (!skipSandbox) {
             sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
                 detached: true,
@@ -85,7 +85,7 @@ describe("Voting", () => {
 
     afterAll(async () => {
         if (!skipSandbox) {
-            sandboxInstance!.kill();
+            sandboxInstance!.kill('SIGINT');
         }
     })
 

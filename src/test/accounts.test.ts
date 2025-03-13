@@ -36,7 +36,7 @@ describe("Accounts", () => {
     let skipSandbox: boolean;
 
     beforeAll(async () => {
-        skipSandbox = true;
+        skipSandbox = false;
         if (!skipSandbox) {
             sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
                 detached: true,
@@ -44,6 +44,7 @@ describe("Accounts", () => {
             })
             await sleep(15000);
         }
+
         logger = createLogger('aztec:aztec-starter');
         logger.info("Aztec-Starter tests running.")
 
@@ -84,7 +85,7 @@ describe("Accounts", () => {
 
     afterAll(async () => {
         if (!skipSandbox) {
-            sandboxInstance!.kill();
+            sandboxInstance!.kill('SIGINT');
         }
     })
 
