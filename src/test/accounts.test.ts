@@ -32,7 +32,7 @@ describe("Accounts", () => {
     let skipSandbox: boolean;
 
     beforeAll(async () => {
-        skipSandbox = false;
+        skipSandbox = process.env.SKIP_SANDBOX === 'true';
         if (!skipSandbox) {
             sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
                 detached: true,

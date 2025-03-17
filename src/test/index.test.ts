@@ -4,7 +4,7 @@ import { getInitialTestAccountsWallets, generateSchnorrAccounts } from "@aztec/a
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
 import { SponsoredFeePaymentMethod } from '../utils/sponsored_fee_payment_method.js';
-import { type L2AmountClaim, L1FeeJuicePortalManager, AztecAddress } from "@aztec/aztec.js";
+import { L1FeeJuicePortalManager, AztecAddress } from "@aztec/aztec.js";
 import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
 
 const setupSandbox = async () => {
@@ -31,7 +31,7 @@ describe("Voting", () => {
     let skipSandbox: boolean;
 
     beforeAll(async () => {
-        skipSandbox = false;
+        skipSandbox = process.env.SKIP_SANDBOX === 'true';
         if (!skipSandbox) {
             sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
                 detached: true,
