@@ -2,7 +2,7 @@ import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, crea
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
-import { SponsoredFeePaymentMethod } from "../src/test/sponsored_fee_payment_method.js";
+import { SponsoredFeePaymentMethod } from "../src/utils/sponsored_fee_payment_method.js";
 
 
 const setupSandbox = async () => {

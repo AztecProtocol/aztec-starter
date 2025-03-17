@@ -15,7 +15,7 @@ export class SponsoredFeePaymentMethod implements FeePaymentMethod {
      * Contract which will pay the fee.
      */
     private paymentContract: AztecAddress,
-  ) {}
+  ) { }
 
   static async new(pxe: PXE) {
     const sponsoredFPC = await getDeployedSponsoredFPCAddress(pxe);
