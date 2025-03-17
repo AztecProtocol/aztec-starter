@@ -3,12 +3,9 @@ import { AccountManager, AccountWallet, CompleteAddress, ContractDeployer, creat
 import { getInitialTestAccountsWallets, generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
-import { SponsoredFeePaymentMethod } from './sponsored-fpc/sponsored_fee_payment_method.js';
-import { L1TokenPortalManager, type L2AmountClaim, createAztecNodeClient, L1FeeJuicePortalManager, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
-import { createPublicClient, createWalletClient, http, fallback } from 'viem';
-import { foundry } from 'viem/chains';
+import { SponsoredFeePaymentMethod } from '../utils/sponsored_fee_payment_method.js';
+import { getFeeJuiceBalance, type L2AmountClaim, L1FeeJuicePortalManager, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
 import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
-import { retryUntil } from '@aztec/foundation/retry';
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -31,7 +28,6 @@ describe("Accounts", () => {
     let randomAddresses: AztecAddress[] = [];
 
     let l1PortalManager: L1FeeJuicePortalManager;
-    let fundedAddressClaims: L2AmountClaim[] = [];
     let feeJuiceAddress: AztecAddress;
     let skipSandbox: boolean;
 
@@ -45,7 +41,7 @@ describe("Accounts", () => {
             await sleep(15000);
         }
 
-        logger = createLogger('aztec:aztec-starter');
+        logger = createLogger('aztec:aztec-starter:accounts');
         logger.info("Aztec-Starter tests running.")
 
         pxe = await setupSandbox();
@@ -90,14 +86,20 @@ describe("Accounts", () => {
     })
 
     it("Creates accounts with fee juice", async () => {
+        // balance of each random account is 0 before bridge
+        let balances = await Promise.all(randomAddresses.map(async a => getFeeJuiceBalance(a, pxe)));
+        balances.forEach(b => expect(b).toBe(0n));
+
+
         // bridge funds to unfunded random addresses
         const claimAmount = 10n ** 22n;
-
+        const approxMaxDeployCost = 10n ** 8n; //
         let claims: L2AmountClaim[] = [];
         // bridge sequentially to avoid l1 txs (nonces) being processed out of order
         for (let i = 0; i < randomAddresses.length; i++) {
             claims.push(await l1PortalManager.bridgeTokensPublic(randomAddresses[i], claimAmount, true));
         }
+
         // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
         await EasyPrivateVotingContract.deploy(wallets[0], accounts[0]).send().deployed(); // deploy contract with first funded wallet
         await EasyPrivateVotingContract.deploy(wallets[0], accounts[0]).send().deployed(); // deploy contract with first funded wallet
@@ -110,13 +112,10 @@ describe("Accounts", () => {
         }
         await Promise.all(sentTxs.map(stx => stx.wait()));
 
-        // random accounts funded to make regular transactions
-        for (let i = 0; i < randomWallets.length; i++) {
-            await EasyPrivateVotingContract.deploy(randomWallets[i], randomAddresses[i])
-                .send()
-                .deployed()
-                ;
-        }
+        // balance after deploy with claimed fee juice
+        balances = await Promise.all(randomAddresses.map(async a => getFeeJuiceBalance(a, pxe)));
+        const amountAfterDeploy = claimAmount - approxMaxDeployCost;
+        balances.forEach(b => expect(b).toBeGreaterThanOrEqual(amountAfterDeploy));
 
     });
 

@@ -3,12 +3,9 @@ import { AccountManager, AccountWallet, CompleteAddress, ContractDeployer, creat
 import { getInitialTestAccountsWallets, generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
-import { SponsoredFeePaymentMethod } from './sponsored-fpc/sponsored_fee_payment_method.js';
-import { L1TokenPortalManager, type L2AmountClaim, createAztecNodeClient, L1FeeJuicePortalManager, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
-import { createPublicClient, createWalletClient, http, fallback } from 'viem';
-import { foundry } from 'viem/chains';
+import { SponsoredFeePaymentMethod } from '../utils/sponsored_fee_payment_method.js';
+import { type L2AmountClaim, L1FeeJuicePortalManager, AztecAddress } from "@aztec/aztec.js";
 import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
-import { retryUntil } from '@aztec/foundation/retry';
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -31,8 +28,6 @@ describe("Voting", () => {
     let randomAddresses: AztecAddress[] = [];
 
     let l1PortalManager: L1FeeJuicePortalManager;
-    let fundedAddressClaims: L2AmountClaim[] = [];
-    let feeJuiceAddress: AztecAddress;
     let skipSandbox: boolean;
 
     beforeAll(async () => {
@@ -45,7 +40,7 @@ describe("Voting", () => {
             await sleep(15000);
         }
 
-        logger = createLogger('aztec:aztec-starter');
+        logger = createLogger('aztec:aztec-starter:voting');
         logger.info("Aztec-Starter tests running.")
 
         pxe = await setupSandbox();
@@ -70,8 +65,6 @@ describe("Voting", () => {
         const chain = createEthereumChain(['http://localhost:8545'], nodeInfo.l1ChainId);
         const DefaultMnemonic = 'test test test test test test test test test test test junk';
         const { publicClient, walletClient } = createL1Clients(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
-
-        feeJuiceAddress = nodeInfo.protocolContractAddresses.feeJuice;
 
         // create portal manager
         l1PortalManager = await L1FeeJuicePortalManager.new(
