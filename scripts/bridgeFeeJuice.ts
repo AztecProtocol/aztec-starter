@@ -39,7 +39,7 @@ async function main() {
     let accounts: CompleteAddress[] = [];
     let logger: Logger;
 
-    const amount = 100_000_000_000_000_000n;
+    const amount = FEE_FUNDING_FOR_TESTER_ACCOUNT;
 
     logger = createLogger('aztec:aztec-starter');
 
@@ -95,14 +95,16 @@ async function main() {
 
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
     const fpc = await FPCContract.deploy(wallets[0], bananaCoin.address, wallets[0].getAddress()).send().deployed()
-
-    // need to mint some bananaCoin and send to the newWallet
+    await feeJuicePortalManager.bridgeTokensPublic(fpc.address, amount, true);
+    // Mint some bananaCoin and send to the newWallet
+    // doing it twice to make the bridged fee juice available (need 2 txs)
+    await bananaCoin.methods.mint_to_private(wallets[0].getAddress(), newWallet.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
     await bananaCoin.methods.mint_to_private(wallets[0].getAddress(), newWallet.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
     const bananaBalance = await bananaCoin.withWallet(newWallet).methods.balance_of_private(newWallet.getAddress()).simulate()
 
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
-    const privateFee = new PrivateFeePaymentMethod(fpc.address, newWallet)
+    const privateFee = new PrivateFeePaymentMethod(fpc.address, newWallet)    
     await votingContract.withWallet(newWallet).methods.cast_vote(wallets[0].getAddress()).send({ fee: { paymentMethod: privateFee }}).wait()
 
     // Sponsored Fee Payment
