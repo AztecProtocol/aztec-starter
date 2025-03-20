@@ -8,6 +8,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "bridge-juice": "node --loader ts-node/esm scripts/bridgeFeeJuice.ts",
     "clean": "rm -rf ./src/artifacts ./target",
     "codegen": "aztec codegen target --outdir src/artifacts",
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
