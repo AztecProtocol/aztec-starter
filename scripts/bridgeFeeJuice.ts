@@ -69,8 +69,7 @@ async function main() {
     const claim = await feeJuicePortalManager.bridgeTokensPublic(feeJuiceReceipient, amount, true);
 
     const feeJuice = await FeeJuiceContract.at(nodeInfo.protocolContractAddresses.feeJuice, wallets[0])
-    const balance = await feeJuice.methods.balance_of_public(feeJuiceReceipient).simulate()
-    logger.info(`${balance} Fee Juice minted to ${feeJuiceReceipient} on L2.`)
+    logger.info(`Fee Juice minted to ${feeJuiceReceipient} on L2.`)
 
     // Two arbitraty txs to make the message available
     const votingContract = await EasyPrivateVotingContract.deploy(wallets[0], wallets[0].getAddress()).send().deployed();
@@ -95,14 +94,17 @@ async function main() {
 
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
     const fpc = await FPCContract.deploy(wallets[0], bananaCoin.address, wallets[0].getAddress()).send().deployed()
-    await feeJuicePortalManager.bridgeTokensPublic(fpc.address, amount, true);
+    const fpcClaim = await feeJuicePortalManager.bridgeTokensPublic(fpc.address, amount, true);
     // Mint some bananaCoin and send to the newWallet
-    // doing it twice to make the bridged fee juice available (need 2 txs)
     await bananaCoin.methods.mint_to_private(wallets[0].getAddress(), newWallet.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
-    await bananaCoin.methods.mint_to_private(wallets[0].getAddress(), newWallet.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
+    // 2 public txs to make the bridged fee juice available
+    await bananaCoin.methods.mint_to_public(wallets[0].getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
+    await bananaCoin.methods.mint_to_public(wallets[0].getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
     const bananaBalance = await bananaCoin.withWallet(newWallet).methods.balance_of_private(newWallet.getAddress()).simulate()
 
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
+    logger.info(`fpc balance ${(await feeJuice.withWallet(newWallet).methods.balance_of_public(fpc.address).simulate())}`)
+    await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send().wait()
 
     const privateFee = new PrivateFeePaymentMethod(fpc.address, newWallet)    
     await votingContract.withWallet(newWallet).methods.cast_vote(wallets[0].getAddress()).send({ fee: { paymentMethod: privateFee }}).wait()
