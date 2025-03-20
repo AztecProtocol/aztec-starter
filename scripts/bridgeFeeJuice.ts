@@ -8,7 +8,7 @@ import {
 } from 'viem';
 import { foundry } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts';
-import { TokenContract } from "@aztec/noir-contracts.js/Token";
+import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -57,8 +57,8 @@ async function main() {
     let feeJuiceTokenManager = feeJuicePortalManager.getTokenManager()
     await feeJuicePortalManager.bridgeTokensPublic(feeJuiceReceipient, amount, true);
 
-    const token = await TokenContract.at(nodeInfo.protocolContractAddresses.feeJuice, wallets[0])
-    const balance = await token.methods.balance_of_public(feeJuiceReceipient).simulate()
+    const feeJuice = await FeeJuiceContract.at(nodeInfo.protocolContractAddresses.feeJuice, wallets[0])
+    const balance = await feeJuice.methods.balance_of_public(feeJuiceReceipient).simulate()
     logger.info(`${balance} Fee Juice minted to ${feeJuiceReceipient} on L2.`)
 }
 
