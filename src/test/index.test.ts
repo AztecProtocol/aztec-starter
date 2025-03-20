@@ -3,7 +3,7 @@ import { AccountManager, AccountWallet, CompleteAddress, ContractDeployer, creat
 import { getInitialTestAccountsWallets, generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
-import { SponsoredFeePaymentMethod } from '../utils/sponsored_fee_payment_method.js';
+import { SponsoredFeePaymentMethod } from '../utils/sponsored_fee_payment_method.js'
 import { L1FeeJuicePortalManager, AztecAddress } from "@aztec/aztec.js";
 import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
 

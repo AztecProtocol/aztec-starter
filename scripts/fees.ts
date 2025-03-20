@@ -13,6 +13,8 @@ import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { FPCContract } from "@aztec/noir-contracts.js/FPC";
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
+// TODO: replace with import from aztec.js when ready
+import { SponsoredFeePaymentMethod } from '../src/utils/sponsored_fee_payment_method.js'
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -99,17 +101,23 @@ async function main() {
     await bananaCoin.methods.mint_to_private(wallets[0].getAddress(), newWallet.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
     // 2 public txs to make the bridged fee juice available
     await bananaCoin.methods.mint_to_public(wallets[0].getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
-    await bananaCoin.methods.mint_to_public(wallets[0].getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
     const bananaBalance = await bananaCoin.withWallet(newWallet).methods.balance_of_private(newWallet.getAddress()).simulate()
 
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
-    logger.info(`fpc balance ${(await feeJuice.withWallet(newWallet).methods.balance_of_public(fpc.address).simulate())}`)
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send().wait()
 
+    logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate()}`)
     const privateFee = new PrivateFeePaymentMethod(fpc.address, newWallet)    
-    await votingContract.withWallet(newWallet).methods.cast_vote(wallets[0].getAddress()).send({ fee: { paymentMethod: privateFee }}).wait()
+    await bananaCoin.withWallet(newWallet).methods.transfer_in_private(newWallet.getAddress(), wallets[0].getAddress(), 10, 0).send({ fee: { paymentMethod: privateFee }}).wait()
+    logger.info(`Transfer paid with fees, privately.`)
+
 
     // Sponsored Fee Payment
+
+    // This method will only work in environments where there is a sponsored fee contract deployed 
+    const sponsoredPaymentMethod = await SponsoredFeePaymentMethod.new(pxe);
+    await bananaCoin.withWallet(newWallet).methods.transfer_in_private(newWallet.getAddress(), wallets[0].getAddress(), 10, 0).send({ fee: { paymentMethod: sponsoredPaymentMethod }}).wait()
+    logger.info(`Transfer paid with fees from Sponsored FPC.`)
 }
 
 main();
