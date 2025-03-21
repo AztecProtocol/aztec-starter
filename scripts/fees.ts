@@ -24,7 +24,7 @@ const setupSandbox = async () => {
 };
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
-const FEE_FUNDING_FOR_TESTER_ACCOUNT = BigInt(1_000e20);
+const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
 
 let walletClient = getL1WalletClient(foundry.rpcUrls.default.http[0], 0);
 const ownerEthAddress = walletClient.account.address;
@@ -40,14 +40,11 @@ async function main() {
     let wallets: AccountWallet[] = [];
     let logger: Logger;
 
-    const amount = FEE_FUNDING_FOR_TESTER_ACCOUNT;
-
     logger = createLogger('aztec:aztec-starter');
 
     pxe = await setupSandbox();
     wallets = await getInitialTestAccountsWallets(pxe);
     const nodeInfo = (await pxe.getNodeInfo())
-    const l1ContractAddresses = nodeInfo.l1ContractAddresses;
 
     // Setup Schnorr AccountManager
 
@@ -60,16 +57,15 @@ async function main() {
 
     // Setup and bridge fee asset to L2 to get fee juice
 
-    const feeJuicePortalManager = new L1FeeJuicePortalManager(
-        l1ContractAddresses.feeJuicePortalAddress,
-        l1ContractAddresses.feeJuiceAddress,
+    const feeJuicePortalManager = await L1FeeJuicePortalManager.new(
+        pxe,
         //@ts-ignore
         publicClient,
         walletClient,
         logger,
     );
 
-    const claim = await feeJuicePortalManager.bridgeTokensPublic(feeJuiceReceipient, amount, true);
+    const claim = await feeJuicePortalManager.bridgeTokensPublic(feeJuiceReceipient, FEE_FUNDING_FOR_TESTER_ACCOUNT, true);
 
     const feeJuice = await FeeJuiceContract.at(nodeInfo.protocolContractAddresses.feeJuice, wallets[0])
     logger.info(`Fee Juice minted to ${feeJuiceReceipient} on L2.`)
@@ -98,7 +94,7 @@ async function main() {
 
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
     const fpc = await FPCContract.deploy(wallets[0], bananaCoin.address, wallets[0].getAddress()).send().deployed()
-    const fpcClaim = await feeJuicePortalManager.bridgeTokensPublic(fpc.address, amount, true);
+    const fpcClaim = await feeJuicePortalManager.bridgeTokensPublic(fpc.address, FEE_FUNDING_FOR_TESTER_ACCOUNT, true);
     // 2 public txs to make the bridged fee juice available
     // Mint some bananaCoin and send to the newWallet to pay fees privately
     await bananaCoin.methods.mint_to_private(wallets[0].getAddress(), newWallet.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send().wait()
