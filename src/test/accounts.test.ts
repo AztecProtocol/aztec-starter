@@ -92,7 +92,7 @@ describe("Accounts", () => {
 
 
         // bridge funds to unfunded random addresses
-        const claimAmount = 10n ** 22n;
+        const claimAmount = 1000000000000000000n;
         const approxMaxDeployCost = 10n ** 10n; // Need to manually update this if fees increase significantly
         let claims: L2AmountClaim[] = [];
         // bridge sequentially to avoid l1 txs (nonces) being processed out of order
