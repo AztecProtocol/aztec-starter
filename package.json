@@ -14,6 +14,7 @@
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
     "deploy": "node --loader ts-node/esm scripts/deploy-contract.ts",
     "deploy-account": "node --loader ts-node/esm scripts/deploy-account.ts",
+    "pxe": "node --loader ts-node/esm scripts/pxe.ts",
     "get-block": "node --loader ts-node/esm scripts/getBlock.ts",
     "test": "yarn test:js && yarn test:nr",
     "test:js": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
@@ -22,11 +23,13 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "0.82.0",
-    "@aztec/aztec.js": "0.82.0",
-    "@aztec/noir-contracts.js": "0.82.0",
-    "@aztec/stdlib": "0.82.0",
-    "@types/node": "^22.5.1"
+    "@aztec/accounts": "0.82.2",
+    "@aztec/aztec.js": "0.82.2",
+    "@aztec/noir-contracts.js": "0.82.2",
+    "@aztec/pxe": "0.82.2",
+    "@aztec/stdlib": "0.82.2",
+    "@types/node": "^22.5.1",
+    "fake-indexeddb": "^6.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
