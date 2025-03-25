@@ -30,7 +30,6 @@ jobs:
         run: |
           VERSION=0.82.2 aztec-up
           aztec start --sandbox &
-          echo "SANDBOX_PID=$!" >> $GITHUB_ENV
 
       - name: Install project dependencies
         run: yarn
@@ -51,7 +50,9 @@ jobs:
         run: script -e -c "yarn deploy && yarn deploy-account && yarn fees"
 
       - name: Stop Aztec sandbox
-        run: kill -9 $SANDBOX_PID || true
+        run: |
+          docker rm -f aztec-sandbox
+          sleep 2
 
       - name: Start Sandbox without PXE
         run: NO_PXE=true aztec start --sandbox
