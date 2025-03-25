@@ -55,7 +55,9 @@ jobs:
           sleep 2
 
       - name: Start Sandbox without PXE
-        run: NO_PXE=true aztec start --sandbox
+        run: |
+          NO_PXE=true aztec start --sandbox &
+          sleep 10
 
       - name: Run scripts that create PXE
         run: "yarn pxe"
