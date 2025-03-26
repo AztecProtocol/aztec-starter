@@ -265,6 +265,7 @@
   resolved "https://registry.yarnpkg.com/@aztec/protocol-contracts/-/protocol-contracts-0.82.2.tgz#c2aaf5a4f9c9a530caa3f0ee473d31137d4d6c0a"
   integrity sha512-TlUKsSm4zUHwMJDsIRdpD+MiJf/vYnTpi9s+haYiUmle7OIt3PYFSLV969mug2QxN4844kS2T6AHGrjfHnBOCg==
   dependencies:
+
     "@aztec/constants" "0.82.2"
     "@aztec/foundation" "0.82.2"
     "@aztec/stdlib" "0.82.2"

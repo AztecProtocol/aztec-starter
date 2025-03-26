@@ -2,8 +2,8 @@ import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, crea
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
 import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
-import { SponsoredFeePaymentMethod } from "../src/utils/sponsored_fee_payment_method.js";
-
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { getDeployedSponsoredFPCAddress } from "../src/utils/sponsored_fpc.js";
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -23,7 +23,8 @@ async function main() {
 
     pxe = await setupSandbox();
     wallets = await getInitialTestAccountsWallets(pxe);
-    const sponsoredPaymentMethod = await SponsoredFeePaymentMethod.new(pxe);
+    const deployedSponseredFPC = await getDeployedSponsoredFPCAddress(pxe);
+    const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponseredFPC);
 
     let secretKey = Fr.random();
     let salt = Fr.random();
