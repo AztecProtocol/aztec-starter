@@ -3,9 +3,10 @@ import { AccountManager, AccountWallet, CompleteAddress, ContractDeployer, creat
 import { getInitialTestAccountsWallets, generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
-import { SponsoredFeePaymentMethod } from '../utils/sponsored_fee_payment_method.js'
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getFeeJuiceBalance, type L2AmountClaim, L1FeeJuicePortalManager, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
 import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
+import { getDeployedSponsoredFPCAddress } from "../utils/sponsored_fpc.js";
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -48,7 +49,8 @@ describe("Accounts", () => {
 
         wallets = await getInitialTestAccountsWallets(pxe);
         accounts = wallets.map(w => w.getCompleteAddress());
-        sponsoredPaymentMethod = await SponsoredFeePaymentMethod.new(pxe);
+        const deployedSponseredFPC = await getDeployedSponsoredFPCAddress(pxe);
+        sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponseredFPC);
 
         // generate random accounts
         randomAccountManagers = await Promise.all(

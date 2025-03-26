@@ -14,7 +14,8 @@ import { FPCContract } from "@aztec/noir-contracts.js/FPC";
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 // TODO: replace with import from aztec.js when published
-import { SponsoredFeePaymentMethod } from '../src/utils/sponsored_fee_payment_method.js'
+import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
+import { getDeployedSponsoredFPCAddress } from "../src/utils/sponsored_fpc.js";
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -122,7 +123,8 @@ async function main() {
     // Sponsored Fee Payment
 
     // This method will only work in environments where there is a sponsored fee contract deployed 
-    const sponsoredPaymentMethod = await SponsoredFeePaymentMethod.new(pxe);
+    const deployedSponseredFPC = await getDeployedSponsoredFPCAddress(pxe);
+    const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponseredFPC);
     await bananaCoin.withWallet(newWallet).methods.transfer_in_private(newWallet.getAddress(), wallets[0].getAddress(), 10, 0).send({ fee: { paymentMethod: sponsoredPaymentMethod }}).wait()
     logger.info(`Transfer paid with fees from Sponsored FPC.`)
 }
