@@ -100,7 +100,7 @@ Then test with:
 yarn test
 ```
 
-Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/guides/developer_guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
+Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
 
 Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once once the TS tests are complete.
 
