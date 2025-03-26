@@ -15,6 +15,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.19.0'  
+
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
 
@@ -48,3 +53,16 @@ jobs:
 
       - name: Run scripts
         run: script -e -c "yarn deploy && yarn deploy-account && yarn fees"
+
+      - name: Stop Aztec sandbox
+        run: |
+          docker rm -f aztec-sandbox
+          sleep 2
+
+      - name: Start Sandbox without PXE
+        run: |
+          NO_PXE=true aztec start --sandbox &
+          sleep 10
+
+      - name: Run scripts that create PXE
+        run: "yarn pxe"
