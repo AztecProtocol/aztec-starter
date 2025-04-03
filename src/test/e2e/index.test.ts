@@ -154,7 +154,7 @@ describe("Voting", () => {
         // tx will be included in a block but with app logic reverted
         await expect(
             votingContract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
-        ).rejects.toThrow(TxStatus.APP_LOGIC_REVERTED);
+        ).rejects.toThrow('Reason: Tx dropped by P2P node.');
 
     })
 
