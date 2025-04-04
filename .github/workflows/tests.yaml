@@ -28,7 +28,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=0.83.1 aztec-up
+          VERSION=0.84.0 aztec-up
           aztec start --sandbox --no-pxe &
 
       - name: Install project dependencies
