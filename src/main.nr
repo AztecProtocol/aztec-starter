@@ -5,7 +5,7 @@ use dep::aztec::macros::aztec;
 pub contract EasyPrivateVoting {
     use dep::aztec::{
         keys::getters::get_public_keys,
-        macros::{functions::{initializer, internal, private, public}, storage::storage},
+        macros::{functions::{initializer, internal, private, public, utility}, storage::storage},
     };
     use dep::aztec::prelude::{AztecAddress, Map, PublicImmutable, PublicMutable};
     use dep::aztec::protocol_types::traits::{Hash, ToField};
@@ -53,7 +53,8 @@ pub contract EasyPrivateVoting {
         assert(storage.admin.read().eq(context.msg_sender()), "Only admin can end votes"); // assert that caller is admin
         storage.vote_ended.write(true);
     }
-    unconstrained fn get_vote(candidate: Field) -> pub Field {
+    #[utility]
+    unconstrained fn get_vote(candidate: Field) -> Field {
         storage.tally.at(candidate).read()
     }
 }
