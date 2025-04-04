@@ -47,7 +47,13 @@ aztec-up 0.83.1
 Start the sandbox with:
 
 ```bash
-aztec start --sandbox
+aztec start --sandbox --no-pxe
+```
+
+Start the PXE with:
+
+```bash
+aztec start --port 8081 --pxe --pxe.nodeUrl=http://localhost:8080/ --pxe.proverEnabled false
 ```
 
 ---

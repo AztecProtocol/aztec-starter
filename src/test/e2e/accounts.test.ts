@@ -9,7 +9,7 @@ import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
 import { getDeployedSponsoredFPCAddress } from "../../utils/sponsored_fpc.js";
 
 const setupSandbox = async () => {
-    const { PXE_URL = 'http://localhost:8080' } = process.env;
+    const { PXE_URL = 'http://localhost:8081' } = process.env;
     const pxe = createPXEClient(PXE_URL);
     await waitForPXE(pxe);
     return pxe;

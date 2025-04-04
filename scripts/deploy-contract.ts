@@ -1,10 +1,12 @@
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
-import { AccountWallet, createLogger, PXE, waitForPXE, createPXEClient, Logger } from "@aztec/aztec.js";
-import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
+import { createLogger, PXE, waitForPXE, createPXEClient, Logger, AztecAddress } from "@aztec/aztec.js";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
+import { getSponsoredFPCAddress } from "../src/utils/sponsored_fpc.js";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { deploySchnorrAccount } from "./deploy-account.js";
 
 const setupSandbox = async () => {
-    const { PXE_URL = 'http://localhost:8080' } = process.env;
+    const { PXE_URL = 'http://localhost:8081' } = process.env;
     const pxe = await createPXEClient(PXE_URL);
     await waitForPXE(pxe);
     return pxe;
@@ -13,15 +15,18 @@ const setupSandbox = async () => {
 async function main() {
 
     let pxe: PXE;
-    let wallets: AccountWallet[] = [];
     let logger: Logger;
 
     logger = createLogger('aztec:aztec-starter');
 
     pxe = await setupSandbox();
-    wallets = await getInitialTestAccountsWallets(pxe);
 
-    const votingContract = await EasyPrivateVotingContract.deploy(wallets[0], wallets[0].getAddress()).send().deployed();
+    const wallet = await deploySchnorrAccount();
+
+    const sponseredFPCAddress = await getSponsoredFPCAddress();
+    const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPCAddress);
+
+    const votingContract = await EasyPrivateVotingContract.deploy(wallet, wallet.getAddress()).send({ fee: { paymentMethod }}).deployed();
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 
