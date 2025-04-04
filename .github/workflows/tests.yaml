@@ -34,7 +34,7 @@ jobs:
       - name: Install project dependencies
         run: yarn
 
-      - name: Compile, generate code, and run tests
+      - name: Compile
         run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
 
       - name: Codegen
