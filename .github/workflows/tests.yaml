@@ -30,6 +30,9 @@ jobs:
         run: |
           VERSION=0.83.1 aztec-up
           aztec start --sandbox --no-pxe &
+
+      - name: Start PXE
+        run: |
           aztec start --port 8081 --pxe --pxe.nodeUrl=http://localhost:8080/ --pxe.proverEnabled false
 
       - name: Install project dependencies
