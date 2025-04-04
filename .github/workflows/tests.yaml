@@ -31,10 +31,6 @@ jobs:
           VERSION=0.83.1 aztec-up
           aztec start --sandbox --no-pxe &
 
-      - name: Start PXE
-        run: |
-          aztec start --port 8081 --pxe --pxe.nodeUrl=http://localhost:8080/ --pxe.proverEnabled false
-
       - name: Install project dependencies
         run: yarn
 
@@ -46,6 +42,10 @@ jobs:
 
       - name: Change ownership # to get around Docker issues
         run: sudo chown -R $(whoami) ~/nargo && sudo chown -R $(whoami) ~/nargo/github.com
+
+      - name: Start PXE
+        run: |
+          aztec start --port 8081 --pxe --pxe.nodeUrl=http://localhost:8080/ --pxe.proverEnabled false &
 
       # - name: Run tests
       #   run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
