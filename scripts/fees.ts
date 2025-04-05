@@ -1,5 +1,4 @@
-import { AccountWallet, CompleteAddress, createLogger, FeeJuicePaymentMethodWithClaim, Fr, L1FeeJuicePortalManager, PXE, waitForPXE , createPXEClient, Logger, FeeJuicePaymentMethod, PrivateFeePaymentMethod, PublicFeePaymentMethod } from "@aztec/aztec.js";
-import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
+import { createLogger, FeeJuicePaymentMethodWithClaim, Fr, L1FeeJuicePortalManager, PXE, waitForPXE , createPXEClient, Logger, FeeJuicePaymentMethod, PrivateFeePaymentMethod, PublicFeePaymentMethod } from "@aztec/aztec.js";
 import {
     createPublicClient,
     createWalletClient,
@@ -13,7 +12,6 @@ import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { FPCContract } from "@aztec/noir-contracts.js/FPC";
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
-// TODO: replace with import from aztec.js when published
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { getDeployedSponsoredFPCAddress } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
@@ -32,7 +30,6 @@ const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
 
 let walletClient = getL1WalletClient(foundry.rpcUrls.default.http[0], 0);
-const ownerEthAddress = walletClient.account.address;
 
 const publicClient = createPublicClient({
     chain: foundry,
@@ -42,13 +39,11 @@ const publicClient = createPublicClient({
 async function main() {
 
     let pxe: PXE;
-    // let wallets: AccountWallet[] = [];
     let logger: Logger;
 
     logger = createLogger('aztec:aztec-starter');
 
     pxe = await setupSandbox();
-    // wallets = await getInitialTestAccountsWallets(pxe);
     const nodeInfo = (await pxe.getNodeInfo())
 
     // Setup Schnorr AccountManager
@@ -75,10 +70,11 @@ async function main() {
 
     logger.info(`Fee Juice minted to ${feeJuiceReceipient} on L2.`)
 
-    // Two arbitraty txs to make the L1 message available on L2
+    // set up sponsored fee payments
     const sponseredFPC = await getSponsoredFPCInstance();
     await pxe.registerContract({instance: sponseredFPC, artifact: SponsoredFPCContract.artifact});
     const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
+    // Two arbitraty txs to make the L1 message available on L2
     const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({fee: {paymentMethod}}).deployed();
     const bananaCoin = await TokenContract.deploy(wallet1, wallet1.getAddress(), "bananaCoin", "BNC", 18).send({fee: {paymentMethod}}).deployed()
 
@@ -113,7 +109,7 @@ async function main() {
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
-    await pxe.registerContract({instance: feeJuiceInstance.instance, artifact: })
+    // await pxe.registerContract({instance: feeJuiceInstance.instance, artifact: })
     const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, newWallet)
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send().wait()
 
