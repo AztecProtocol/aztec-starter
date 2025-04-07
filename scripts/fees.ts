@@ -1,5 +1,6 @@
 import { createLogger, FeeJuicePaymentMethodWithClaim, Fr, L1FeeJuicePortalManager, PXE, waitForPXE , createPXEClient, Logger, FeeJuicePaymentMethod, PrivateFeePaymentMethod, PublicFeePaymentMethod } from "@aztec/aztec.js";
 import {
+    Chain,
     createPublicClient,
     createWalletClient,
     http,
@@ -18,6 +19,8 @@ import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "./deploy-account.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8081' } = process.env;
@@ -29,11 +32,11 @@ const setupSandbox = async () => {
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
 
-let walletClient = getL1WalletClient(foundry.rpcUrls.default.http[0], 0);
+let walletClient = getL1WalletClient(process.env.L1_URL!, 0);
 
 const publicClient = createPublicClient({
     chain: foundry,
-    transport: http("http://127.0.0.1:8545"),
+    transport: http(process.env.L1_URL),
 });
 
 async function main() {
@@ -140,9 +143,19 @@ main();
 // from here: https://github.com/AztecProtocol/aztec-packages/blob/ecbd59e58006533c8885a8b2fadbd9507489300c/yarn-project/end-to-end/src/fixtures/utils.ts#L534
 function getL1WalletClient(rpcUrl: string, index: number) {
     const hdAccount = mnemonicToAccount(MNEMONIC, { addressIndex: index });
+    const chain: Chain = {
+        id: Number(process.env.L1_CHAIN_ID!),
+        name: "test",
+        nativeCurrency: {
+            name: "ETH",
+            symbol: "ETH",
+            decimals: 18
+        },
+        rpcUrls: {default: {http: [process.env.L1_URL!]}}
+    }
     return createWalletClient({
         account: hdAccount,
-        chain: foundry,
+        chain,
         transport: http(rpcUrl),
     });
 }
