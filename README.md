@@ -41,13 +41,14 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.84.0
+aztec-up 0.84.0-alpha-testnet.1
 ```
 
-Start the sandbox with:
+Start the PXE with:
 
 ```bash
-aztec start --sandbox
+export BOOTNODE=http://x.x.x.x # also set this in .env
+aztec start --port 8081 --pxe --pxe.nodeUrl=$BOOTNODE --pxe.proverEnabled true --l1-rpc-url 11155111
 ```
 
 ---
@@ -88,21 +89,7 @@ yarn codegen
 
 ## 🧪 **Test**
 
-**Make sure the sandbox is running before running tests.**
-
-```bash
-aztec start --sandbox
-```
-
-Then test with:
-
-```bash
-yarn test
-```
-
-Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
-
-Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once the TS tests are complete.
+You don't want to run tests against testnet. This will take a long time. Run tests against the sandbox, as described on the [main branch](https://github.com/AztecProtocol/aztec-starter).
 
 ---
 
