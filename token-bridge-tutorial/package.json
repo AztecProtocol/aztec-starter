@@ -1,0 +1,21 @@
+{
+  "name": "token-bridge-tutorial",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+    "type": "module",
+    "scripts": {
+      "start": "node --import tsx index.ts"
+    },
+  "dependencies": {
+    "@aztec/accounts": "^0.84.0",
+    "@aztec/aztec.js": "^0.84.0",
+    "@aztec/ethereum": "^0.84.0",
+    "@aztec/l1-artifacts": "^0.84.0",
+    "@aztec/noir-contracts.js": "^0.84.0",
+    "@types/node": "^22.14.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.0.4",
+    "viem": "^2.22.8"
+  }
+}
