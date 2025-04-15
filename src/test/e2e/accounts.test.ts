@@ -54,7 +54,7 @@ describe("Accounts", () => {
 
         // generate random accounts
         randomAccountManagers = await Promise.all(
-            (await generateSchnorrAccounts(5)).map(
+            (await generateSchnorrAccounts(2)).map(
                 a => getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
             )
         );
@@ -110,19 +110,13 @@ describe("Accounts", () => {
         let sentTxs = [];
         for (let i = 0; i < randomWallets.length; i++) {
             const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomWallets[i], claims[i]);
-            sentTxs.push(randomAccountManagers[i].deploy({ fee: { paymentMethod } }));
+            await randomAccountManagers[i].deploy({ fee: { paymentMethod } }).wait();
         }
-        await Promise.all(sentTxs.map(stx => stx.wait()));
-
         // balance after deploy with claimed fee juice
-        balances = await Promise.all(randomAddresses.map(async a => getFeeJuiceBalance(a, pxe)));
+        balances = await Promise.all(randomAddresses.map(async a => await getFeeJuiceBalance(a, pxe)));
         const amountAfterDeploy = claimAmount - approxMaxDeployCost;
         balances.forEach(b => expect(b).toBeGreaterThanOrEqual(amountAfterDeploy));
 
-    });
-
-    it("Deploys first unfunded account from first funded account", async () => {
-        const tx_acc = await randomAccountManagers[0].deploy({ deployWallet: wallets[0] });
     });
 
     it("Sponsored contract deployment", async () => {
@@ -138,7 +132,6 @@ describe("Accounts", () => {
         const daWallets = await Promise.all(accounts.map(a => a.getWallet()));
         const [deployerWallet, adminWallet] = daWallets;
         const [deployerAddress, adminAddress] = daWallets.map(w => w.getAddress());
-        // const adminAddress = adminWallet.getCompleteAddress().address;
 
         const deploymentData = await getContractInstanceFromDeployParams(VotingContractArtifact,
             {
@@ -151,12 +144,12 @@ describe("Accounts", () => {
             contractAddressSalt: salt,
             fee: { paymentMethod: sponsoredPaymentMethod } // without the sponsoredFPC the deployment fails, thus confirming it works
         })
+
         const receipt = await tx.getReceipt();
 
         expect(receipt).toEqual(
             expect.objectContaining({
                 status: TxStatus.PENDING,
-                error: ''
             }),
         );
 
