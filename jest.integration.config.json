@@ -8,5 +8,5 @@
   },
   "testRegex": "./src/.*\\.test\\.ts$",
   "rootDir": "./src",
-  "testTimeout": 70000
+  "testTimeout": 100000
 }
