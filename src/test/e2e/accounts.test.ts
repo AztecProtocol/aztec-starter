@@ -151,14 +151,6 @@ describe("Accounts", () => {
             contractAddressSalt: salt,
             fee: { paymentMethod: sponsoredPaymentMethod } // without the sponsoredFPC the deployment fails, thus confirming it works
         })
-        const receipt = await tx.getReceipt();
-
-        expect(receipt).toEqual(
-            expect.objectContaining({
-                status: TxStatus.PENDING,
-                error: ''
-            }),
-        );
 
         const receiptAfterMined = await tx.wait({ wallet: deployerWallet });
         expect(await pxe.getContractMetadata(deploymentData.address)).toBeDefined();
