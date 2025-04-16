@@ -52,16 +52,6 @@ describe("Accounts", () => {
         const deployedSponseredFPC = await getDeployedSponsoredFPCAddress(pxe);
         sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponseredFPC);
 
-        // generate random accounts
-        randomAccountManagers = await Promise.all(
-            (await generateSchnorrAccounts(2)).map(
-                a => getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
-            )
-        );
-        // get corresponding wallets
-        randomWallets = await Promise.all(randomAccountManagers.map(am => am.getWallet()));
-        // get corresponding addresses
-        randomAddresses = await Promise.all(randomWallets.map(async w => (await w.getCompleteAddress()).address));
 
         // create default ethereum clients
         const nodeInfo = await pxe.getNodeInfo();
@@ -79,6 +69,19 @@ describe("Accounts", () => {
             logger
         );
 
+    })
+
+    beforeEach(async () => {
+        // generate random accounts
+        randomAccountManagers = await Promise.all(
+            (await generateSchnorrAccounts(2)).map(
+                a => getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
+            )
+        );
+        // get corresponding wallets
+        randomWallets = await Promise.all(randomAccountManagers.map(am => am.getWallet()));
+        // get corresponding addresses
+        randomAddresses = await Promise.all(randomWallets.map(async w => (await w.getCompleteAddress()).address));
     })
 
     afterAll(async () => {
