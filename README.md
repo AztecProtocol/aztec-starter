@@ -41,14 +41,14 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.84.0-alpha-testnet.1
+aztec-up 0.85.0-alpha-testnet.1
 ```
 
-Start the PXE with:
+Make sure you have a `.env` file with variables provided in the `.env-example`. Start the PXE with:
 
 ```bash
-export BOOTNODE=http://x.x.x.x # also set this in .env
-aztec start --port 8081 --pxe --pxe.nodeUrl=$BOOTNODE --pxe.proverEnabled true --l1-rpc-url 11155111
+source .env
+aztec start --port 8081 --pxe --pxe.nodeUrl=$BOOTNODE --pxe.proverEnabled true --l1-chain-id $L1_CHAIN_ID
 ```
 
 ---
