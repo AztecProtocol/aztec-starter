@@ -122,6 +122,10 @@ describe("Accounts", () => {
 
     });
 
+    it("Deploys first unfunded account from first funded account", async () => {
+        const tx_acc = await randomAccountManagers[0].deploy({ deployWallet: wallets[0] });
+    });
+
     it("Sponsored contract deployment", async () => {
         const salt = Fr.random();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
