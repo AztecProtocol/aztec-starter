@@ -1,6 +1,6 @@
 import { PXE, waitForPXE, createPXEClient } from "@aztec/aztec.js";
 
-const setupSandbox = async () => {
+const setupPXE = async () => {
     const { PXE_URL = 'http://localhost:8081' } = process.env;
     const pxe = await createPXEClient(PXE_URL);
     await waitForPXE(pxe);
@@ -10,7 +10,7 @@ const setupSandbox = async () => {
 async function main() {
 
     let pxe: PXE;
-    pxe = await setupSandbox();
+    pxe = await setupPXE();
 
     let block = await pxe.getBlock(1);
     console.log(block)

@@ -22,7 +22,7 @@ import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const setupSandbox = async () => {
+const setupPXE = async () => {
     const { PXE_URL = 'http://localhost:8081' } = process.env;
     const pxe = await createPXEClient(PXE_URL);
     await waitForPXE(pxe);
@@ -46,7 +46,7 @@ async function main() {
 
     logger = createLogger('aztec:aztec-starter');
 
-    pxe = await setupSandbox();
+    pxe = await setupPXE();
     const nodeInfo = (await pxe.getNodeInfo())
 
     // Setup Schnorr AccountManager

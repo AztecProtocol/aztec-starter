@@ -5,7 +5,7 @@ import { getSponsoredFPCAddress } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { deploySchnorrAccount } from "./deploy-account.js";
 
-const setupSandbox = async () => {
+const setupPXE = async () => {
     const { PXE_URL = 'http://localhost:8081' } = process.env;
     const pxe = await createPXEClient(PXE_URL);
     await waitForPXE(pxe);
@@ -19,7 +19,7 @@ async function main() {
 
     logger = createLogger('aztec:aztec-starter');
 
-    pxe = await setupSandbox();
+    pxe = await setupPXE();
 
     const wallet = await deploySchnorrAccount();
 

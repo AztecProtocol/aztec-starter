@@ -5,7 +5,7 @@ import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 
-const setupSandbox = async () => {
+const setupPXE = async () => {
     const { PXE_URL = 'http://localhost:8081' } = process.env;
     const pxe = await createPXEClient(PXE_URL);
     await waitForPXE(pxe);
@@ -21,7 +21,7 @@ export async function deploySchnorrAccount(): Promise<AccountWalletWithSecretKey
 
     logger = createLogger('aztec:aztec-starter');
 
-    pxe = await setupSandbox();
+    pxe = await setupPXE();
 
     let secretKey = Fr.random();
     let salt = Fr.random();
