@@ -15,17 +15,13 @@ const setupPXE = async () => {
 export async function deploySchnorrAccount(): Promise<AccountWalletWithSecretKey> {
 
     let pxe: PXE;
-    let wallets: AccountWallet[] = [];
-    let accounts: CompleteAddress[] = [];
     let logger: Logger;
-
     logger = createLogger('aztec:aztec-starter');
 
     pxe = await setupPXE();
 
     let secretKey = Fr.random();
     let salt = Fr.random();
-
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
     let wallet = await schnorrAccount.getWallet();
 
