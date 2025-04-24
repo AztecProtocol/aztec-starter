@@ -5,9 +5,13 @@ import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { L1FeeJuicePortalManager, AztecAddress } from "@aztec/aztec.js";
-import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
+import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getDeployedSponsoredFPCAddress } from "../../utils/sponsored_fpc.js";
-
+import {createPublicClient,
+createWalletClient,
+http,
+} from 'viem';
+import { foundry } from "viem/chains";
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
     const pxe = createPXEClient(PXE_URL);
@@ -66,13 +70,12 @@ describe("Voting", () => {
         const nodeInfo = await pxe.getNodeInfo();
         const chain = createEthereumChain(['http://localhost:8545'], nodeInfo.l1ChainId);
         const DefaultMnemonic = 'test test test test test test test test test test test junk';
-        const { publicClient, walletClient } = createL1Clients(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
+        const l1Client = createExtendedL1Client(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
 
         // create portal manager
         l1PortalManager = await L1FeeJuicePortalManager.new(
             pxe,
-            publicClient,
-            walletClient,
+            l1Client,
             logger
         );
 
