@@ -5,7 +5,7 @@ import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getFeeJuiceBalance, type L2AmountClaim, L1FeeJuicePortalManager, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
-import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
+import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getDeployedSponsoredFPCAddress } from "../../utils/sponsored_fpc.js";
 
 const setupSandbox = async () => {
@@ -57,15 +57,14 @@ describe("Accounts", () => {
         const nodeInfo = await pxe.getNodeInfo();
         const chain = createEthereumChain(['http://localhost:8545'], nodeInfo.l1ChainId);
         const DefaultMnemonic = 'test test test test test test test test test test test junk';
-        const { publicClient, walletClient } = createL1Clients(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
+        const l1Client = createExtendedL1Client(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
 
         feeJuiceAddress = nodeInfo.protocolContractAddresses.feeJuice;
 
         // create portal manager
         l1PortalManager = await L1FeeJuicePortalManager.new(
             pxe,
-            publicClient,
-            walletClient,
+            l1Client,
             logger
         );
 

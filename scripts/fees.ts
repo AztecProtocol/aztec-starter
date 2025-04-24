@@ -16,6 +16,7 @@ import { TokenContract } from "@aztec/noir-contracts.js/Token";
 // TODO: replace with import from aztec.js when published
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { getDeployedSponsoredFPCAddress } from "../src/utils/sponsored_fpc.js";
+import { createEthereumChain, createExtendedL1Client } from "@aztec/ethereum";
 
 const setupSandbox = async () => {
     const { PXE_URL = 'http://localhost:8080' } = process.env;
@@ -30,10 +31,6 @@ const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
 let walletClient = getL1WalletClient(foundry.rpcUrls.default.http[0], 0);
 const ownerEthAddress = walletClient.account.address;
 
-const publicClient = createPublicClient({
-    chain: foundry,
-    transport: http("http://127.0.0.1:8545"),
-});
 
 async function main() {
 
@@ -46,6 +43,9 @@ async function main() {
     pxe = await setupSandbox();
     wallets = await getInitialTestAccountsWallets(pxe);
     const nodeInfo = (await pxe.getNodeInfo())
+
+    const chain = createEthereumChain(['http://localhost:8545'], nodeInfo.l1ChainId);
+    const l1Client = createExtendedL1Client(chain.rpcUrls, MNEMONIC, chain.chainInfo);
 
     // Setup Schnorr AccountManager
 
@@ -61,8 +61,7 @@ async function main() {
     const feeJuicePortalManager = await L1FeeJuicePortalManager.new(
         pxe,
         //@ts-ignore
-        publicClient,
-        walletClient,
+        l1Client,
         logger,
     );
 
