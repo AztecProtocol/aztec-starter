@@ -21,12 +21,12 @@ async function main() {
 
     pxe = await setupPXE();
 
-    const wallet = await deploySchnorrAccount();
+    const wallet = await (await deploySchnorrAccount()).getWallet();
 
     const sponseredFPCAddress = await getSponsoredFPCAddress();
     const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPCAddress);
 
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet, wallet.getAddress()).send({ fee: { paymentMethod }}).deployed();
+    const votingContract = await EasyPrivateVotingContract.deploy(wallet, wallet.getAddress()).send({ fee: { paymentMethod }}).deployed({timeout: 120000});
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 

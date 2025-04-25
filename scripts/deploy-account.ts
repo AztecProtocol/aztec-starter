@@ -1,9 +1,10 @@
-import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, createPXEClient, Logger, getWallet, AccountWalletWithSecretKey } from "@aztec/aztec.js";
+import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, createPXEClient, Logger, getWallet, AccountWalletWithSecretKey, AccountManager } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
+import { AztecCheatCodes } from "@aztec/aztec.js/testing";
 
 const setupPXE = async () => {
     const { PXE_URL = 'http://localhost:8081' } = process.env;
@@ -12,7 +13,7 @@ const setupPXE = async () => {
     return pxe;
 };
 
-export async function deploySchnorrAccount(): Promise<AccountWalletWithSecretKey> {
+export async function deploySchnorrAccount(): Promise<AccountManager> {
 
     let pxe: PXE;
     let logger: Logger;
@@ -29,11 +30,11 @@ export async function deploySchnorrAccount(): Promise<AccountWalletWithSecretKey
     await pxe.registerContract({instance: sponseredFPC, artifact: SponsoredFPCContract.artifact});
     const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
 
-    let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait();
+    let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait({timeout: 120000});
 
     logger.info(`Schnorr account deployed at: ${wallet.getAddress()}`);
 
-    return wallet;
+    return schnorrAccount;
 }
 
 deploySchnorrAccount();
