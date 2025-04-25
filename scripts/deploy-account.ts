@@ -33,6 +33,7 @@ export async function deploySchnorrAccount(): Promise<AccountManager> {
     let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait({timeout: 120000});
 
     logger.info(`Schnorr account deployed at: ${wallet.getAddress()}`);
+    logger.info(`Tx in explorer: https://testnet.aztecscan.xyz/tx-effects/${tx.txHash}`)
 
     return schnorrAccount;
 }

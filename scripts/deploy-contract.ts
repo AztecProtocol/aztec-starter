@@ -26,8 +26,12 @@ async function main() {
     const sponseredFPCAddress = await getSponsoredFPCAddress();
     const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPCAddress);
 
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet, wallet.getAddress()).send({ fee: { paymentMethod }}).deployed({timeout: 120000});
+    const tx = await EasyPrivateVotingContract.deploy(wallet, wallet.getAddress()).send({ fee: { paymentMethod }})
+    const votingContract = await tx.deployed({timeout: 120000});
+
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
+    logger.info(`Tx in explorer: https://testnet.aztecscan.xyz/tx-effects/${tx.getTxHash()}`)
+
 }
 
 main();
