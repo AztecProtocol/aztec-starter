@@ -41,7 +41,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.85.0-alpha-testnet.1
+aztec-up 0.85.0-alpha-testnet.2
 ```
 
 Make sure you have a `.env` file with variables provided in the `.env-example`. Start the PXE with:
