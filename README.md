@@ -6,11 +6,18 @@
 
 # Aztec Starter
 
-This repo is meant to be a starting point for writing Aztec contracts and tests.
+## Sandbox
+
+This repo is meant to be a starting point for writing Aztec contracts and tests on the Aztec sandbox (local development environment).
 
 You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`.
 
 The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/developers/tutorials/codealong/contract_tutorials/private_voting_contract).
+
+
+## Testnet
+
+If you are interested in trying out this repo with the testnet, try the [testnet branch](https://github.com/AztecProtocol/aztec-starter/tree/testnet).
 
 <div align="center">
 
