@@ -30,7 +30,7 @@ async function main() {
     const votingContract = await tx.deployed({timeout: 120000});
 
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
-    logger.info(`Tx in explorer: https://testnet.aztecscan.xyz/tx-effects/${tx.getTxHash()}`)
+    logger.info(`Tx in explorer: https://testnet.aztecscan.xyz/tx-effects/${await tx.getTxHash()}`)
 
 }
 
