@@ -22,10 +22,10 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "0.85.0-alpha-testnet.1",
-    "@aztec/aztec.js": "0.85.0-alpha-testnet.1",
-    "@aztec/noir-contracts.js": "0.85.0-alpha-testnet.1",
-    "@aztec/stdlib": "0.85.0-alpha-testnet.1",
+    "@aztec/accounts": "0.85.0-alpha-testnet.3",
+    "@aztec/aztec.js": "0.85.0-alpha-testnet.3",
+    "@aztec/noir-contracts.js": "0.85.0-alpha-testnet.3",
+    "@aztec/stdlib": "0.85.0-alpha-testnet.3",
     "@types/dotenv": "^8.2.3",
     "@types/node": "^22.5.1",
     "dotenv": "^16.4.7"
