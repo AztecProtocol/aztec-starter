@@ -42,10 +42,14 @@ async function main() {
     const pxe1 = await setupPxe1();
     const pxe2 = await setupPxe2();
 
+    // deploy token contract
+
     const wallets = await getInitialTestAccountsWallets(pxe1);
     const ownerAddress = wallets[0].getAddress()
     const token = await TokenContract.deploy(wallets[0], ownerAddress, 'Clean USDC', 'USDC', 6).send({contractAddressSalt: L2_TOKEN_CONTRACT_SALT}).wait()
   
+    // setup account on 2nd pxe
+
      const sponseredFPC = await getSponsoredFPCInstance();
      await pxe2.registerContract({instance: sponseredFPC, artifact: SponsoredFPCContract.artifact});
      const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
@@ -56,12 +60,17 @@ async function main() {
 
     let schnorrAccount = await getSchnorrAccount(pxe2, secretKey, deriveSigningKey(secretKey), salt);
 
+  // mint to account on 2nd pxe
+
     const private_mint_tx = await token.contract.methods.mint_to_private(ownerAddress, schnorrAccount.getAddress(), 100).send().wait()
     console.log(await pxe1.getTxEffect(private_mint_tx.txHash))
     await token.contract.methods.mint_to_public(schnorrAccount.getAddress(), 100).send().wait()
 
+    // deploy account on 2nd pxe
     let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait();
     let wallet = await schnorrAccount.getWallet();
+
+    // setup token on 2nd pxe
 
     const l2TokenContractInstance = await getL2TokenContractInstance(wallets[0], ownerAddress)
     await wallet.registerContract({
@@ -78,8 +87,10 @@ async function main() {
     const notes = await pxe2.getNotes({ txHash: private_mint_tx.txHash });
     console.log(notes)
 
+    // returns 0n
     const balance = await l2TokenContract.methods.balance_of_private(wallet.getAddress()).simulate()
     console.log("private balance should be 100", balance)
+    // errors
     const public_balance = await l2TokenContract.methods.balance_of_public(wallet.getAddress()).simulate()
    
 }
