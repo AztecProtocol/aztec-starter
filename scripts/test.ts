@@ -39,31 +39,33 @@ export async function getL2TokenContractInstance(ownerWallet: any, ownerAztecAdd
 
 async function main() {
 
-    let pxe1: PXE;
-    pxe1 = await setupPxe1();
+    const pxe1 = await setupPxe1();
     const pxe2 = await setupPxe2();
+
     const wallets = await getInitialTestAccountsWallets(pxe1);
     const ownerAddress = wallets[0].getAddress()
     const token = await TokenContract.deploy(wallets[0], ownerAddress, 'Clean USDC', 'USDC', 6).send({contractAddressSalt: L2_TOKEN_CONTRACT_SALT}).wait()
-
-    const l2TokenContractInstance = await getL2TokenContractInstance(wallets[0], ownerAddress)
   
      const sponseredFPC = await getSponsoredFPCInstance();
      await pxe2.registerContract({instance: sponseredFPC, artifact: SponsoredFPCContract.artifact});
      const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
+     pxe2.registerSender(ownerAddress)
 
     let secretKey = Fr.random();
     let salt = Fr.random();
 
     let schnorrAccount = await getSchnorrAccount(pxe2, secretKey, deriveSigningKey(secretKey), salt);
-    await pxe2.registerSender(ownerAddress)
-    await token.contract.methods.mint_to_private(ownerAddress, schnorrAccount.getAddress(), 100).send().wait()
+
+    const private_mint_tx = await token.contract.methods.mint_to_private(ownerAddress, schnorrAccount.getAddress(), 100).send().wait()
+    console.log(await pxe1.getTxEffect(private_mint_tx.txHash))
+    await token.contract.methods.mint_to_public(schnorrAccount.getAddress(), 100).send().wait()
+
     let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait();
     let wallet = await schnorrAccount.getWallet();
 
-    await pxe2.registerContract({
-        instance: l2TokenContractInstance,
-        artifact: TokenContract.artifact,
+    const l2TokenContractInstance = await getL2TokenContractInstance(wallets[0], ownerAddress)
+    await wallet.registerContract({
+        instance: l2TokenContractInstance
       })
 
      const l2TokenContract = await TokenContract.at(
@@ -71,8 +73,14 @@ async function main() {
        wallet
      )
 
-     const balance = await l2TokenContract.methods.balance_of_private(wallet.getAddress()).simulate()
-     console.log("admin", balance)
+    await l2TokenContract.methods.sync_notes().simulate()
+
+    const notes = await pxe2.getNotes({ txHash: private_mint_tx.txHash });
+    console.log(notes)
+
+    const balance = await l2TokenContract.methods.balance_of_private(wallet.getAddress()).simulate()
+    console.log("private balance should be 100", balance)
+    const public_balance = await l2TokenContract.methods.balance_of_public(wallet.getAddress()).simulate()
    
 }
 
