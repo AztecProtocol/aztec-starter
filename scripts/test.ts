@@ -15,19 +15,22 @@ const config = getPXEServiceConfig()
 const fullConfig = { ...config, l1Contracts}
 fullConfig.proverEnabled = false;
 console.log(fullConfig)
-const store = await createStore('network_data', {
+const store1 = await createStore('pxe1', {
   dataDirectory: 'store',
   dataStoreMapSizeKB: 1e6,
 });
-
+const store2 = await createStore('pxe2', {
+  dataDirectory: 'store',
+  dataStoreMapSizeKB: 1e6,
+});
 const setupPxe1 = async () => {
-    const pxe = await createPXEService(node, fullConfig, true, store);
+    const pxe = await createPXEService(node, fullConfig, true, store1);
     await waitForPXE(pxe);
     return pxe;
 };
 
 const setupPxe2 = async () => {
-    const pxe = await createPXEService(node, fullConfig, true, store);
+    const pxe = await createPXEService(node, fullConfig, true, store2);
     await waitForPXE(pxe);
     return pxe;
 };
