@@ -14,7 +14,14 @@ export AZTEC_VERSION=0.85.0-alpha-testnet.5
 
 echo "Starting Aztec Testnet Setup..."
 
-# Step 1: Check prerequisites
+# Step 1: Prompt user to verify NODE_URL and SPONSORED_FPC_ADDRESS
+echo "Using NODE_URL: $NODE_URL"
+echo "Using SPONSORED_FPC_ADDRESS: $SPONSORED_FPC_ADDRESS"
+echo "Please verify these values at https://docs.aztec.network or Aztec Discord."
+echo "Press Enter to continue or Ctrl+C to cancel and update the values."
+read -r
+
+# Step 2: Check prerequisites
 echo "Checking prerequisites..."
 if ! command -v curl &> /dev/null; then
     echo "Error: curl is not installed. Please install curl and try again."
@@ -24,8 +31,22 @@ if ! command -v docker &> /dev/null; then
     echo "Error: Docker is not installed. Please install Docker and try again."
     exit 1
 fi
+# Check Docker resources (optional, for proof generation)
+echo "Checking Docker resources..."
+docker info --format '{{.CPUs}} CPUs, {{.MemTotal}} memory' || {
+    echo "Warning: Unable to check Docker resources. Ensure at least 2 CPUs and 4GB memory."
+}
 
-# Step 2: Install Aztec CLI
+# Step 3: Test NODE_URL connectivity
+echo "Testing NODE_URL connectivity..."
+if curl -s --head "$NODE_URL" | head -n 1 | grep "200" > /dev/null; then
+    echo "NODE_URL is reachable."
+else
+    echo "Error: NODE_URL ($NODE_URL) is not reachable. Verify the URL at https://docs.aztec.network."
+    exit 1
+fi
+
+# Step 4: Install Aztec CLI
 echo "Installing Aztec CLI..."
 curl -s https://install.aztec.network | bash -s -- -y || {
     echo "Error: Failed to install Aztec CLI. Check network connection or https://docs.aztec.network."
@@ -39,14 +60,14 @@ if ! command -v aztec &> /dev/null; then
     exit 1
 fi
 
-# Step 3: Install specific testnet version
+# Step 5: Install specific testnet version
 echo "Installing Aztec testnet version $AZTEC_VERSION..."
 aztec-up alpha-testnet || {
     echo "Error: Failed to install testnet version $AZTEC_VERSION. Check version compatibility at https://docs.aztec.network."
     exit 1
 }
 
-# Step 4: Create a new account
+# Step 6: Create a new account
 echo "Creating a new account..."
 aztec-wallet create-account \
     --register-only \
@@ -56,7 +77,7 @@ aztec-wallet create-account \
     exit 1
 }
 
-# Step 5: Register account with fee sponsor contract
+# Step 7: Register account with fee sponsor contract
 echo "Registering account with fee sponsor contract..."
 if aztec-wallet register-contract \
     --node-url $NODE_URL \
@@ -70,35 +91,40 @@ else
     exit 1
 fi
 
-# Step 6: Deploy the account with sponsored fee payment
-echo "Deploying account..."
+# Step 8: Deploy the account with sponsored fee payment
+echo "Deploying account with fee sponsor..."
 if aztec-wallet deploy-account \
     --node-url $NODE_URL \
     --from my-wallet \
-    --payment method=fpc-sponsored,fpc=contracts:sponsoredfpc \
+    --payment-method fpc-sponsored,fpc=contracts:sponsoredfpc \
     --register-class; then
-    echo "Account deployed successfully."
+    echo "Account deployed successfully with fee sponsor."
 else
-    echo "Warning: Failed to deploy account with sponsored fees. Retrying without fee sponsor..."
+    echo "Warning: Failed to deploy account with fee sponsor (possibly insufficient fee payer balance)."
+    echo "Retrying without fee sponsor. Ensure your wallet (my-wallet) has testnet funds."
+    echo "Check for a testnet faucet at https://docs.aztec.network or request funds on Aztec Discord."
     if aztec-wallet deploy-account \
         --node-url $NODE_URL \
         --from my-wallet \
         --register-class; then
         echo "Account deployed successfully without fee sponsor."
     else
-        echo "Error: Failed to deploy account. Check NODE_URL, wallet funds, or network status."
+        echo "Error: Failed to deploy account. Possible causes:"
+        echo "1. Insufficient funds in my-wallet (request testnet funds)."
+        echo "2. Invalid NODE_URL ($NODE_URL)."
+        echo "3. Network congestion or server issues (Error 500)."
         echo "Note: If you see 'Timeout awaiting isMined', the transaction may still be pending."
-        echo "Visit https://docs.aztec.network or Aztec Discord for support."
+        echo "Visit https://docs.aztec.network or join Aztec Discord for support."
         exit 1
     fi
 fi
 
-# Step 7: Deploy a token contract
+# Step 9: Deploy a token contract
 echo "Deploying token contract..."
 if aztec-wallet deploy \
     --node-url $NODE_URL \
     --from accounts:my-wallet \
-    --payment method=fpc-sponsored,fpc=contracts:sponsoredfpc \
+    --payment-method fpc-sponsored,fpc=contracts:sponsoredfpc \
     --alias token \
     TokenContract \
     --args accounts:my-wallet Token TOK 18; then
@@ -108,31 +134,31 @@ else
     exit 1
 fi
 
-# Step 8: Mint 10 private tokens
+# Step 10: Mint 10 private tokens
 echo "Minting 10 private tokens..."
 aztec-wallet send mint_to_private \
     --node-url $NODE_URL \
     --from accounts:my-wallet \
-    --payment method=fpc-sponsored,fpc=contracts:sponsoredfpc \
+    --payment-method fpc-sponsored,fpc=contracts:sponsoredfpc \
     --contract-address last \
     --args accounts:my-wallet accounts:my-wallet 10 || {
     echo "Error: Failed to mint private tokens. Check contract deployment or fee sponsor."
     exit 1
 }
 
-# Step 9: Transfer 2 private tokens to public
+# Step 11: Transfer 2 private tokens to public
 echo "Transferring 2 private tokens to public..."
 aztec-wallet send transfer_to_public \
     --node-url $NODE_URL \
     --from accounts:my-wallet \
-    --payment method=fpc-sponsored,fpc=contracts:sponsoredfpc \
+    --payment-method fpc-sponsored,fpc=contracts:sponsoredfpc \
     --contract-address last \
     --args accounts:my-wallet accounts:my-wallet 2 0 || {
     echo "Error: Failed to transfer tokens to public. Check previous steps."
     exit 1
 }
 
-# Step 10: Check private balance
+# Step 12: Check private balance
 echo "Checking private balance..."
 aztec-wallet simulate balance_of_private \
     --node-url $NODE_URL \
@@ -143,7 +169,7 @@ aztec-wallet simulate balance_of_private \
     exit 1
 }
 
-# Step 11: Check public balance
+# Step 13: Check public balance
 echo "Checking public balance..."
 aztec-wallet simulate balance_of_public \
     --node-url $NODE_URL \
