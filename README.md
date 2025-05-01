@@ -1,36 +1,3 @@
-<div align="center">
-  <a href="https://aztec.network">
-    <img src="https://github.com/AztecProtocol/aztec-packages/blob/master/docs/static/img/aztec-logo.9cde8ae1.svg" alt="Aztec Protocol Logo" width="300">
-  </a>
-</div>
-
-# Aztec Starter
-
-## Sandbox
-
-This repo is meant to be a starting point for writing Aztec contracts and tests on the Aztec sandbox (local development environment).
-
-You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`.
-
-The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/developers/tutorials/codealong/contract_tutorials/private_voting_contract).
-
-## Testnet
-
-If you are interested in trying out this repo with the testnet, try the [testnet branch](https://github.com/AztecProtocol/aztec-starter/tree/testnet). The testnet branch is more suitable for simple interactions with the testnet via script, or as a reference to see how to do something against a live, remote network. The `main` branch should be used for getting started with writing contracts and rapid, local testing.
-
-<div align="center">
-
-[![GitHub Repo stars](https://img.shields.io/github/stars/AztecProtocol/aztec-starter?logo=github&color=yellow)](https://github.com/AztecProtocol/aztec-starter/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/AztecProtocol/aztec-starter?logo=github&color=blue)](https://github.com/AztecProtocol/aztec-starter/network/members)
-[![Build](https://github.com/AztecProtocol/aztec-starter/actions/workflows/update.yaml/badge.svg)](https://github.com/AztecProtocol/aztec-starter/actions)
-[![GitHub last commit](https://img.shields.io/github/last-commit/AztecProtocol/aztec-starter?logo=git)](https://github.com/AztecProtocol/aztec-starter/commits/main)
-[![License](https://img.shields.io/github/license/AztecProtocol/aztec-starter)](https://github.com/AztecProtocol/aztec-starter/blob/main/LICENSE)
-[![Discord](https://img.shields.io/badge/discord-join%20chat-5B5EA6)](https://discord.gg/aztec)
-[![Twitter Follow](https://img.shields.io/twitter/follow/aztecnetwork?style=flat&logo=twitter)](https://x.com/aztecnetwork)
-
-</div>
-
----
 
 # Aztec Testnet Setup Guide
 
