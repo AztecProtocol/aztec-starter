@@ -6,6 +6,9 @@ This repository provides a script to automate the setup and interaction with the
 ## Prerequisites
 - Docker installed on your machine.
 
+## you can setup this guide using codespace
+- https://github.com/codespaces
+
 ## Usage
 1. Clone the repository:
    ```bash
@@ -16,7 +19,6 @@ This repository provides a script to automate the setup and interaction with the
   - Build the Docker image
    ```bash
    docker build -t aztec-testnet .
-   cd /root
    ```
 
   - Run the Docker container:
