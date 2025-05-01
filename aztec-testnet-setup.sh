@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Aztec Testnet Setup Script
-# This script automates the setup and interaction with the Aztec testnet in a Docker environment.
+# Automates setup and interaction with the Aztec testnet or Sandbox in a Docker environment.
 
 # Exit on any error
 set -e
@@ -11,8 +11,33 @@ export NODE_URL=http://34.107.66.170
 export SPONSORED_FPC_ADDRESS=0x0b27e30667202907fc700d50e9bc816be42f8141fae8b9f2281873dbdb9fc2e5
 export AZTEC_VERSION=0.85.0-alpha-testnet.5
 export PAYMENT_METHOD="fpc-sponsored,fpc=contracts:sponsoredfpc"
+export SANDBOX_NODE_URL=http://localhost:8545
 
 echo "Starting Aztec Testnet Setup..."
+
+# Function to test NODE_URL connectivity with retries
+test_node_url() {
+    local url=$1
+    local retries=3
+    local delay=5
+    local attempt=1
+
+    while [ $attempt -le $retries ]; do
+        echo "Testing NODE_URL ($url) - Attempt $attempt/$retries..."
+        if curl -s --head --connect-timeout 10 "$url" | head -n 1 | grep "200" >/dev/null; then
+            echo "NODE_URL is reachable."
+            return 0
+        else
+            echo "NODE_URL ($url) is not reachable."
+            if [ $attempt -lt $retries ]; then
+                echo "Retrying in $delay seconds..."
+                sleep $delay
+            fi
+            ((attempt++))
+        fi
+    done
+    return 1
+}
 
 # Step 1: Prompt user to verify or update environment variables
 echo "Default values:"
@@ -54,7 +79,7 @@ fi
 # Check Docker daemon
 echo "Checking Docker daemon..."
 if ! docker info >/dev/null 2>&1; then
-    echo "Docker daemon is not running. Attempting to start..."
+    echo "Docker daemon is not running. Bones to start..."
     if command -v systemctl >/dev/null; then
         sudo systemctl start docker || {
             echo "Error: Failed to start Docker. Please start Docker manually."
@@ -75,13 +100,40 @@ else
 fi
 
 # Step 3: Test NODE_URL connectivity
-echo "Testing NODE_URL connectivity..."
-if curl -s --head "$NODE_URL" | head -n 1 | grep "200" >/dev/null; then
-    echo "NODE_URL is reachable."
-else
-    echo "Error: NODE_URL ($NODE_URL) is not reachable."
-    echo "Verify the URL at https://docs.aztec.network or ask on Aztec Discord (https://discord.gg/aztec)."
-    exit 1
+if ! test_node_url "$NODE_URL"; then
+    echo "Error: NODE_URL ($NODE_URL) is not reachable after retries."
+    echo "Troubleshooting steps:"
+    echo "1. Verify the URL at https://docs.aztec.network or ask on Aztec Discord (https://discord.gg/aztec)."
+    echo "2. Check if the testnet requires partner access (contact devrel@aztecprotocol.com)."
+    echo "3. Ensure your server allows outbound HTTP traffic to $NODE_URL."
+    echo "   Run: curl -s --head $NODE_URL"
+    echo "4. Alternatively, use the Aztec Sandbox (local development environment)."
+    echo "Enter a new NODE_URL to try again, or type 'sandbox' to switch to the Sandbox:"
+    read -r fallback_url
+    if [ "$fallback_url" = "sandbox" ]; then
+        echo "Switching to Aztec Sandbox..."
+        export NODE_URL=$SANDBOX_NODE_URL
+        echo "Installing and starting Aztec Sandbox..."
+        aztec-up sandbox || {
+            echo "Error: Failed to start Aztec Sandbox. Check Docker and https://docs.aztec.network."
+            exit 1
+        }
+        if ! test_node_url "$NODE_URL"; then
+            echo "Error: Sandbox NODE_URL ($NODE_URL) is not reachable."
+            echo "Ensure the Sandbox is running (aztec-up sandbox) and Docker is configured correctly."
+            exit 1
+        fi
+    elif [ -n "$fallback_url" ]; then
+        export NODE_URL="$fallback_url"
+        if ! test_node_url "$NODE_URL"; then
+            echo "Error: New NODE_URL ($NODE_URL) is not reachable."
+            echo "Verify the URL or use the Sandbox. Exiting."
+            exit 1
+        fi
+    else
+        echo "No new URL provided. Exiting."
+        exit 1
+    fi
 fi
 
 # Step 4: Install Aztec CLI
@@ -130,8 +182,7 @@ if aztec-wallet register-contract \
     --node-url $NODE_URL \
     --from my-wallet \
     --alias sponsoredfpc \
-    $SPONSORED_FPC_ADDRESS SponsoredFPC \
-; then
+    $SPONSORED_FPC_ADDRESS SponsoredFPC; then
     echo "Fee sponsor contract registered successfully."
 else
     echo "Error: Failed to register fee sponsor contract. Verify SPONSORED_FPC_ADDRESS ($SPONSORED_FPC_ADDRESS)."
@@ -253,5 +304,5 @@ fi
 
 echo "Aztec Testnet Setup Complete!"
 echo "Private balance should be 8n, and public balance should be 2n."
-echo "You can now explore further with the Aztec testnet!"
+echo "You can now explore further with the Aztec testnet or Sandbox!"
 echo "For further assistance, visit https://docs.aztec.network or join the Aztec Discord (https://discord.gg/aztec)."
