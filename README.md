@@ -1,138 +1,47 @@
-<div align="center">
-  <a href="https://aztec.network">
-    <img src="https://github.com/AztecProtocol/aztec-packages/blob/master/docs/static/img/aztec-logo.9cde8ae1.svg" alt="Aztec Protocol Logo" width="300">
-  </a>
-</div>
 
-# Aztec Starter
+# Aztec Testnet Setup Guide
 
-## Sandbox
+This repository provides a script to automate the setup and interaction with the Aztec testnet using a single command in a Docker container.
 
-This repo is meant to be a starting point for writing Aztec contracts and tests on the Aztec sandbox (local development environment).
+## Prerequisites
+- Docker installed on your machine.
 
-You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`.
+## you can setup this guide using codespace
+- https://github.com/codespaces
 
-The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/developers/tutorials/codealong/contract_tutorials/private_voting_contract).
+## Usage
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Gmhax/aztec-starter.git
+   cd aztec-starter
+   ```
 
-## Testnet
+  - Build the Docker image
+   ```bash
+   docker build -t aztec-testnet .
+   ```
 
-If you are interested in trying out this repo with the testnet, try the [testnet branch](https://github.com/AztecProtocol/aztec-starter/tree/testnet). The testnet branch is more suitable for simple interactions with the testnet via script, or as a reference to see how to do something against a live, remote network. The `main` branch should be used for getting started with writing contracts and rapid, local testing.
+  - Run the Docker container:
+   ```bash
+   docker run -it --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /root \
+  aztec-testnet
+   ```
 
-<div align="center">
+ - Follow the output to see the setup process, including account creation, contract deployment, token minting, and balance checking.
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/AztecProtocol/aztec-starter?logo=github&color=yellow)](https://github.com/AztecProtocol/aztec-starter/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/AztecProtocol/aztec-starter?logo=github&color=blue)](https://github.com/AztecProtocol/aztec-starter/network/members)
-[![Build](https://github.com/AztecProtocol/aztec-starter/actions/workflows/update.yaml/badge.svg)](https://github.com/AztecProtocol/aztec-starter/actions)
-[![GitHub last commit](https://img.shields.io/github/last-commit/AztecProtocol/aztec-starter?logo=git)](https://github.com/AztecProtocol/aztec-starter/commits/main)
-[![License](https://img.shields.io/github/license/AztecProtocol/aztec-starter)](https://github.com/AztecProtocol/aztec-starter/blob/main/LICENSE)
-[![Discord](https://img.shields.io/badge/discord-join%20chat-5B5EA6)](https://discord.gg/aztec)
-[![Twitter Follow](https://img.shields.io/twitter/follow/aztecnetwork?style=flat&logo=twitter)](https://x.com/aztecnetwork)
+## Expected Output
+- Private balance: 8n
+- Public balance: 2n
 
-</div>
+## Notes
+- The script uses Aztec testnet version 0.85.0-alpha-testnet.5.
+- If you encounter a Timeout awaiting isMined message, the transaction is still processing and you can proceed.
+- For further exploration, refer to the [Aztec documentation.](https://docs.aztec.network/developers/guides/getting_started_on_testnet)
 
----
 
-## 🚀 **Getting Started**
 
-Use **Node.js version 18.19.0**.
-
-[Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
-
-Get the **sandbox, aztec-cli, and other tooling** with this command:
-
-```bash
-bash -i <(curl -s https://install.aztec.network)
-```
-
-Install the correct version of the toolkit with:
-
-```bash
-aztec-up 0.86.0
-```
-
-Start the sandbox with:
-
-```bash
-aztec start --sandbox
-```
-
----
-
-## 📦 **Install Packages**
-
-We need to ignore node version warnings (a temporary fix):
-
-```bash
-YARN_IGNORE_ENGINES=true yarn install
-```
-
----
-
-## 🏗 **Compile**
-
-```bash
-aztec-nargo compile
-```
-
-or
-
-```bash
-yarn compile
-```
-
----
-
-## 🔧 **Codegen**
-
-Generate the **contract artifact JSON** and TypeScript interface:
-
-```bash
-yarn codegen
-```
-
----
-
-## 🧪 **Test**
-
-**Make sure the sandbox is running before running tests.**
-
-```bash
-aztec start --sandbox
-```
-
-Then test with:
-
-```bash
-yarn test
-```
-
-Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
-
-Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once the TS tests are complete.
-
----
-
-## ❗ **Error Resolution**
-
-### 🔄 **Update Node.js and Noir Dependencies**
-
-```bash
-yarn update
-```
-
-### 🔄 **Update Contract**
-
-Get the **contract code from the monorepo**. The script will look at the versions defined in `./Nargo.toml` and fetch that version of the code from the monorepo.
-
-```bash
-yarn update
-```
-
-You may need to update permissions with:
-
-```bash
-chmod +x update_contract.sh
-```
 
 ### 💬 Join the Community:
 
