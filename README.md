@@ -32,107 +32,40 @@ If you are interested in trying out this repo with the testnet, try the [testnet
 
 ---
 
-## 🚀 **Getting Started**
+# Aztec Testnet Setup Guide
 
-Use **Node.js version 18.19.0**.
+This repository provides a script to automate the setup and interaction with the Aztec testnet using a single command in a Docker container.
 
-[Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
+## Prerequisites
+- Docker installed on your machine.
 
-Get the **sandbox, aztec-cli, and other tooling** with this command:
+## Usage
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Gmhax/aztec-starter.git
+   cd aztec-starter
+  - Build the Docker image
+  ```bash
+  docker build -t aztec-testnet .
+  ```
+  - Run the Docker container:
+  ```bash
+  docker run --rm aztec-testnet
+  ```
 
-```bash
-bash -i <(curl -s https://install.aztec.network)
-```
+ - Follow the output to see the setup process, including account creation, contract deployment, token minting, and balance checking.
 
-Install the correct version of the toolkit with:
+## Expected Output
+- Private balance: 8n
+- Public balance: 2n
 
-```bash
-aztec-up 0.86.0
-```
+## Notes
+- The script uses Aztec testnet version 0.85.0-alpha-testnet.5.
+- If you encounter a Timeout awaiting isMined message, the transaction is still processing and you can proceed.
+- For further exploration, refer to the Aztec documentation.
 
-Start the sandbox with:
 
-```bash
-aztec start --sandbox
-```
 
----
-
-## 📦 **Install Packages**
-
-We need to ignore node version warnings (a temporary fix):
-
-```bash
-YARN_IGNORE_ENGINES=true yarn install
-```
-
----
-
-## 🏗 **Compile**
-
-```bash
-aztec-nargo compile
-```
-
-or
-
-```bash
-yarn compile
-```
-
----
-
-## 🔧 **Codegen**
-
-Generate the **contract artifact JSON** and TypeScript interface:
-
-```bash
-yarn codegen
-```
-
----
-
-## 🧪 **Test**
-
-**Make sure the sandbox is running before running tests.**
-
-```bash
-aztec start --sandbox
-```
-
-Then test with:
-
-```bash
-yarn test
-```
-
-Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
-
-Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once the TS tests are complete.
-
----
-
-## ❗ **Error Resolution**
-
-### 🔄 **Update Node.js and Noir Dependencies**
-
-```bash
-yarn update
-```
-
-### 🔄 **Update Contract**
-
-Get the **contract code from the monorepo**. The script will look at the versions defined in `./Nargo.toml` and fetch that version of the code from the monorepo.
-
-```bash
-yarn update
-```
-
-You may need to update permissions with:
-
-```bash
-chmod +x update_contract.sh
-```
 
 ### 💬 Join the Community:
 
