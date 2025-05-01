@@ -20,7 +20,9 @@ This repository provides a script to automate the setup and interaction with the
 
   - Run the Docker container:
    ```bash
-   docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aztec-testnet
+   docker run -it --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  aztec-testnet
    ```
 
  - Follow the output to see the setup process, including account creation, contract deployment, token minting, and balance checking.
