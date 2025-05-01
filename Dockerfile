@@ -1,17 +1,19 @@
 # Use a lightweight Ubuntu base image
 FROM ubuntu:22.04
 
-# Install dependencies
+# Install dependencies (curl, Node.js, and other required tools)
 RUN apt-get update && apt-get install -y \
     curl \
     bash \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Docker
-RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
+# Install Aztec CLI
+RUN curl -s https://install.aztec.network | bash -s -- -y
 
-# Start Docker daemon in the background
-RUN service docker start
+# Ensure Aztec CLI is in PATH
+ENV PATH="/root/.aztec/bin:${PATH}"
 
 # Copy the setup script
 COPY aztec-testnet-setup.sh /aztec-testnet-setup.sh
