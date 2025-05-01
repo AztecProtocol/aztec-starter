@@ -15,7 +15,8 @@ echo "Starting Aztec Testnet Setup..."
 
 # Step 1: Install Aztec CLI
 echo "Installing Aztec CLI..."
-bash -i <(curl -s https://install.aztec.network)
+curl -s https://install.aztec.network | bash -s -- -y
+
 
 # Step 2: Install specific testnet version
 echo "Installing Aztec testnet version $AZTEC_VERSION..."
