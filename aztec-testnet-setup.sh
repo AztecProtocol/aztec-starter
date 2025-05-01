@@ -8,8 +8,8 @@ set -e
 
 # Define environment variables
 # TODO: Verify NODE_URL and SPONSORED_FPC_ADDRESS at https://docs.aztec.network or Aztec Discord
-export NODE_URL=http://34.107.66.170
-export SPONSORED_FPC_ADDRESS=0x0b27e30667202907fc700d50e9bc816be42f8141fae8b9f2281873dbdb9fc2e5
+export NODE_URL=http://34.107.66.170  # Replace with the current testnet node URL
+export SPONSORED_FPC_ADDRESS=0x0b27e30667202907fc700d50e9bc816be42f8141fae8b9f2281873dbdb9fc2e5  # Verify this address
 export AZTEC_VERSION=0.85.0-alpha-testnet.5
 
 echo "Starting Aztec Testnet Setup..."
@@ -31,18 +31,23 @@ if ! command -v docker &> /dev/null; then
     echo "Error: Docker is not installed. Please install Docker and try again."
     exit 1
 fi
-# Check Docker resources (optional, for proof generation)
+
+# Check Docker resources
 echo "Checking Docker resources..."
-docker info --format '{{.CPUs}} CPUs, {{.MemTotal}} memory' || {
+if docker info --format '{{.NCPU}} CPUs, {{.MemTotal}} memory' >/dev/null 2>&1; then
+    docker info --format 'Available: {{.NCPU}} CPUs, {{.MemTotal}} memory'
+else
     echo "Warning: Unable to check Docker resources. Ensure at least 2 CPUs and 4GB memory."
-}
+    docker info --format 'Docker version: {{.ServerVersion}}' || echo "Error: Docker info unavailable."
+fi
 
 # Step 3: Test NODE_URL connectivity
 echo "Testing NODE_URL connectivity..."
-if curl -s --head "$NODE_URL" | head -n 1 | grep "200" > /dev/null; then
+if curl -s --head "$NODE_URL" | head -n 1 | grep "200" >/dev/null; then
     echo "NODE_URL is reachable."
 else
-    echo "Error: NODE_URL ($NODE_URL) is not reachable. Verify the URL at https://docs.aztec.network."
+    echo "Error: NODE_URL ($NODE_URL) is not reachable."
+    echo "Verify the URL at https://docs.aztec.network or ask on Aztec Discord (https://discord.gg/aztec)."
     exit 1
 fi
 
@@ -102,7 +107,8 @@ if aztec-wallet deploy-account \
 else
     echo "Warning: Failed to deploy account with fee sponsor (possibly insufficient fee payer balance)."
     echo "Retrying without fee sponsor. Ensure your wallet (my-wallet) has testnet funds."
-    echo "Check for a testnet faucet at https://docs.aztec.network or request funds on Aztec Discord."
+    echo "Check for a testnet faucet at https://docs.aztec.network or request funds on Aztec Discord (https://discord.gg/aztec)."
+    echo "To view your wallet address: aztec-wallet list-accounts"
     if aztec-wallet deploy-account \
         --node-url $NODE_URL \
         --from my-wallet \
@@ -114,7 +120,7 @@ else
         echo "2. Invalid NODE_URL ($NODE_URL)."
         echo "3. Network congestion or server issues (Error 500)."
         echo "Note: If you see 'Timeout awaiting isMined', the transaction may still be pending."
-        echo "Visit https://docs.aztec.network or join Aztec Discord for support."
+        echo "Visit https://docs.aztec.network or join Aztec Discord (https://discord.gg/aztec) for support."
         exit 1
     fi
 fi
@@ -183,4 +189,4 @@ aztec-wallet simulate balance_of_public \
 echo "Aztec Testnet Setup Complete!"
 echo "Private balance should be 8n, and public balance should be 2n."
 echo "You can now explore further with the Aztec testnet!"
-echo "For further assistance, visit https://docs.aztec.network or join the Aztec Discord."
+echo "For further assistance, visit https://docs.aztec.network or join the Aztec Discord (https://discord.gg/aztec)."
