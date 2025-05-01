@@ -44,6 +44,7 @@ This repository provides a script to automate the setup and interaction with the
    ```bash
    git clone https://github.com/Gmhax/aztec-starter.git
    cd aztec-starter
+   ```
   - Build the Docker image
    ```bash
    docker build -t aztec-testnet .
