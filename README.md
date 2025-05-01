@@ -45,13 +45,13 @@ This repository provides a script to automate the setup and interaction with the
    git clone https://github.com/Gmhax/aztec-starter.git
    cd aztec-starter
   - Build the Docker image
-  ```bash
-  docker build -t aztec-testnet .
-  ```
+   ```bash
+   docker build -t aztec-testnet .
+   ```
   - Run the Docker container:
-  ```bash
-  docker run --rm aztec-testnet
-  ```
+   ```bash
+   docker run --rm aztec-testnet
+   ```
 
  - Follow the output to see the setup process, including account creation, contract deployment, token minting, and balance checking.
 
