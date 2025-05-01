@@ -9,19 +9,21 @@ This repository provides a script to automate the setup and interaction with the
 ## Usage
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Gmhax/aztec-starter.git
-   cd aztec-starter
+      git clone https://github.com/Gmhax/aztec-starter.git
+      cd aztec-starter
    ```
 
   - Build the Docker image
    ```bash
    docker build -t aztec-testnet .
+   cd /root
    ```
 
   - Run the Docker container:
    ```bash
    docker run -it --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /root \
   aztec-testnet
    ```
 
