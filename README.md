@@ -9,8 +9,8 @@ This repository provides a script to automate the setup and interaction with the
 ## Usage
 1. Clone the repository:
    ```bash
-      git clone https://github.com/Gmhax/aztec-starter.git
-      cd aztec-starter
+   git clone https://github.com/Gmhax/aztec-starter.git
+   cd aztec-starter
    ```
 
   - Build the Docker image
