@@ -62,7 +62,7 @@ This repository provides a script to automate the setup and interaction with the
 ## Notes
 - The script uses Aztec testnet version 0.85.0-alpha-testnet.5.
 - If you encounter a Timeout awaiting isMined message, the transaction is still processing and you can proceed.
-- For further exploration, refer to the Aztec documentation.
+- For further exploration, refer to the [Aztec documentation.](https://docs.aztec.network/developers/guides/getting_started_on_testnet)
 
 
 
