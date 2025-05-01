@@ -17,6 +17,8 @@ echo "Starting Aztec Testnet Setup..."
 echo "Installing Aztec CLI..."
 curl -s https://install.aztec.network | bash -s -- -y
 
+# Add Aztec CLI to PATH (IMPORTANT!)
+export PATH="/root/.aztec/bin:$PATH"
 
 # Step 2: Install specific testnet version
 echo "Installing Aztec testnet version $AZTEC_VERSION..."
