@@ -40,39 +40,35 @@ aztec-wallet register-contract \
     $SPONSORED_FPC_ADDRESS SponsoredFPC \
     --salt 0
 
-# Step 5: Deploy the account
+# Step 5: Deploy the account (remove payment-method flag)
 echo "Deploying account..."
 aztec-wallet deploy-account \
     --node-url $NODE_URL \
     --from my-wallet \
-    --payment-method=fpc-sponsored,fpc=contracts:sponsoredfpc \
     --register-class
 
-# Step 6: Deploy a token contract
+# Step 6: Deploy a token contract (remove payment-method flag)
 echo "Deploying token contract..."
 aztec-wallet deploy \
     --node-url $NODE_URL \
     --from accounts:my-wallet \
-    --payment-method=fpc-sponsored,fpc=contracts:sponsoredfpc \
     --alias token \
     TokenContract \
     --args accounts:my-wallet Token TOK 18
 
-# Step 7: Mint 10 private tokens
+# Step 7: Mint 10 private tokens (remove payment-method flag)
 echo "Minting 10 private tokens..."
 aztec-wallet send mint_to_private \
     --node-url $NODE_URL \
     --from accounts:my-wallet \
-    --payment-method=fpc-sponsored,fpc=contracts:sponsoredfpc \
     --contract-address last \
     --args accounts:my-wallet accounts:my-wallet 10
 
-# Step 8: Transfer 2 private tokens to public
+# Step 8: Transfer 2 private tokens to public (remove payment-method flag)
 echo "Transferring 2 private tokens to public..."
 aztec-wallet send transfer_to_public \
     --node-url $NODE_URL \
     --from accounts:my-wallet \
-    --payment-method=fpc-sponsored,fpc=contracts:sponsoredfpc \
     --contract-address last \
     --args accounts:my-wallet accounts:my-wallet 2 0
 
