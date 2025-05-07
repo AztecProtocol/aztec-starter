@@ -10,7 +10,7 @@ import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
 
 const SPONSORED_FPC_SALT = new Fr(0);
 
-async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
+export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
   return await getContractInstanceFromDeployParams(SponsoredFPCContract.artifact, {
     salt: SPONSORED_FPC_SALT,
   });
