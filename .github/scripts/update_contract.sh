@@ -6,7 +6,7 @@ version_tag="$1"
 echo "version tag: $version_tag"
 nargo_file_path="$copy_to_file_path/Nargo.toml"
 
-repo_url="https://github.com/AztecProtocol/aztec-packages.git"
+repo_url="https://github.com/AztecProtocol/aztec-packages"
 contracts_path="noir-projects/noir-contracts/contracts"
 
 # Check if the file exists
