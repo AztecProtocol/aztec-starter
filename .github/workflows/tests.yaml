@@ -47,4 +47,4 @@ jobs:
         run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
 
       - name: Run scripts
-        run: script -e -c "yarn deploy && yarn deploy-account && yarn fees"
+        run: script -e -c "yarn deploy && yarn deploy-account && yarn fees && yarn multiple-pxe"

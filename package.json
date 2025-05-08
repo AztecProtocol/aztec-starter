@@ -10,13 +10,15 @@
   "scripts": {
     "fees": "node --loader ts-node/esm scripts/fees.ts",
     "clean": "rm -rf ./src/artifacts ./target",
+    "clear-store": "rm -rf ./store",
     "codegen": "aztec codegen target --outdir src/artifacts",
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
-    "deploy": "node --loader ts-node/esm scripts/deploy-contract.ts",
-    "deploy-account": "node --loader ts-node/esm scripts/deploy-account.ts",
-    "get-block": "node --loader ts-node/esm scripts/getBlock.ts",
+    "deploy": "node --loader ts-node/esm scripts/deploy_contract.ts",
+    "deploy-account": "node --loader ts-node/esm scripts/deploy_account.ts",
+    "multiple-pxe": "node --loader ts-node/esm scripts/multiple_pxe.ts",
+    "get-block": "node --loader ts-node/esm scripts/get_block.ts",
     "test": "yarn test:js && yarn test:nr",
-    "test:js": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
+    "test:js": "rm -rf store/pxe && NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
     "test:nr": "aztec test",
     "update": "aztec update --contract . && ./.github/scripts/update_contract.sh $(grep -oP 'tag\\s*=\\s*\"\\K[^\"]+' \"Nargo.toml\" | head -1) && yarn && yarn update-readme-version",
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
@@ -25,6 +27,8 @@
     "@aztec/accounts": "0.86.0",
     "@aztec/aztec.js": "0.86.0",
     "@aztec/noir-contracts.js": "0.86.0",
+    "@aztec/protocol-contracts": "0.86.0",
+    "@aztec/pxe": "0.86.0",
     "@aztec/stdlib": "0.86.0",
     "@types/node": "^22.5.1"
   },

@@ -92,6 +92,8 @@ yarn codegen
 
 ---
 
+:warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the sandbox, you will need to delete the `./store` directory to avoid errors.
+
 ## 🧪 **Test**
 
 **Make sure the sandbox is running before running tests.**
@@ -112,7 +114,18 @@ Note: The Typescript tests spawn an instance of the sandbox to test against, and
 
 ---
 
+## Scripts
+
+You can find a handful of scripts in the `./scripts` folder.
+
+- `./scripts/deploy-accounts.ts` is an example of how to deploy a schnorr account.
+- `./scripts/deploy.ts` is an example of how to deploy a contract.
+- `./scripts/fees.ts` is an example of how to pay for a contract deployment using various fee payment methods.
+- `./scripts/multiple_pxe.ts` is an example of how to deploy a contract from one PXE instance and interact with it from another.
+
 ## ❗ **Error Resolution**
+
+:warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the sandbox, you will need to delete the `./store` directory to avoid errors.
 
 ### 🔄 **Update Node.js and Noir Dependencies**
 
