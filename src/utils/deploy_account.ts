@@ -7,8 +7,6 @@ import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
 import { setupPXE } from "./setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 
-const pxe = await setupPXE()
-
 export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
 
     let logger: Logger;
