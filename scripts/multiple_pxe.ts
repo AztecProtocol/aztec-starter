@@ -18,10 +18,12 @@ const store1 = await createStore('pxe1', {
     dataDirectory: 'store',
     dataStoreMapSizeKB: 1e6,
 });
+
 const store2 = await createStore('pxe2', {
     dataDirectory: 'store',
     dataStoreMapSizeKB: 1e6,
 });
+
 const setupPxe1 = async () => {
     const pxe = await createPXEService(node, fullConfig, true, store1);
     await waitForPXE(pxe);

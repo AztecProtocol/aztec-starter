@@ -257,7 +257,7 @@
   resolved "https://registry.yarnpkg.com/@aztec/noir-types/-/noir-types-0.86.0.tgz#f07fd5133f00ffbb1a34f181babd8ef14e652339"
   integrity sha512-+Q7Ql8SFklbtG1oIN8+6BNLEvXQRji9kmmgT2pARQwMNa3tfU3ybPUHTPMpapcB58Hbn1Sv84TpZvr9cweycEA==
 
-"@aztec/protocol-contracts@0.86.0":
+"@aztec/protocol-contracts@0.86.0", "@aztec/protocol-contracts@^0.86.0":
   version "0.86.0"
   resolved "https://registry.yarnpkg.com/@aztec/protocol-contracts/-/protocol-contracts-0.86.0.tgz#10b965cf9ae6db17357dca8ecaae27b95495a976"
   integrity sha512-dAUlqROtbjb/yvL6IzaDb43WigdUuZ4+Yx2tY6I1NWcy41S7BO4ClH49zjIemozcClyn9qKIpEGokJFej7lMLg==
@@ -269,7 +269,7 @@
     lodash.omit "^4.5.0"
     tslib "^2.4.0"
 
-"@aztec/pxe@^0.86.0":
+"@aztec/pxe@0.86.0":
   version "0.86.0"
   resolved "https://registry.yarnpkg.com/@aztec/pxe/-/pxe-0.86.0.tgz#cb7eddf17ec0c7d4a0b4fd84a5a4aa593513673a"
   integrity sha512-DtNEf3peqNG7vdQOY0mczrkUWR/usHbZzstCf6LvLgvlXOPccWZHR3yvwn559u1kTN+cWuUuYOlifC3SR0vgDw==
