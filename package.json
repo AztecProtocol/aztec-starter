@@ -8,7 +8,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "debug": "node --loader ts-node/esm scripts/debug.ts",
+    "debug": "node --loader ts-node/esm scripts/debug.ts"
   },
   "dependencies": {
     "@aztec/accounts": "0.85.0-alpha-testnet.11",
