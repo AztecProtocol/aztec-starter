@@ -2,10 +2,6 @@ import { createAztecNodeClient, Fr } from "@aztec/aztec.js";
 import { TxEffect, TxHash } from "@aztec/stdlib/tx";
 import fs from 'fs';
 
-const L1_NODE_URL = "<ANY_SEPOLIA_NODE_RPC_URL>";
-const L1_WALLET_MNEMONIC =
-  "test test test test test test test test test test test junk";
-const L1_DEBUG_CONTRACT_ADDRESS = "0xa90b5c2ac05f5c0389ffbe44bdff95197f817364";
 const L2_NODE_URL = "https://aztec-alpha-testnet-fullnode.zkv.xyz";
 
 async function main() {
