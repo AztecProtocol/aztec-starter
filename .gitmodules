@@ -1,0 +1,4 @@
+[submodule "lib/aztec-packages"]
+	path = lib/aztec-packages
+	url = https://github.com/aztecprotocol/aztec-packages
+	branch = alpha-testnet

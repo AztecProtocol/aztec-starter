@@ -1,0 +1,11 @@
+[profile.default]
+src = "l1-contracts/src"
+out = "l1-contracts/out"
+libs = ["lib"]
+solc = "0.8.28"
+optimizer = true
+optimizer_runs = 200
+
+remappings = [
+    "@aztec/=lib/aztec-packages/l1-contracts/src"
+]
