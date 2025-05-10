@@ -12,14 +12,16 @@ contract Debug {
         bytes32 messageHash,
         uint256 messageIndex,
         bytes32[] calldata siblingPath
-    ) public view {
+    ) public view returns (bool) {
         (bytes32 root, ) = outbox.getRootData(l2BlockNumber);
-
+ 
         MerkleLib.verifyMembership(
             siblingPath,
             messageHash,
             messageIndex,
             root
         );
+
+        return true;
     }
 }
