@@ -16,18 +16,13 @@ import { TokenContract } from "@aztec/noir-contracts.js/Token";
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { getDeployedSponsoredFPCAddress } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { deploySchnorrAccount } from "./deploy-account.js";
+import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const setupPXE = async () => {
-    const { PXE_URL = 'http://localhost:8081' } = process.env;
-    const pxe = await createPXEClient(PXE_URL);
-    await waitForPXE(pxe);
-    return pxe;
-};
+import { setupPXE } from "../src/utils/setup_pxe.js";
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
@@ -55,7 +50,7 @@ async function main() {
     let salt = Fr.random();
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
     
-    const wallet1 = await (await deploySchnorrAccount()).getWallet()
+    const wallet1 = await (await deploySchnorrAccount(pxe)).getWallet()
     const newWallet = await schnorrAccount.getWallet()
     const feeJuiceReceipient = schnorrAccount.getAddress()
 

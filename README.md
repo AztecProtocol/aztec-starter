@@ -41,14 +41,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.85.0-alpha-testnet.3
-```
-
-Make sure you have a `.env` file with variables provided in the `.env-example`. Start the PXE with:
-
-```bash
-source .env
-aztec start --port 8081 --pxe --pxe.nodeUrl=$BOOTNODE --pxe.proverEnabled true --l1-chain-id $L1_CHAIN_ID
+aztec-up alpha-testnet
 ```
 
 ---
@@ -87,9 +80,22 @@ yarn codegen
 
 ---
 
+:warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the sandbox, you will need to delete the `./store` directory to avoid errors.
+
 ## 🧪 **Test**
 
 You don't want to run tests against testnet. This will take a long time. Run tests against the sandbox, as described on the [main branch](https://github.com/AztecProtocol/aztec-starter).
+
+---
+
+## Scripts
+
+You can find a handful of scripts in the `./scripts` folder.
+
+- `./scripts/deploy-accounts.ts` is an example of how to deploy a schnorr account.
+- `./scripts/deploy.ts` is an example of how to deploy a contract.
+- `./scripts/fees.ts` is an example of how to pay for a contract deployment using various fee payment methods.
+- `./scripts/multiple_pxe.ts` is an example of how to deploy a contract from one PXE instance and interact with it from another.
 
 ---
 

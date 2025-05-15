@@ -1,27 +1,25 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../../artifacts/EasyPrivateVoting.js"
-import { AccountManager, AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, waitForPXE, TxStatus, createPXEClient, getContractInstanceFromDeployParams, Logger } from "@aztec/aztec.js";
-import { getInitialTestAccountsWallets, generateSchnorrAccounts } from "@aztec/accounts/testing"
+import { AccountManager, AccountWallet, CompleteAddress, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromDeployParams, Logger, ContractInstanceWithAddress } from "@aztec/aztec.js";
+import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn } from 'child_process';
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { L1FeeJuicePortalManager, AztecAddress } from "@aztec/aztec.js";
 import { createEthereumChain, createL1Clients } from '@aztec/ethereum';
-import { getDeployedSponsoredFPCAddress } from "../../utils/sponsored_fpc.js";
+import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
+import { setupPXE } from "../../utils/setup_pxe.js";
+import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { deriveSigningKey } from "@aztec/stdlib/keys";
 
-const setupSandbox = async () => {
-    const { PXE_URL = 'http://localhost:8080' } = process.env;
-    const pxe = createPXEClient(PXE_URL);
-    await waitForPXE(pxe);
-    return pxe;
-};
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe("Voting", () => {
     let pxe: PXE;
-    let wallets: AccountWallet[] = [];
+    let firstWallet: AccountWallet;
     let accounts: CompleteAddress[] = [];
     let logger: Logger;
     let sandboxInstance;
+    let sponsoredFPC: ContractInstanceWithAddress;
     let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
 
     let randomAccountManagers: AccountManager[] = [];
@@ -44,12 +42,11 @@ describe("Voting", () => {
         logger = createLogger('aztec:aztec-starter:voting');
         logger.info("Aztec-Starter tests running.")
 
-        pxe = await setupSandbox();
+        pxe = await setupPXE();
 
-        wallets = await getInitialTestAccountsWallets(pxe);
-        accounts = wallets.map(w => w.getCompleteAddress());
-        const deployedSponseredFPC = await getDeployedSponsoredFPCAddress(pxe);
-        sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponseredFPC);
+        sponsoredFPC = await getSponsoredFPCInstance();
+        await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+        sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
         // generate random accounts
         randomAccountManagers = await Promise.all(
@@ -76,6 +73,13 @@ describe("Voting", () => {
             logger
         );
 
+
+        // Set up a wallet
+        let secretKey = Fr.random();
+        let salt = Fr.random();
+        let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt)
+        await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
+        firstWallet = await schnorrAccount.getWallet();
     })
 
     afterAll(async () => {
@@ -87,17 +91,15 @@ describe("Voting", () => {
     it("Deploys the contract", async () => {
         const salt = Fr.random();
         const VotingContractArtifact = EasyPrivateVotingContractArtifact
-        // const [deployerWallet, adminWallet] = wallets; // using first account as deployer and second as contract admin
         const accounts = await Promise.all(
             (await generateSchnorrAccounts(2)).map(
                 async a => await getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
             )
         );
-        await Promise.all(accounts.map(a => a.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } })));
+        await Promise.all(accounts.map(a => a.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()));
         const daWallets = await Promise.all(accounts.map(a => a.getWallet()));
         const [deployerWallet, adminWallet] = daWallets;
         const [deployerAddress, adminAddress] = daWallets.map(w => w.getAddress());
-        // const adminAddress = adminWallet.getCompleteAddress().address;
 
         const deploymentData = await getContractInstanceFromDeployParams(VotingContractArtifact,
             {
@@ -134,8 +136,8 @@ describe("Voting", () => {
     it("It casts a vote", async () => {
         const candidate = new Fr(1)
 
-        const contract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        const tx = await contract.methods.cast_vote(candidate).send().wait();
+        const contract = await EasyPrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed();
+        const tx = await contract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
         let count = await contract.methods.get_vote(candidate).simulate();
         expect(count).toBe(1n);
     })
@@ -143,17 +145,17 @@ describe("Voting", () => {
     it("It should fail when trying to vote twice", async () => {
         const candidate = new Fr(1)
 
-        const votingContract = await EasyPrivateVotingContract.deploy(wallets[0], accounts[0].address).send().deployed();
-        await votingContract.methods.cast_vote(candidate).send().wait();
+        const votingContract = await EasyPrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed();
+        await votingContract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
         expect(await votingContract.methods.get_vote(candidate).simulate()).toBe(1n);
 
         // We try voting again, but our TX is dropped due to trying to emit duplicate nullifiers
         // first confirm that it fails simulation
-        await expect(votingContract.methods.cast_vote(candidate).send().wait()).rejects.toThrow(/Nullifier collision/);
+        await expect(votingContract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()).rejects.toThrow(/Nullifier collision/);
         // if we skip simulation before submitting the tx,
         // tx will be included in a block but with app logic reverted
         await expect(
-            votingContract.methods.cast_vote(candidate).send({ skipPublicSimulation: true }).wait(),
+            votingContract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod }, skipPublicSimulation: true }).wait(),
         ).rejects.toThrow(/Existing nullifier/);
 
     })
