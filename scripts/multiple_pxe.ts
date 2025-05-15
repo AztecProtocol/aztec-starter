@@ -66,7 +66,7 @@ async function main() {
 
     let secretKey = Fr.random();
     let salt = Fr.random();
-    let schnorrAccount = await getSchnorrAccount(pxe2, secretKey, deriveSigningKey(secretKey), salt);
+    let schnorrAccount = await getSchnorrAccount(pxe1, secretKey, deriveSigningKey(secretKey), salt);
     let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait();
     let ownerWallet = await schnorrAccount.getWallet();
     let ownerAddress = await ownerWallet.getAddress();
@@ -96,7 +96,8 @@ async function main() {
 
     const l2TokenContractInstance = await getL2TokenContractInstance(ownerAddress, ownerAddress)
     await wallet2.registerContract({
-        instance: l2TokenContractInstance
+        instance: l2TokenContractInstance,
+        artifact: TokenContract.artifact
     })
 
     const l2TokenContract = await TokenContract.at(
