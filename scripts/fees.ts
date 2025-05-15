@@ -69,7 +69,7 @@ async function main() {
     await pxe.registerContract({ instance: sponseredFPC, artifact: SponsoredFPCContract.artifact });
     const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
 
-    // Two arbitraty txs to make the L1 message available on L2
+    // Two arbitrary txs to make the L1 message available on L2
     const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({ fee: { paymentMethod } }).deployed();
     const bananaCoin = await TokenContract.deploy(wallet1, wallet1.getAddress(), "bananaCoin", "BNC", 18).send({ fee: { paymentMethod } }).deployed()
 
