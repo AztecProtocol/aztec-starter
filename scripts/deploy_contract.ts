@@ -20,7 +20,7 @@ async function main() {
 
     let accountManager = await deploySchnorrAccount(pxe);
     const wallet = await accountManager.getWallet();
-    const address = await accountManager.getAddress();
+    const address = accountManager.getAddress();
 
     const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed();
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
