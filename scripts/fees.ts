@@ -23,9 +23,6 @@ import { deriveSigningKey } from '@aztec/stdlib/keys';
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
 
-let walletClient = getL1WalletClient(foundry.rpcUrls.default.http[0], 0);
-const ownerEthAddress = walletClient.account.address;
-
 async function main() {
 
     let pxe: PXE;
