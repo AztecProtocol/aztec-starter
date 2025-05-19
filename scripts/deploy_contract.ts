@@ -1,6 +1,5 @@
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
 import { createLogger, PXE, Logger, SponsoredFeePaymentMethod, Fr } from "@aztec/aztec.js";
-import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
@@ -21,7 +20,7 @@ async function main() {
 
     let accountManager = await deploySchnorrAccount(pxe);
     const wallet = await accountManager.getWallet();
-    const address = await accountManager.getAddress();
+    const address = accountManager.getAddress();
 
     const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed();
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
