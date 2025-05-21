@@ -149,7 +149,7 @@ describe("Voting", () => {
 
         // We try voting again, but our TX is dropped due to trying to emit duplicate nullifiers
         // first confirm that it fails simulation
-        await expect(votingContract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()).rejects.toThrow(/Nullifier collision/);
+        await expect(votingContract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()).rejects.toThrow(/Existing nullifier/);
         // if we skip simulation before submitting the tx,
         // tx will be included in a block but with app logic reverted
         await expect(
