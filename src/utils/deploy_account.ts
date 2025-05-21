@@ -1,9 +1,9 @@
-import { createLogger, Fr, PXE,  Logger, AccountManager } from "@aztec/aztec.js";
+import { createLogger, Fr, AccountManager } from "@aztec/aztec.js";
+import type { PXE, Logger } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
-import { setupPXE } from "./setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 
 export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
@@ -19,7 +19,7 @@ export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
     let salt = Fr.random();
 
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
-    let tx = await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
+    await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
     let wallet = await schnorrAccount.getWallet();
 
     logger.info(`Schnorr account deployed at: ${wallet.getAddress()}`);

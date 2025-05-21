@@ -69,7 +69,7 @@ async function main() {
     let schnorrAccount = await getSchnorrAccount(pxe1, secretKey, deriveSigningKey(secretKey), salt);
     let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait();
     let ownerWallet = await schnorrAccount.getWallet();
-    let ownerAddress = await ownerWallet.getAddress();
+    let ownerAddress = ownerWallet.getAddress();
     const token = await TokenContract.deploy(ownerWallet, ownerAddress, 'Clean USDC', 'USDC', 6).send({ contractAddressSalt: L2_TOKEN_CONTRACT_SALT, fee: { paymentMethod } }).wait()
 
     // setup account on 2nd pxe
@@ -114,7 +114,7 @@ async function main() {
     const balance = await l2TokenContract.methods.balance_of_private(wallet2.getAddress()).simulate()
     console.log("private balance should be 100", balance)
     // errors
-    const public_balance = await l2TokenContract.methods.balance_of_public(wallet2.getAddress()).simulate()
+    await l2TokenContract.methods.balance_of_public(wallet2.getAddress()).simulate()
 
 }
 

@@ -23,9 +23,6 @@ import { deriveSigningKey } from '@aztec/stdlib/keys';
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
 
-let walletClient = getL1WalletClient(foundry.rpcUrls.default.http[0], 0);
-const ownerEthAddress = walletClient.account.address;
-
 async function main() {
 
     let pxe: PXE;
@@ -69,7 +66,7 @@ async function main() {
     await pxe.registerContract({ instance: sponseredFPC, artifact: SponsoredFPCContract.artifact });
     const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
 
-    // Two arbitraty txs to make the L1 message available on L2
+    // Two arbitrary txs to make the L1 message available on L2
     const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({ fee: { paymentMethod } }).deployed();
     const bananaCoin = await TokenContract.deploy(wallet1, wallet1.getAddress(), "bananaCoin", "BNC", 18).send({ fee: { paymentMethod } }).deployed()
 
