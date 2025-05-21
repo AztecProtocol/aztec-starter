@@ -105,7 +105,7 @@ async function main() {
         wallet2
     )
 
-    await l2TokenContract.methods.sync_notes().simulate()
+    await l2TokenContract.methods.sync_private_state().simulate()
 
     const notes = await pxe2.getNotes({ txHash: private_mint_tx.txHash });
     console.log(notes)
