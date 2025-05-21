@@ -34,7 +34,7 @@ If you are interested in trying out this repo with the testnet, try the [testnet
 
 ## 🚀 **Getting Started**
 
-Use **Node.js version 18.19.0**.
+Use **Node.js version 22.15.0**.
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
@@ -47,7 +47,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.86.0
+aztec-up 0.87.2
 ```
 
 Start the sandbox with:
@@ -60,10 +60,9 @@ aztec start --sandbox
 
 ## 📦 **Install Packages**
 
-We need to ignore node version warnings (a temporary fix):
 
 ```bash
-YARN_IGNORE_ENGINES=true yarn install
+yarn install
 ```
 
 ---

@@ -153,7 +153,7 @@ describe("Voting", () => {
         // if we skip simulation before submitting the tx,
         // tx will be included in a block but with app logic reverted
         await expect(
-            votingContract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod }, skipPublicSimulation: true }).wait(),
+            votingContract.methods.cast_vote(candidate).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait(),
         ).rejects.toThrow(/Existing nullifier/);
 
     })

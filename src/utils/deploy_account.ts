@@ -1,7 +1,6 @@
-import { AccountWallet, CompleteAddress, createLogger, Fr, PXE, waitForPXE, createPXEClient, Logger, AccountWalletWithSecretKey, AccountManager } from "@aztec/aztec.js";
+import { createLogger, Fr, PXE,  Logger, AccountManager } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
-import { getInitialTestAccountsWallets } from "@aztec/accounts/testing";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
 import { setupPXE } from "./setup_pxe.js";
