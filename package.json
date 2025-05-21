@@ -29,8 +29,7 @@
     "@aztec/noir-contracts.js": "0.87.2",
     "@aztec/protocol-contracts": "0.87.2",
     "@aztec/pxe": "0.87.2",
-    "@aztec/stdlib": "0.87.2",
-    "@types/node": "^22.5.1"
+    "@aztec/stdlib": "0.87.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
