@@ -19,7 +19,7 @@ export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
     let salt = Fr.random();
 
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
-    let tx = await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
+    let tx = await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({timeout: 120000});
     let wallet = await schnorrAccount.getWallet();
 
     logger.info(`Schnorr account deployed at: ${wallet.getAddress()}`);

@@ -66,11 +66,11 @@ async function main() {
 
     let secretKey = Fr.random();
     let salt = Fr.random();
-    let schnorrAccount = await getSchnorrAccount(pxe2, secretKey, deriveSigningKey(secretKey), salt);
-    let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait();
+    let schnorrAccount = await getSchnorrAccount(pxe1, secretKey, deriveSigningKey(secretKey), salt);
+    let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait({timeout: 120000});
     let ownerWallet = await schnorrAccount.getWallet();
     let ownerAddress = await ownerWallet.getAddress();
-    const token = await TokenContract.deploy(ownerWallet, ownerAddress, 'Clean USDC', 'USDC', 6).send({ contractAddressSalt: L2_TOKEN_CONTRACT_SALT, fee: { paymentMethod } }).wait()
+    const token = await TokenContract.deploy(ownerWallet, ownerAddress, 'Clean USDC', 'USDC', 6).send({ contractAddressSalt: L2_TOKEN_CONTRACT_SALT, fee: { paymentMethod } }).wait({timeout: 120000})
 
     // setup account on 2nd pxe
 
@@ -81,22 +81,23 @@ async function main() {
     let schnorrAccount2 = await getSchnorrAccount(pxe2, secretKey2, deriveSigningKey(secretKey2), salt2);
 
     // deploy account on 2nd pxe
-    let tx2 = await schnorrAccount2.deploy({ fee: { paymentMethod } }).wait();
+    let tx2 = await schnorrAccount2.deploy({ fee: { paymentMethod } }).wait({timeout: 120000});
     let wallet2 = await schnorrAccount2.getWallet();
     wallet2.registerSender(ownerAddress)
 
     // mint to account on 2nd pxe
 
-    const private_mint_tx = await token.contract.methods.mint_to_private(ownerAddress, schnorrAccount2.getAddress(), 100).send({ fee: { paymentMethod } }).wait()
+    const private_mint_tx = await token.contract.methods.mint_to_private(ownerAddress, schnorrAccount2.getAddress(), 100).send({ fee: { paymentMethod } }).wait({timeout: 120000})
     console.log(await pxe1.getTxEffect(private_mint_tx.txHash))
-    await token.contract.methods.mint_to_public(schnorrAccount2.getAddress(), 100).send({ fee: { paymentMethod } }).wait()
+    await token.contract.methods.mint_to_public(schnorrAccount2.getAddress(), 100).send({ fee: { paymentMethod } }).wait({timeout: 120000})
 
 
     // setup token on 2nd pxe
 
     const l2TokenContractInstance = await getL2TokenContractInstance(ownerAddress, ownerAddress)
     await wallet2.registerContract({
-        instance: l2TokenContractInstance
+        instance: l2TokenContractInstance,
+        artifact: TokenContract.artifact
     })
 
     const l2TokenContract = await TokenContract.at(

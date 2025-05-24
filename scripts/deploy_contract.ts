@@ -23,7 +23,7 @@ async function main() {
     const wallet = await accountManager.getWallet();
     const address = await accountManager.getAddress();
 
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed();
+    const votingContract = await EasyPrivateVotingContract.deploy(wallet, address).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed({timeout: 120000});
     logger.info(`Voting Contract deployed at: ${votingContract.address}`);
 }
 
