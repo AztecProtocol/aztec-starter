@@ -5,7 +5,7 @@ import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 export async function deployAccount() {
     let logger: Logger;
     logger = createLogger('aztec:aztec-starter');
-    const pxe = await setupPXE()
+    const pxe = await setupPXE();
     await deploySchnorrAccount(pxe);
 }
 
