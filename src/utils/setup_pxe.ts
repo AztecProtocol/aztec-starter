@@ -16,7 +16,7 @@ const store = await createStore('pxe', {
 });
 
 export const setupPXE = async () => {
-    const pxe = await createPXEService(node, fullConfig, true, store);
+    const pxe = await createPXEService(node, fullConfig, {store});
     await waitForPXE(pxe);
     return pxe;
 };
