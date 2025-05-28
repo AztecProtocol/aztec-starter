@@ -1,7 +1,7 @@
 
 import { createPXEService, getPXEServiceConfig } from '@aztec/pxe/server';
 import { createStore } from "@aztec/kv-store/lmdb"
-import { createAztecNodeClient, waitForPXE } from '@aztec/aztec.js';
+import { createAztecNodeClient, createLogger, waitForPXE } from '@aztec/aztec.js';
 
 const { NODE_URL = 'https://aztec-alpha-testnet-fullnode.zkv.xyz' } = process.env;
 const node = createAztecNodeClient(NODE_URL)
@@ -16,7 +16,20 @@ const store = await createStore('pxe', {
 });
 
 export const setupPXE = async () => {
-    const pxe = await createPXEService(node, fullConfig, true, store);
+    const pxeLogger = createLogger('aztec:pxe');
+    const proverLogger = createLogger('aztec:prover');
+    const storeLogger = createLogger('aztec:store');
+
+    const creationOptions = {
+        loggers: {
+            store: storeLogger,
+            pxe: pxeLogger,
+            prover: proverLogger
+        },
+        store
+    }
+
+    const pxe = await createPXEService(node, fullConfig, creationOptions);
     await waitForPXE(pxe);
     return pxe;
 };

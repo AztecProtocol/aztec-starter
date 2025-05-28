@@ -25,13 +25,13 @@ const store2 = await createStore('pxe2', {
 });
 
 const setupPxe1 = async () => {
-    const pxe = await createPXEService(node, fullConfig, true, store1);
+    const pxe = await createPXEService(node, fullConfig, {store: store1});
     await waitForPXE(pxe);
     return pxe;
 };
 
 const setupPxe2 = async () => {
-    const pxe = await createPXEService(node, fullConfig, true, store2);
+    const pxe = await createPXEService(node, fullConfig, {store: store2});
     await waitForPXE(pxe);
     return pxe;
 };
@@ -105,7 +105,7 @@ async function main() {
         wallet2
     )
 
-    await l2TokenContract.methods.sync_notes().simulate()
+    await l2TokenContract.methods.sync_private_state().simulate()
 
     const notes = await pxe2.getNotes({ txHash: private_mint_tx.txHash });
     console.log(notes)
