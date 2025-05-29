@@ -1,0 +1,49 @@
+on:
+  push:
+    branches:
+      - testnet
+  pull_request:
+    branches:
+      - testnet
+
+jobs:
+  setup-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+          cache: 'yarn' # Optional: cache dependencies for faster builds
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Install Aztec CLI
+        run: |
+          curl -s https://install.aztec.network > tmp.sh
+          bash tmp.sh <<< yes "yes"
+
+      - name: Update path
+        run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
+
+      - name: Set Aztec version and start sandbox
+        run: |
+          VERSION=0.87.4 aztec-up
+          aztec start --sandbox &
+
+      - name: Install project dependencies
+        run: yarn
+
+      - name: Compile, generate code, and run tests
+        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
+
+      - name: Codegen
+        run: script -e -c "aztec codegen target --outdir src/artifacts"
+
+      - name: Run scripts
+        run: script -e -c "yarn deploy && yarn deploy-account && yarn fees && yarn multiple-pxe"
