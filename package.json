@@ -17,6 +17,7 @@
     "deploy-account": "node --loader ts-node/esm scripts/deploy_account.ts",
     "multiple-pxe": "node --loader ts-node/esm scripts/multiple_pxe.ts",
     "get-block": "node --loader ts-node/esm scripts/get_block.ts",
+    "profile": "node --loader ts-node/esm scripts/profile_deploy.ts",
     "test": "yarn test:js && yarn test:nr",
     "test:js": "rm -rf store/pxe && NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
     "test:nr": "aztec test",
