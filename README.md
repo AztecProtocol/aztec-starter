@@ -161,6 +161,12 @@ You may need to update permissions with:
 chmod +x .github/scripts/update_contract.sh
 ```
 
+## Contributor Guide
+
+This repository includes an [AGENTS.md](./AGENTS.md) file with detailed
+instructions for setting up your environment, running tests, and creating
+pull requests. Please read it before contributing changes.
+
 ### 💬 Join the Community:
 
 <p align="left">
