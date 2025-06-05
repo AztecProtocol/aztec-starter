@@ -10,7 +10,7 @@
 
 This repo is meant to be a starting point for writing Aztec contracts and tests on the Aztec sandbox (local development environment).
 
-You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/index.test.ts`.
+You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
 
 The corresponding tutorial can be found in the [Aztec docs here](https://docs.aztec.network/developers/tutorials/codealong/contract_tutorials/private_voting_contract).
 
@@ -121,7 +121,7 @@ Then test with:
 yarn test
 ```
 
-Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
+Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test/e2e`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
 
 Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once the TS tests are complete.
 
@@ -131,8 +131,8 @@ Note: The Typescript tests spawn an instance of the sandbox to test against, and
 
 You can find a handful of scripts in the `./scripts` folder.
 
-- `./scripts/deploy-accounts.ts` is an example of how to deploy a schnorr account.
-- `./scripts/deploy.ts` is an example of how to deploy a contract.
+- `./scripts/deploy_account.ts` is an example of how to deploy a schnorr account.
+- `./scripts/deploy_contract.ts` is an example of how to deploy a contract.
 - `./scripts/fees.ts` is an example of how to pay for a contract deployment using various fee payment methods.
 - `./scripts/multiple_pxe.ts` is an example of how to deploy a contract from one PXE instance and interact with it from another.
 - `./scripts/profile_deploy.ts` shows how to profile a transaction and print the results.
@@ -158,7 +158,7 @@ yarn update
 You may need to update permissions with:
 
 ```bash
-chmod +x update_contract.sh
+chmod +x .github/scripts/update_contract.sh
 ```
 
 ### 💬 Join the Community:

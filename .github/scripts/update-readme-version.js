@@ -1,6 +1,4 @@
 import { readFileSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 // Read Nargo.toml
 const nargoContent = readFileSync('Nargo.toml', 'utf8');
@@ -24,4 +22,4 @@ const updatedContent = readmeContent.replace(
 
 // Write back to README
 writeFileSync(readmePath, updatedContent);
-console.log(`Updated README.md with version ${version}`); 
+console.log(`Updated README.md with version ${version}`);
