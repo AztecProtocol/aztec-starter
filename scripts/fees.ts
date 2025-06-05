@@ -62,9 +62,9 @@ async function main() {
     logger.info(`Fee Juice minted to ${feeJuiceRecipient} on L2.`)
 
     // set up sponsored fee payments
-    const sponseredFPC = await getSponsoredFPCInstance();
-    await pxe.registerContract({ instance: sponseredFPC, artifact: SponsoredFPCContract.artifact });
-    const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
+    const sponsoredFPC = await getSponsoredFPCInstance();
+    await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
     const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({ fee: { paymentMethod } }).deployed();
@@ -120,8 +120,8 @@ async function main() {
     // Sponsored Fee Payment
 
     // This method will only work in environments where there is a sponsored fee contract deployed 
-    const deployedSponseredFPC = await getDeployedSponsoredFPCAddress(pxe);
-    const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponseredFPC);
+    const deployedSponsoredFPC = await getDeployedSponsoredFPCAddress(pxe);
+    const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponsoredFPC);
     await bananaCoin.withWallet(wallet2).methods.transfer_in_private(wallet2.getAddress(), wallet1.getAddress(), 10, 0).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()
     logger.info(`Transfer paid with fees from Sponsored FPC.`)
 }
