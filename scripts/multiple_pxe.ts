@@ -58,10 +58,10 @@ async function main() {
 
     const pxe1 = await setupPxe1();
     const pxe2 = await setupPxe2();
-    const sponseredFPC = await getSponsoredFPCInstance();
-    await pxe1.registerContract({ instance: sponseredFPC, artifact: SponsoredFPCContract.artifact });
-    await pxe2.registerContract({ instance: sponseredFPC, artifact: SponsoredFPCContract.artifact });
-    const paymentMethod = new SponsoredFeePaymentMethod(sponseredFPC.address);
+    const sponsoredFPC = await getSponsoredFPCInstance();
+    await pxe1.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await pxe2.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     // deploy token contract
 
     let secretKey = Fr.random();
@@ -74,7 +74,7 @@ async function main() {
 
     // setup account on 2nd pxe
 
-    pxe2.registerSender(ownerAddress)
+    await pxe2.registerSender(ownerAddress)
 
     let secretKey2 = Fr.random();
     let salt2 = Fr.random();
@@ -83,7 +83,7 @@ async function main() {
     // deploy account on 2nd pxe
     let tx2 = await schnorrAccount2.deploy({ fee: { paymentMethod } }).wait();
     let wallet2 = await schnorrAccount2.getWallet();
-    wallet2.registerSender(ownerAddress)
+    await wallet2.registerSender(ownerAddress)
 
     // mint to account on 2nd pxe
 

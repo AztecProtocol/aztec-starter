@@ -122,7 +122,18 @@ describe("Accounts", () => {
     });
 
     it("Deploys first unfunded account from first funded account", async () => {
-        const tx_acc = await randomAccountManagers[0].deploy({ fee: { paymentMethod: sponsoredPaymentMethod }, deployWallet: ownerWallet }).wait();
+        const receipt = await randomAccountManagers[0]
+            .deploy({ fee: { paymentMethod: sponsoredPaymentMethod }, deployWallet: ownerWallet })
+            .wait();
+
+        expect(receipt).toEqual(
+            expect.objectContaining({
+                status: TxStatus.SUCCESS,
+            }),
+        );
+
+        const deployedWallet = await randomAccountManagers[0].getWallet();
+        expect(deployedWallet.getAddress()).toEqual(randomAccountManagers[0].getAddress());
     });
 
     it("Sponsored contract deployment", async () => {
