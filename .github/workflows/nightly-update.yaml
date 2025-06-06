@@ -53,6 +53,10 @@ jobs:
         if: steps.latest.outputs.latest != steps.current.outputs.current
         run: yarn update
 
+      - name: Clean up temporary files
+        if: steps.latest.outputs.latest != steps.current.outputs.current
+        run: rm -f tmp.sh
+
       - name: Commit changes
         if: steps.latest.outputs.latest != steps.current.outputs.current
         run: |
@@ -65,6 +69,7 @@ jobs:
         if: steps.latest.outputs.latest != steps.current.outputs.current
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: nightly/update-${{ steps.latest.outputs.latest }}
           title: "Update to ${{ steps.latest.outputs.latest }}"
           body: "Automated nightly update to aztec-packages ${{ steps.latest.outputs.latest }}"
