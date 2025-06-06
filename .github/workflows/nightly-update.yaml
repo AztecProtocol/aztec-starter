@@ -69,7 +69,7 @@ jobs:
         if: steps.latest.outputs.latest != steps.current.outputs.current
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ACCESS_TOKEN }}
           branch: nightly/update-${{ steps.latest.outputs.latest }}
           title: "Update to ${{ steps.latest.outputs.latest }}"
           body: "Automated nightly update to aztec-packages ${{ steps.latest.outputs.latest }}"
@@ -82,7 +82,7 @@ jobs:
     steps:
       - uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
             await github.rest.issues.create({
               owner: context.repo.owner,
