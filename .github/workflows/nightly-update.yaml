@@ -45,7 +45,9 @@ jobs:
 
       - name: Set up Aztec for latest version
         if: steps.latest.outputs.latest != steps.current.outputs.current
-        run: aztec-up -v ${{ steps.latest.outputs.latest#v }}
+        run: |
+          tag=${{ steps.latest.outputs.latest }}
+          aztec-up -v ${tag#v}
 
       - name: Run yarn update
         if: steps.latest.outputs.latest != steps.current.outputs.current
