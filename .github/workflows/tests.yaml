@@ -1,3 +1,5 @@
+name: Run Tests and Scripts
+
 on:
   push:
     branches:
