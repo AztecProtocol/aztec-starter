@@ -1,6 +1,7 @@
 name: Nightly Version Update
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * *" # Runs every night at midnight UTC
 
@@ -80,6 +81,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: 'Nightly update failed',
-              body: '@AztecProtocol/devrel The nightly update workflow failed. Please investigate.'
+              body: '@critesjosh The nightly update workflow failed. Please investigate.'
             })
 
