@@ -47,11 +47,17 @@ jobs:
         if: steps.latest.outputs.latest != steps.current.outputs.current
         run: |
           tag=${{ steps.latest.outputs.latest }}
+          echo "TAG=$tag" >> $GITHUB_ENV
           aztec-up -v ${tag#v}
 
       - name: Run yarn update
         if: steps.latest.outputs.latest != steps.current.outputs.current
         run: yarn update
+
+      - name: Update tests workflow version
+        if: steps.latest.outputs.latest != steps.current.outputs.current
+        run: |
+          sed -i "s/VERSION=[0-9.]*/VERSION=${TAG#v}/" .github/workflows/tests.yaml
 
       - name: Clean up temporary files
         if: steps.latest.outputs.latest != steps.current.outputs.current
