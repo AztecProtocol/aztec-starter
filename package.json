@@ -25,12 +25,12 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "0.87.8",
-    "@aztec/aztec.js": "0.87.8",
-    "@aztec/noir-contracts.js": "0.87.8",
-    "@aztec/protocol-contracts": "0.87.8",
-    "@aztec/pxe": "0.87.8",
-    "@aztec/stdlib": "0.87.8"
+    "@aztec/accounts": "0.87.9",
+    "@aztec/aztec.js": "0.87.9",
+    "@aztec/noir-contracts.js": "0.87.9",
+    "@aztec/protocol-contracts": "0.87.9",
+    "@aztec/pxe": "0.87.9",
+    "@aztec/stdlib": "0.87.9"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
