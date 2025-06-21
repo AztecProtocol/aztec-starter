@@ -15,6 +15,7 @@
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
     "deploy": "node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy-account": "node --loader ts-node/esm scripts/deploy_account.ts",
+    "interaction": "node --loader ts-node/esm scripts/interaction_existing.ts",
     "get-block": "node --loader ts-node/esm scripts/get_block.ts",
     "multiple-pxe": "node --loader ts-node/esm scripts/multiple_pxe.ts",
     "test": "yarn test:js && yarn test:nr",
@@ -24,12 +25,12 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "0.87.4",
-    "@aztec/aztec.js": "0.87.4",
-    "@aztec/noir-contracts.js": "0.87.4",
-    "@aztec/protocol-contracts": "0.87.4",
-    "@aztec/pxe": "0.87.4",
-    "@aztec/stdlib": "0.87.4",
+    "@aztec/accounts": "0.87.9",
+    "@aztec/aztec.js": "0.87.9",
+    "@aztec/noir-contracts.js": "0.87.9",
+    "@aztec/protocol-contracts": "0.87.9",
+    "@aztec/pxe": "0.87.9",
+    "@aztec/stdlib": "0.87.9",
     "@types/dotenv": "^8.2.3",
     "@types/node": "^22.5.1",
     "dotenv": "^16.4.7"
