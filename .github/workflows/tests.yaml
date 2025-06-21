@@ -54,5 +54,81 @@ jobs:
       - name: Run tests
         run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
 
-      - name: Run scripts
-        run: script -e -c "yarn deploy && yarn deploy-account && yarn fees && yarn multiple-pxe && yarn profile"
+      - name: Deploy account and capture SECRET/SALT
+        run: |
+          # Create a temporary file to store the output
+          TEMP_OUTPUT=$(mktemp)
+          
+          # Run deploy-account script and capture both stdout and stderr
+          if script -e -c "yarn deploy-account" > "$TEMP_OUTPUT" 2>&1; then
+            echo "✅ Deploy account script completed successfully"
+          else
+            echo "❌ Deploy account script failed"
+            cat "$TEMP_OUTPUT"
+            rm "$TEMP_OUTPUT"
+            exit 1
+          fi
+          
+          # Show the full output for debugging
+          cat "$TEMP_OUTPUT"
+          
+          # Extract SECRET and SALT from the output
+          SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
+          SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
+          
+          # Clean up temp file
+          rm "$TEMP_OUTPUT"
+          
+          # Validate and create .env file
+          if [ -n "$SECRET_KEY" ] && [ -n "$SALT_VALUE" ]; then
+            
+            # Create .env file with all necessary values
+            echo "SECRET=\"$SECRET_KEY\"" >> .env
+            echo "SALT=\"$SALT_VALUE\"" >> .env
+            echo "📋 Current .env file contents:"
+            cat .env
+          else
+            echo "❌ Failed to extract SECRET and/or SALT from deploy output"
+            echo "🔍 SECRET_KEY: '$SECRET_KEY'"
+            echo "🔍 SALT_VALUE: '$SALT_VALUE'"
+            exit 1
+          fi
+
+      - name: Deploy contract and capture address
+        run: |
+          # Create a temporary file to store the output
+          TEMP_OUTPUT=$(mktemp)
+          
+          # Run deploy script and capture both stdout and stderr
+          if script -e -c "yarn deploy" > "$TEMP_OUTPUT" 2>&1; then
+          else
+            cat "$TEMP_OUTPUT"
+            rm "$TEMP_OUTPUT"
+            exit 1
+          fi
+          
+          # Show the full output for debugging
+          cat "$TEMP_OUTPUT"
+          
+          # Try multiple extraction patterns in order of preference
+          VOTING_CONTRACT_ADDRESS=""
+          
+          # Look for "Contract address:" pattern
+          if [ -z "$VOTING_CONTRACT_ADDRESS" ]; then
+            VOTING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
+          fi
+          
+          # Clean up temp file
+          rm "$TEMP_OUTPUT"
+          
+          # Validate and save the address
+          if [ -n "$VOTING_CONTRACT_ADDRESS" ]; then
+            echo "VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"" >> .env
+          fi
+
+      - name: Run other scripts
+        run: |
+          script -e -c "yarn fees"
+          script -e -c "yarn multiple-pxe"
+          script -e -c "yarn profile"
+          script -e -c "yarn interaction"
