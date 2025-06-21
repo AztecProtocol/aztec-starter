@@ -101,6 +101,7 @@ jobs:
           
           # Run deploy script and capture both stdout and stderr
           if script -e -c "yarn deploy" > "$TEMP_OUTPUT" 2>&1; then
+            echo "✅ Deploy script completed successfully"
           else
             cat "$TEMP_OUTPUT"
             rm "$TEMP_OUTPUT"
