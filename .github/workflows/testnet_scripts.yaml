@@ -23,7 +23,7 @@ jobs:
           cache: 'yarn' # Optional: cache dependencies for faster builds
 
       - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Install Aztec CLI
         run: |
