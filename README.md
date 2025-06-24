@@ -60,7 +60,6 @@ aztec start --sandbox
 
 ## 📦 **Install Packages**
 
-
 ```bash
 yarn install
 ```
@@ -136,6 +135,15 @@ You can find a handful of scripts in the `./scripts` folder.
 - `./scripts/fees.ts` is an example of how to pay for a contract deployment using various fee payment methods.
 - `./scripts/multiple_pxe.ts` is an example of how to deploy a contract from one PXE instance and interact with it from another.
 - `./scripts/profile_deploy.ts` shows how to profile a transaction and print the results.
+- `./scripts/interaction_existing_contract.ts` demonstrates how to interact with an already deployed voting contract, including casting votes and checking vote counts.
+
+### Utility Functions
+
+The `./src/utils/` folder contains utility functions:
+
+- `./src/utils/create_account_from_env.ts` provides functions to create Schnorr accounts from environment variables (SECRET and SALT), useful for account management across different environments.
+- `./src/utils/setup_pxe.ts` provides a function to set up and configure the Private Execution Environment (PXE) service with proper configuration for local development.
+- `./src/utils/deploy_account.ts` provides a function to deploy Schnorr accounts to the network with sponsored fee payment, including key generation and deployment verification.
 
 ## ❗ **Error Resolution**
 
