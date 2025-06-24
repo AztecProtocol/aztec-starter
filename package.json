@@ -15,7 +15,7 @@
     "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
     "deploy": "node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy-account": "node --loader ts-node/esm scripts/deploy_account.ts",
-    "interaction": "node --loader ts-node/esm scripts/interaction_existing.ts",
+    "interaction": "node --loader ts-node/esm scripts/interaction_existing_contract.ts",
     "multiple-pxe": "node --loader ts-node/esm scripts/multiple_pxe.ts",
     "get-block": "node --loader ts-node/esm scripts/get_block.ts",
     "profile": "node --loader ts-node/esm scripts/profile_deploy.ts",
