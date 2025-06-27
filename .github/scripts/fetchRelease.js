@@ -7,7 +7,7 @@ async function main() {
     const res = await fetch('https://api.github.com/repos/AztecProtocol/aztec-packages/releases', fetchOpts);
     const data = await res.json();
 
-    const release = data.find(r => !r.draft && !/nightly/i.test(r.tag_name));
+    const release = data.find(r => !r.draft && !/nightly/i.test(r.tag_name) && !/staging/i.test(r.tag_name));
     if (!release) {
         console.error('No suitable release found');
         process.exit(1);
