@@ -19,7 +19,7 @@ async function main() {
 
     let accountManager = await deploySchnorrAccount(pxe);
     const wallet = await accountManager.getWallet();
-    const address = accountManager.getAddress();
+    const address = await accountManager.getAddress();
 
     const profileTx = await EasyPrivateVotingContract.deploy(wallet, address).profile({ profileMode: "full"});
     console.dir(profileTx, { depth: 2 });
