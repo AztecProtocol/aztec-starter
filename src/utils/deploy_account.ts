@@ -25,7 +25,7 @@ export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
     logger.info('🔐 Generating account keys...');
     let secretKey = Fr.random();
     let salt = Fr.random();
-    logger.info(`Save the follwing SECRET and SALT in .env for future use.`);
+    logger.info(`Save the following SECRET and SALT in .env for future use.`);
     logger.info(`🔑 Secret key generated: ${secretKey.toString()}`);
     logger.info(`🧂 Salt generated: ${salt.toString()}`);
 
