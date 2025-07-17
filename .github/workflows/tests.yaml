@@ -131,10 +131,6 @@ jobs:
       - name: Run other scripts
         run: |
           script -e -c "yarn fees"
-          script -e -c "yarn clear-store"
           script -e -c "yarn multiple-pxe"
-          script -e -c "yarn clear-store"
           script -e -c "yarn profile"
-          script -e -c "yarn clear-store"
-          script -e -c "yarn interaction"
-          script -e -c "yarn clear-store"
+          script -e -c "yarn interaction-existing-contract"
