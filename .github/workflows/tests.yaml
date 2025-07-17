@@ -20,8 +20,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'yarn' # Optional: cache dependencies for faster builds
+          node-version: "22"
+          cache: "yarn" # Optional: cache dependencies for faster builds
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
@@ -36,7 +36,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=0.87.9 aztec-up
+          VERSION=1.1.0 aztec-up
           aztec start --sandbox &
 
       - name: Install project dependencies
@@ -56,9 +56,10 @@ jobs:
 
       - name: Deploy account and capture SECRET/SALT
         run: |
+          script -e -c "yarn clear-store"
           # Create a temporary file to store the output
           TEMP_OUTPUT=$(mktemp)
-          
+
           # Run deploy-account script and capture both stdout and stderr
           if script -e -c "yarn deploy-account" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy account script completed successfully"
@@ -68,17 +69,17 @@ jobs:
             rm "$TEMP_OUTPUT"
             exit 1
           fi
-          
+
           # Show the full output for debugging
           cat "$TEMP_OUTPUT"
-          
+
           # Extract SECRET and SALT from the output
           SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
           SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
-          
+
           # Clean up temp file
           rm "$TEMP_OUTPUT"
-          
+
           # Validate and create .env file
           if [ -n "$SECRET_KEY" ] && [ -n "$SALT_VALUE" ]; then
             
@@ -98,7 +99,7 @@ jobs:
         run: |
           # Create a temporary file to store the output
           TEMP_OUTPUT=$(mktemp)
-          
+
           # Run deploy script and capture both stdout and stderr
           if script -e -c "yarn deploy" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy script completed successfully"
@@ -107,21 +108,21 @@ jobs:
             rm "$TEMP_OUTPUT"
             exit 1
           fi
-          
+
           # Show the full output for debugging
           cat "$TEMP_OUTPUT"
-          
+
           # Try multiple extraction patterns in order of preference
           VOTING_CONTRACT_ADDRESS=""
-          
+
           # Look for "Contract address:" pattern
           if [ -z "$VOTING_CONTRACT_ADDRESS" ]; then
             VOTING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
           fi
-          
+
           # Clean up temp file
           rm "$TEMP_OUTPUT"
-          
+
           # Validate and save the address
           if [ -n "$VOTING_CONTRACT_ADDRESS" ]; then
             echo "VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"" >> .env
@@ -132,4 +133,4 @@ jobs:
           script -e -c "yarn fees"
           script -e -c "yarn multiple-pxe"
           script -e -c "yarn profile"
-          script -e -c "yarn interaction"
+          script -e -c "yarn interaction-existing-contract"
