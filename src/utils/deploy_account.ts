@@ -4,6 +4,7 @@ import { deriveSigningKey } from '@aztec/stdlib/keys';
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { getAccountFromEnv } from "./create_account_from_env.js";
 
 export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
     let logger: Logger;
@@ -31,7 +32,13 @@ export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
 
     // Create Schnorr account
     logger.info('🏗️  Creating Schnorr account instance...');
+    
+    // deploy a new, random account
     let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
+    
+    // deploy an account using the SECRET and SALT in .env
+    // let schnorrAccount = await getAccountFromEnv(pxe);
+    
     const accountAddress = schnorrAccount.getAddress();
     logger.info(`📍 Account address will be: ${accountAddress}`);
 
@@ -39,7 +46,7 @@ export async function deploySchnorrAccount(pxe: PXE): Promise<AccountManager> {
     logger.info('🚀 Deploying account to the network...');
     logger.info('⏳ Waiting for account deployment transaction to be mined...');
     let tx = await schnorrAccount.deploy({ 
-        fee: { paymentMethod: sponsoredPaymentMethod } 
+        fee: { paymentMethod: sponsoredPaymentMethod }
     }).wait({ timeout: 120000 });
     
     logger.info(`✅ Account deployment transaction successful!`);
