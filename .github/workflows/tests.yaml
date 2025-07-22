@@ -28,7 +28,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=0.84.0-alpha-testnet.1 aztec-up
+          VERSION=1.1.3 aztec-up
           aztec start --sandbox --no-pxe &
 
       - name: Install project dependencies

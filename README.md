@@ -41,7 +41,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 0.87.9
+aztec-up 1.1.3
 ```
 
 ---
@@ -87,10 +87,11 @@ You don't want to run tests against testnet. This will take a long time. Run tes
 
 You can find a handful of scripts in the `./scripts` folder.
 
-- `./scripts/deploy-accounts.ts` is an example of how to deploy a schnorr account.
-- `./scripts/deploy.ts` is an example of how to deploy a contract.
+- `./scripts/deploy-account.ts` is an example of how to deploy a schnorr account.
+- `./scripts/deploy_contract.ts` is an example of how to deploy a contract.
 - `./scripts/fees.ts` is an example of how to pay for a contract deployment using various fee payment methods.
 - `./scripts/multiple_pxe.ts` is an example of how to deploy a contract from one PXE instance and interact with it from another.
+- `./scripts/interaction_existing.ts` is an example of how to interact with a contrac that is already deployed to the network.
 
 ---
 
