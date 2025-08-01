@@ -112,10 +112,20 @@ if ! command -v aztec &> /dev/null; then
     /usr/local/share/install-aztec.sh
 fi
 
-# Don't auto-start sandbox, just make it available
-echo "Aztec setup complete!"
-echo "The 'aztec' command is now available in your PATH."
-echo "You can now run 'aztec start --sandbox' to start the sandbox."
+# Start the sandbox automatically if enabled
+if [ "${AUTO_START}" = "true" ]; then
+    echo "Starting Aztec Sandbox in background..."
+    mkdir -p /workspaces/.aztec
+    nohup aztec start --sandbox > /workspaces/.aztec/aztec-sandbox.log 2>&1 &
+    echo $! > /workspaces/.aztec/aztec-sandbox.pid
+    echo "Aztec Sandbox started in background!"
+    echo "Logs: /workspaces/.aztec/aztec-sandbox.log"
+    echo "PID: \$(cat /workspaces/.aztec/aztec-sandbox.pid)"
+else
+    echo "Aztec setup complete!"
+    echo "The 'aztec' command is now available in your PATH."
+    echo "Run 'aztec start --sandbox' to start the sandbox manually."
+fi
 EOF
 
 chmod +x /usr/local/share/aztec-sandbox-start.sh
