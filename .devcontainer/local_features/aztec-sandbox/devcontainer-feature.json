@@ -1,0 +1,22 @@
+{
+	"name": "Aztec Sandbox",
+	"id": "aztec-sandbox",
+	"version": "1.0.0",
+	"description": "A feature to install and run Aztec Sandbox with test accounts",
+	"options": {
+		"autoStart": {
+			"type": "boolean",
+			"default": true,
+			"description": "Automatically start the sandbox on container creation"
+		},
+		"importTestAccounts": {
+			"type": "boolean",
+			"default": true,
+			"description": "Import test accounts using aztec-wallet"
+		}
+	},
+	"dependsOn": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	},
+	"postCreateCommand": "/usr/local/share/aztec-sandbox-start.sh"
+}
