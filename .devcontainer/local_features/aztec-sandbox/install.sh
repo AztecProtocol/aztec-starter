@@ -106,18 +106,23 @@ for i in {1..30}; do
     sleep 2
 done
 
+# Add Aztec to PATH for this session
+export PATH="/workspaces/.aztec/bin:\$PATH"
+
 # Install Aztec tools if not already installed
 if ! command -v aztec &> /dev/null; then
     echo "Aztec tools not found. Installing..."
     /usr/local/share/install-aztec.sh
+    # Re-export PATH after installation
+    export PATH="/workspaces/.aztec/bin:\$PATH"
 fi
 
 # Start the sandbox automatically if enabled
 if [ "${AUTO_START}" = "true" ]; then
     echo "Starting Aztec Sandbox in background..."
     mkdir -p /workspaces/.aztec
-    nohup aztec start --sandbox > /workspaces/.aztec/aztec-sandbox.log 2>&1 &
-    echo $! > /workspaces/.aztec/aztec-sandbox.pid
+    nohup /workspaces/.aztec/bin/aztec start --sandbox > /workspaces/.aztec/aztec-sandbox.log 2>&1 &
+    echo \$! > /workspaces/.aztec/aztec-sandbox.pid
     echo "Aztec Sandbox started in background!"
     echo "Logs: /workspaces/.aztec/aztec-sandbox.log"
     echo "PID: \$(cat /workspaces/.aztec/aztec-sandbox.pid)"
