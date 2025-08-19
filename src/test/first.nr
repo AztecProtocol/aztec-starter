@@ -11,7 +11,7 @@ unconstrained fn test_initializer() {
     let block_number = get_block_number();
     let admin_slot = EasyPrivateVoting::storage_layout().admin.slot;
     let admin_storage_value = storage_read(voting_contract_address, admin_slot, block_number);
-    assert(admin_storage_value == admin, "Admin should be correctly stored");
+    assert(admin_storage_value == admin, "Vote ended should be false");
 }
 
 #[test]
