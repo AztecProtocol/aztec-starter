@@ -46,7 +46,7 @@ async function main() {
     let salt = Fr.random();
     let account2 = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
     const wallet2 = await account2.getWallet();
-    const feeJuiceRecipient = account2.getAddress();
+    const feeJuiceRecipient = await account2.getAddress();
 
     // Setup and bridge fee asset to L2 to get fee juice
 
@@ -74,12 +74,12 @@ async function main() {
 
     const claimAndPay = new FeeJuicePaymentMethodWithClaim(wallet2, claim)
     await account2.deploy({ fee: { paymentMethod: claimAndPay } }).wait()
-    logger.info(`New account at ${account2.getAddress()} deployed using claimed funds for fees.`)
+    logger.info(`New account at ${await account2.getAddress()} deployed using claimed funds for fees.`)
 
     // Pay fees yourself
 
     // Create a new voting contract instance, interacting from the newWallet
-    const useFeeJuice = new FeeJuicePaymentMethod(account2.getAddress())
+    const useFeeJuice = new FeeJuicePaymentMethod(await account2.getAddress())
     await votingContract.withWallet(wallet2).methods.cast_vote(wallet1.getAddress()).send({ fee: { paymentMethod: useFeeJuice } }).wait()
     logger.info(`Vote cast from new account, paying fees via newWallet.`)
 
