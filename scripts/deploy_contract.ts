@@ -1,6 +1,5 @@
 import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
 import { createLogger, PXE, Logger, SponsoredFeePaymentMethod, Fr } from "@aztec/aztec.js";
-import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
