@@ -10,8 +10,8 @@ unconstrained fn test_initializer() {
 
     let block_number = get_block_number();
     let admin_slot = EasyPrivateVoting::storage_layout().admin.slot;
-    let admin_storage_value = storage_read(voting_contract_address, admin_slot, block_number);
-    assert(admin_storage_value == admin, "Admin should be correctly stored");
+    let admin_storage_value: Field = storage_read(voting_contract_address, admin_slot, block_number);
+    assert(admin_storage_value == admin.into(), "Admin should be correctly stored");
 }
 
 #[test]
@@ -22,7 +22,7 @@ unconstrained fn test_check_vote_status() {
 
     let block_number = get_block_number();
     let status_slot = EasyPrivateVoting::storage_layout().vote_ended.slot;
-    let vote_ended_read: bool = storage_read(voting_contract_address, status_slot, block_number);
+    let vote_ended_read: bool = storage_read(voting_contract_address, status_slot, block_number).try_into().unwrap();
     assert(vote_ended_expected == vote_ended_read, "Vote ended should be false");
 }
 
@@ -37,7 +37,7 @@ unconstrained fn test_end_vote() {
 
     let block_number = get_block_number();
     let status_slot = EasyPrivateVoting::storage_layout().vote_ended.slot;
-    let vote_ended_read: bool = storage_read(voting_contract_address, status_slot, block_number);
+    let vote_ended_read: bool = storage_read(voting_contract_address, status_slot, block_number).try_into().unwrap();
     assert(vote_ended_expected == vote_ended_read, "Vote ended should be true");
 }
 
@@ -63,8 +63,8 @@ unconstrained fn test_cast_vote() {
     // Read vote count from storage
     let block_number = get_block_number();
     let tally_slot = EasyPrivateVoting::storage_layout().tally.slot;
-    let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate);
-    let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number);
+    let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate.into());
+    let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number).try_into().unwrap();
 
     assert(vote_count == 1, "vote tally should be incremented");
 }
@@ -88,8 +88,8 @@ unconstrained fn test_cast_vote_with_separate_accounts() {
     // Read vote count from storage
     let block_number = get_block_number();
     let tally_slot = EasyPrivateVoting::storage_layout().tally.slot;
-    let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate);
-    let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number);
+    let candidate_tally_slot = derive_storage_slot_in_map(tally_slot, candidate.into());
+    let vote_count: u32 = storage_read(voting_contract_address, candidate_tally_slot, block_number).try_into().unwrap();
 
     assert(vote_count == 2, "vote tally should be 2");
 }
