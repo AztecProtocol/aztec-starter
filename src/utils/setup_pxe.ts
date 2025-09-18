@@ -10,13 +10,23 @@ const config = getPXEServiceConfig()
 const fullConfig = { ...config, l1Contracts }
 fullConfig.proverEnabled = false;
 
-const store = await createStore('pxe', {
-    dataDirectory: 'store',
-    dataStoreMapSizeKB: 1e6,
-});
+const storeCache = new Map<string, Awaited<ReturnType<typeof createStore>>>();
 
-export const setupPXE = async () => {
-    const pxe = await createPXEService(node, fullConfig, {store});
+async function getStore(label: string) {
+    let store = storeCache.get(label);
+    if (!store) {
+        store = await createStore(label, {
+            dataDirectory: 'store',
+            dataStoreMapSizeKB: 1e6,
+        });
+        storeCache.set(label, store);
+    }
+    return store;
+}
+
+export const setupPXE = async (storeLabel = 'pxe') => {
+    const store = await getStore(storeLabel);
+    const pxe = await createPXEService(node, fullConfig, { store });
     await waitForPXE(pxe);
     return pxe;
 };

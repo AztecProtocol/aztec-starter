@@ -1,8 +1,8 @@
 import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../../artifacts/EasyPrivateVoting.js"
-import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromDeployParams, Logger } from "@aztec/aztec.js";
+import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger } from "@aztec/aztec.js";
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
 
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
@@ -30,19 +30,28 @@ describe("Accounts", () => {
     let skipSandbox: boolean;
 
     beforeAll(async () => {
+        logger = createLogger('aztec:aztec-starter:accounts');
+        logger.info("Aztec-Starter tests running.")
+
         skipSandbox = process.env.SKIP_SANDBOX === 'true';
+        const aztecBinary = process.env.AZTEC_BIN ?? 'aztec';
         if (!skipSandbox) {
-            sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
+            const { error } = spawnSync(aztecBinary, ['--version'], { stdio: 'ignore' });
+            if (error) {
+                logger.warn(`Skipping sandbox startup because ${aztecBinary} is not available: ${error.message}`);
+                skipSandbox = true;
+            }
+        }
+
+        if (!skipSandbox) {
+            sandboxInstance = spawn(aztecBinary, ["start", "--sandbox"], {
                 detached: true,
                 stdio: 'ignore'
             })
             await sleep(15000);
         }
 
-        logger = createLogger('aztec:aztec-starter:accounts');
-        logger.info("Aztec-Starter tests running.")
-
-        pxe = await setupPXE();
+        pxe = await setupPXE('accounts');
 
         const sponsoredFPC = await getSponsoredFPCInstance();
         await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
@@ -96,7 +105,7 @@ describe("Accounts", () => {
 
 
         // bridge funds to unfunded random addresses
-        const claimAmount = 1000000000000000000n;
+        const claimAmount = await l1PortalManager.getTokenManager().getMintAmount();
         const approxMaxDeployCost = 10n ** 10n; // Need to manually update this if fees increase significantly
         let claims: L2AmountClaim[] = [];
         // bridge sequentially to avoid l1 txs (nonces) being processed out of order
@@ -105,8 +114,14 @@ describe("Accounts", () => {
         }
 
         // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
-        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed(); // deploy contract with first funded wallet
-        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).deployed(); // deploy contract with first funded wallet
+        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
+            from: ownerWallet.getAddress(),
+            fee: { paymentMethod: sponsoredPaymentMethod }
+        }).deployed(); // deploy contract with first funded wallet
+        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
+            from: ownerWallet.getAddress(),
+            fee: { paymentMethod: sponsoredPaymentMethod }
+        }).deployed(); // deploy contract with first funded wallet
 
         // claim and pay to deploy random accounts
         let sentTxs = [];
@@ -149,7 +164,7 @@ describe("Accounts", () => {
         const [deployerWallet, adminWallet] = daWallets;
         const [deployerAddress, adminAddress] = daWallets.map(w => w.getAddress());
 
-        const deploymentData = await getContractInstanceFromDeployParams(VotingContractArtifact,
+        const deploymentData = await getContractInstanceFromInstantiationParams(VotingContractArtifact,
             {
                 constructorArgs: [adminAddress],
                 salt,
@@ -157,6 +172,7 @@ describe("Accounts", () => {
             });
         const deployer = new ContractDeployer(VotingContractArtifact, deployerWallet);
         const tx = deployer.deploy(adminAddress).send({
+            from: deployerAddress,
             contractAddressSalt: salt,
             fee: { paymentMethod: sponsoredPaymentMethod } // without the sponsoredFPC the deployment fails, thus confirming it works
         })

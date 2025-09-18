@@ -67,8 +67,14 @@ async function main() {
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({ fee: { paymentMethod } }).deployed();
-    const bananaCoin = await TokenContract.deploy(wallet1, wallet1.getAddress(), "bananaCoin", "BNC", 18).send({ fee: { paymentMethod } }).deployed()
+    const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({
+        from: wallet1.getAddress(),
+        fee: { paymentMethod }
+    }).deployed();
+    const bananaCoin = await TokenContract.deploy(wallet1, wallet1.getAddress(), "bananaCoin", "BNC", 18).send({
+        from: wallet1.getAddress(),
+        fee: { paymentMethod }
+    }).deployed()
 
     // Claim Fee Juice & Pay Fees yourself
 
@@ -80,7 +86,10 @@ async function main() {
 
     // Create a new voting contract instance, interacting from the newWallet
     const useFeeJuice = new FeeJuicePaymentMethod(account2.getAddress())
-    await votingContract.withWallet(wallet2).methods.cast_vote(wallet1.getAddress()).send({ fee: { paymentMethod: useFeeJuice } }).wait()
+    await votingContract.withWallet(wallet2).methods.cast_vote(wallet1.getAddress()).send({
+        from: wallet2.getAddress(),
+        fee: { paymentMethod: useFeeJuice }
+    }).wait()
     logger.info(`Vote cast from new account, paying fees via newWallet.`)
 
     // Private Fee Payments via FPC
@@ -89,14 +98,25 @@ async function main() {
     // Need to deploy an FPC to use Private Fee payment methods
 
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
-    const fpc = await FPCContract.deploy(wallet1, bananaCoin.address, wallet1.getAddress()).send({ fee: { paymentMethod } }).deployed()
+    const fpc = await FPCContract.deploy(wallet1, bananaCoin.address, wallet1.getAddress()).send({
+        from: wallet1.getAddress(),
+        fee: { paymentMethod }
+    }).deployed()
     const fpcClaim = await feeJuicePortalManager.bridgeTokensPublic(fpc.address, FEE_FUNDING_FOR_TESTER_ACCOUNT, true);
     // 2 public txs to make the bridged fee juice available
     // Mint some bananaCoin and send to the newWallet to pay fees privately
-    await bananaCoin.methods.mint_to_private(wallet1.getAddress(), wallet2.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send({ fee: { paymentMethod } }).wait()
+    await bananaCoin.methods.mint_to_private(wallet1.getAddress(), wallet2.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
+        from: wallet1.getAddress(),
+        fee: { paymentMethod }
+    }).wait()
     // mint some public bananaCoin to the newWallet to pay fees publicly
-    await bananaCoin.methods.mint_to_public(wallet2.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send({ fee: { paymentMethod } }).wait()
-    const bananaBalance = await bananaCoin.withWallet(wallet2).methods.balance_of_private(wallet2.getAddress()).simulate()
+    await bananaCoin.methods.mint_to_public(wallet2.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
+        from: wallet1.getAddress(),
+        fee: { paymentMethod }
+    }).wait()
+    const bananaBalance = await bananaCoin.withWallet(wallet2).methods.balance_of_private(wallet2.getAddress()).simulate({
+        from: wallet2.getAddress()
+    })
 
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
@@ -104,17 +124,25 @@ async function main() {
     const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet2)
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send().wait()
 
-    logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate()}`)
+    logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate({
+        from: wallet2.getAddress()
+    })}`)
 
     const privateFee = new PrivateFeePaymentMethod(fpc.address, wallet2)
-    await bananaCoin.withWallet(wallet2).methods.transfer_in_private(wallet2.getAddress(), wallet1.getAddress(), 10, 0).send({ fee: { paymentMethod: privateFee } }).wait()
+    await bananaCoin.withWallet(wallet2).methods.transfer_in_private(wallet2.getAddress(), wallet1.getAddress(), 10, 0).send({
+        from: wallet2.getAddress(),
+        fee: { paymentMethod: privateFee }
+    }).wait()
 
     logger.info(`Transfer paid with fees via the FPC, privately.`)
 
     // Public Fee Payments via FPC
 
     const publicFee = new PublicFeePaymentMethod(fpc.address, wallet2)
-    await bananaCoin.withWallet(wallet2).methods.transfer_in_private(wallet2.getAddress(), wallet1.getAddress(), 10, 0).send({ fee: { paymentMethod: publicFee } }).wait()
+    await bananaCoin.withWallet(wallet2).methods.transfer_in_private(wallet2.getAddress(), wallet1.getAddress(), 10, 0).send({
+        from: wallet2.getAddress(),
+        fee: { paymentMethod: publicFee }
+    }).wait()
     logger.info(`Transfer paid with fees via the FPC, publicly.`)
 
     // Sponsored Fee Payment
@@ -122,7 +150,10 @@ async function main() {
     // This method will only work in environments where there is a sponsored fee contract deployed 
     const deployedSponsoredFPC = await getDeployedSponsoredFPCAddress(pxe);
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(deployedSponsoredFPC);
-    await bananaCoin.withWallet(wallet2).methods.transfer_in_private(wallet2.getAddress(), wallet1.getAddress(), 10, 0).send({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()
+    await bananaCoin.withWallet(wallet2).methods.transfer_in_private(wallet2.getAddress(), wallet1.getAddress(), 10, 0).send({
+        from: wallet2.getAddress(),
+        fee: { paymentMethod: sponsoredPaymentMethod }
+    }).wait()
     logger.info(`Transfer paid with fees from Sponsored FPC.`)
 }
 
@@ -137,4 +168,3 @@ function getL1WalletClient(rpcUrl: string, index: number) {
         transport: http(rpcUrl),
     });
 }
-
