@@ -43,7 +43,7 @@ jobs:
         run: yarn
 
       - name: Compile, generate code, and run tests
-        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile &&"
+        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
 
       - name: Codegen
         run: script -e -c "aztec codegen target --outdir src/artifacts && aztec-postprocess-contract"
