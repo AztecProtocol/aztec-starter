@@ -17,23 +17,12 @@ describe("Voting", () => {
     let pxe: PXE;
     let firstWallet: AccountWallet;
     let logger: Logger;
-    let sandboxInstance;
     let sponsoredFPC: ContractInstanceWithAddress;
     let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
 
     let l1PortalManager: L1FeeJuicePortalManager;
-    let skipSandbox: boolean;
 
     beforeAll(async () => {
-        skipSandbox = process.env.SKIP_SANDBOX === 'true';
-        if (!skipSandbox) {
-            sandboxInstance = spawn("aztec", ["start", "--sandbox"], {
-                detached: true,
-                stdio: 'ignore'
-            })
-            await sleep(15000);
-        }
-
         logger = createLogger('aztec:aztec-starter:voting');
         logger.info("Aztec-Starter tests running.")
 
@@ -69,12 +58,6 @@ describe("Voting", () => {
                 .map(sender => pxe.removeSender(sender))
         );
         await firstWallet.registerSender(firstWallet.getAddress());
-    })
-
-    afterAll(async () => {
-        if (!skipSandbox) {
-            sandboxInstance!.kill('SIGINT');
-        }
     })
 
     it("Deploys the contract", async () => {
