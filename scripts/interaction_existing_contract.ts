@@ -1,5 +1,5 @@
 import { createLogger, Logger, SponsoredFeePaymentMethod, Fr, AztecAddress } from "@aztec/aztec.js";
-import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js";
+import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
@@ -29,7 +29,7 @@ async function main() {
     }
 
     logger.info(`Connecting to voting contract at: ${contractAddress}`);
-    const votingContract = await EasyPrivateVotingContract.at(
+    const votingContract = await PrivateVotingContract.at(
         AztecAddress.fromString(contractAddress),
         wallet
     );
@@ -39,19 +39,26 @@ async function main() {
 
     // First get_vote call - check initial vote count
     logger.info("Getting initial vote count...");
-    const initialVoteCount = await votingContract.methods.get_vote(candidate).simulate();
+    const initialVoteCount = await votingContract.methods.get_vote(candidate).simulate({
+        from: wallet.getAddress()
+    });
     logger.info(`Initial vote count for candidate ${candidate}: ${initialVoteCount}`);
 
     // Cast a vote
     logger.info("Casting vote...");
     await votingContract.methods.cast_vote(candidate)
-        .send({ fee: { paymentMethod: sponsoredPaymentMethod } })
+        .send({
+            from: wallet.getAddress(),
+            fee: { paymentMethod: sponsoredPaymentMethod }
+        })
         .wait({ timeout: 120000 });
     logger.info("Vote cast successfully!");
 
     // Second get_vote call - check updated vote count
     logger.info("Getting updated vote count...");
-    const updatedVoteCount = await votingContract.methods.get_vote(candidate).simulate();
+    const updatedVoteCount = await votingContract.methods.get_vote(candidate).simulate({
+        from: wallet.getAddress()
+    });
     logger.info(`Updated vote count for candidate ${candidate}: ${updatedVoteCount}`);
 
     logger.info(`Vote count increased from ${initialVoteCount} to ${updatedVoteCount}`);

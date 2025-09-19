@@ -12,7 +12,7 @@
     "clean": "rm -rf ./src/artifacts ./target",
     "clear-store": "rm -rf ./store",
     "codegen": "aztec codegen target --outdir src/artifacts",
-    "compile": "${AZTEC_NARGO:-aztec-nargo} compile",
+    "compile": "${AZTEC_NARGO:-aztec-nargo} compile && aztec-postprocess-contract",
     "deploy": "node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy-account": "node --loader ts-node/esm scripts/deploy_account.ts",
     "interaction-existing-contract": "node --loader ts-node/esm scripts/interaction_existing_contract.ts",
@@ -26,12 +26,12 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "1.2.0",
-    "@aztec/aztec.js": "1.2.0",
-    "@aztec/noir-contracts.js": "1.2.0",
-    "@aztec/protocol-contracts": "1.2.0",
-    "@aztec/pxe": "1.2.0",
-    "@aztec/stdlib": "1.2.0"
+    "@aztec/accounts": "2.0.2",
+    "@aztec/aztec.js": "2.0.2",
+    "@aztec/noir-contracts.js": "2.0.2",
+    "@aztec/protocol-contracts": "2.0.2",
+    "@aztec/pxe": "2.0.2",
+    "@aztec/stdlib": "2.0.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

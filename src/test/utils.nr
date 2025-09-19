@@ -1,18 +1,17 @@
-use dep::aztec::{prelude::AztecAddress, test::helpers::test_environment::TestEnvironment};
+use dep::aztec::{
+    protocol_types::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
+};
 
-use crate::EasyPrivateVoting;
+use crate::PrivateVoting;
 
-pub unconstrained fn setup() -> (&mut TestEnvironment, AztecAddress, AztecAddress) {
+pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
     let mut env = TestEnvironment::new();
 
-    let admin = env.create_account(1);
+    let admin = env.create_light_account();
 
-    let initializer_call_interface = EasyPrivateVoting::interface().constructor(admin);
-    let voting_contract = env.deploy_self("EasyPrivateVoting").with_public_void_initializer(
-        admin,
-        initializer_call_interface,
-    );
+    let initializer_call_interface = PrivateVoting::interface().constructor(admin);
+    let voting_contract_address =
+        env.deploy("PrivateVoting").with_public_initializer(admin, initializer_call_interface);
 
-    env.advance_block_by(1);
-    (&mut env, voting_contract.to_address(), admin)
+    (env, voting_contract_address, admin)
 }

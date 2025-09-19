@@ -1,4 +1,4 @@
-import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
+import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
 import { createLogger, PXE, Logger, SponsoredFeePaymentMethod, Fr } from "@aztec/aztec.js";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { setupPXE } from "../src/utils/setup_pxe.js";
@@ -23,7 +23,7 @@ async function main() {
     logger.info('💰 Setting up sponsored fee payment contract...');
     const sponsoredFPC = await getSponsoredFPCInstance();
     logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
-    
+
     logger.info('📝 Registering sponsored FPC contract with PXE...');
     await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
@@ -39,30 +39,33 @@ async function main() {
     // Deploy voting contract
     logger.info('🗳️  Starting voting contract deployment...');
     logger.info(`📋 Admin address for voting contract: ${address}`);
-    
-    const deployTx = EasyPrivateVotingContract.deploy(wallet, address).send({ 
-        fee: { paymentMethod: sponsoredPaymentMethod } 
+
+    const deployTx = PrivateVotingContract.deploy(wallet, address).send({
+        from: wallet.getAddress(),
+        fee: { paymentMethod: sponsoredPaymentMethod }
     });
-    
+
     logger.info('⏳ Waiting for deployment transaction to be mined...');
     const votingContract = await deployTx.deployed({ timeout: 120000 });
-    
+
     logger.info(`🎉 Voting Contract deployed successfully!`);
     logger.info(`📍 Contract address: ${votingContract.address}`);
     logger.info(`👤 Admin address: ${address}`);
-    
+
     // Verify deployment
     logger.info('🔍 Verifying contract deployment...');
     try {
         // Test a read operation
         logger.info('🧪 Testing contract read operation...');
-        const initialVoteCount = await votingContract.methods.get_vote(Fr.fromString("1")).simulate();
+        const initialVoteCount = await votingContract.methods.get_vote(Fr.fromString("1")).simulate({
+            from: wallet.getAddress()
+        });
         logger.info(`📊 Initial vote count for candidate 1: ${initialVoteCount}`);
-        
+
     } catch (error) {
         logger.error(`❌ Contract verification failed: ${error}`);
     }
-    
+
     logger.info('🏁 Deployment process completed successfully!');
     logger.info(`📋 Summary:`);
     logger.info(`   - Contract Address: ${votingContract.address}`);
