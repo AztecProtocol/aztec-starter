@@ -21,7 +21,7 @@ async function main() {
     const wallet = await accountManager.getWallet();
     const address = await accountManager.getAddress();
 
-    const profileTx = await EasyPrivateVotingContract.deploy(wallet, address).profile({ profileMode: "full"});
+    const profileTx = await EasyPrivateVotingContract.deploy(wallet, address).profile({ profileMode: "full", from: address });
     console.dir(profileTx, { depth: 2 });
 }
 
