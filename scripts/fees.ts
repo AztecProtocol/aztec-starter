@@ -21,7 +21,7 @@ import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { deriveSigningKey } from '@aztec/stdlib/keys';
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
-const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000n;
+const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000000n;
 
 async function main() {
 
@@ -105,7 +105,7 @@ async function main() {
     const fpcClaim = await feeJuicePortalManager.bridgeTokensPublic(fpc.address, FEE_FUNDING_FOR_TESTER_ACCOUNT, true);
     // 2 public txs to make the bridged fee juice available
     // Mint some bananaCoin and send to the newWallet to pay fees privately
-    await bananaCoin.methods.mint_to_private(wallet1.getAddress(), wallet2.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
+    await bananaCoin.methods.mint_to_private(wallet2.getAddress(), FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
         from: wallet1.getAddress(),
         fee: { paymentMethod }
     }).wait()
@@ -122,7 +122,7 @@ async function main() {
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
     const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet2)
-    await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send().wait()
+    await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: wallet2.getAddress() }).wait()
 
     logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate({
         from: wallet2.getAddress()

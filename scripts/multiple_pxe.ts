@@ -91,7 +91,7 @@ async function main() {
 
     // mint to account on 2nd pxe
 
-    const private_mint_tx = await token.contract.methods.mint_to_private(ownerAddress, schnorrAccount2.getAddress(), 100).send({
+    const private_mint_tx = await token.contract.methods.mint_to_private(schnorrAccount2.getAddress(), 100).send({
         from: ownerAddress,
         fee: { paymentMethod }
     }).wait()
@@ -119,7 +119,7 @@ async function main() {
         from: wallet2.getAddress()
     })
 
-    const notes = await pxe2.getNotes({ txHash: private_mint_tx.txHash });
+    const notes = await pxe2.getNotes({ txHash: private_mint_tx.txHash, contractAddress: l2TokenContractInstance.address });
     console.log(notes)
 
     // returns 0n
