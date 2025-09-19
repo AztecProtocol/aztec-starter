@@ -1,6 +1,5 @@
-import { createLogger, Fr, PXE, Logger, AccountManager } from "@aztec/aztec.js";
+import { createLogger, Fr, PXE, Logger, AccountManager, Fq } from "@aztec/aztec.js";
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-import { deriveSigningKey } from '@aztec/stdlib/keys';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
@@ -14,10 +13,15 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
 
     // Read SECRET and SALT from environment variables
     const secretEnv = process.env.SECRET;
+    const signingKeyEnv = process.env.SIGNING_KEY;
     const saltEnv = process.env.SALT;
 
     if (!secretEnv) {
         throw new Error('SECRET environment variable is required. Please set it in your .env file.');
+    }
+
+    if (!signingKeyEnv) {
+        throw new Error('SIGNING_KEY environment variable is required. Please set it in your .env file.');
     }
 
     if (!saltEnv) {
@@ -26,10 +30,12 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
 
     // Convert hex strings to Fr values
     let secretKey: Fr;
+    let signingKey: Fq;
     let salt: Fr;
 
     try {
         secretKey = Fr.fromString(secretEnv);
+        signingKey = Fq.fromString(signingKeyEnv);
         salt = Fr.fromString(saltEnv);
         logger.info('✅ Successfully parsed SECRET and SALT values');
     } catch (error) {
@@ -39,7 +45,7 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
 
     // Create Schnorr account with specified values
     logger.info('🏗️  Creating Schnorr account instance with environment values...');
-    let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
+    let schnorrAccount = await getSchnorrAccount(pxe, secretKey, signingKey, salt);
     const accountAddress = schnorrAccount.getAddress();
     logger.info(`📍 Account address: ${accountAddress}`);
 
@@ -48,7 +54,7 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
     try {
         const registeredAccounts = await pxe.getRegisteredAccounts();
         const isRegistered = registeredAccounts.some(acc => acc.address.equals(accountAddress));
-        
+
         if (isRegistered) {
             logger.info('✅ Account is already registered with PXE');
         } else {

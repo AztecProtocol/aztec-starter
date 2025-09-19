@@ -1,9 +1,8 @@
 import { PrivateVotingContractArtifact, PrivateVotingContract } from "../../artifacts/PrivateVoting.js"
-import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger } from "@aztec/aztec.js";
+import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger, Fq } from "@aztec/aztec.js";
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { spawn, spawnSync } from 'child_process';
-import { deriveSigningKey } from '@aztec/stdlib/keys';
 
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getFeeJuiceBalance, type L2AmountClaim, L1FeeJuicePortalManager, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
@@ -11,6 +10,7 @@ import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { sign } from "crypto";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -73,8 +73,9 @@ describe("Accounts", () => {
         );
 
         let secretKey = Fr.random();
+        let signingKey = Fq.random();
         let salt = Fr.random();
-        let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt)
+        let schnorrAccount = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
         await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
         ownerWallet = await schnorrAccount.getWallet();
     })

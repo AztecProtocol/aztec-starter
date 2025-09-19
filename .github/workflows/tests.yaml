@@ -54,7 +54,7 @@ jobs:
       - name: Run tests
         run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
 
-      - name: Deploy account and capture SECRET/SALT
+      - name: Deploy account and capture SECRET/SIGNING_KEY/SALT
         run: |
           script -e -c "yarn clear-store"
           # Create a temporary file to store the output
@@ -73,24 +73,27 @@ jobs:
           # Show the full output for debugging
           cat "$TEMP_OUTPUT"
 
-          # Extract SECRET and SALT from the output
+          # Extract SECRET, SIGNING_KEY, and SALT from the output
           SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
+          SIGNING_KEY=$(grep -o "🖊️ Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🖊️ Signing key generated: //' || echo "")
           SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
 
           # Clean up temp file
           rm "$TEMP_OUTPUT"
 
           # Validate and create .env file
-          if [ -n "$SECRET_KEY" ] && [ -n "$SALT_VALUE" ]; then
+          if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ]; then
             
             # Create .env file with all necessary values
             echo "SECRET=\"$SECRET_KEY\"" >> .env
+            echo "SIGNING_KEY=\"$SIGNING_KEY\"" >> .env
             echo "SALT=\"$SALT_VALUE\"" >> .env
             echo "📋 Current .env file contents:"
             cat .env
           else
-            echo "❌ Failed to extract SECRET and/or SALT from deploy output"
+            echo "❌ Failed to extract SECRET, SIGNING_KEY and/or SALT from deploy output"
             echo "🔍 SECRET_KEY: '$SECRET_KEY'"
+            echo "🔍 SIGNING_KEY: '$SIGNING_KEY'"
             echo "🔍 SALT_VALUE: '$SALT_VALUE'"
             exit 1
           fi

@@ -14,11 +14,10 @@ import { getDeployedSponsoredFPCAddress, getSponsoredFPCInstance } from "../src/
 import { createEthereumChain, createExtendedL1Client } from "@aztec/ethereum";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { setupPXE } from "../src/utils/setup_pxe.js";
-import { createLogger, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, Fr, L1FeeJuicePortalManager, Logger, PrivateFeePaymentMethod, PublicFeePaymentMethod, PXE } from '@aztec/aztec.js';
+import { createLogger, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, Fq, Fr, L1FeeJuicePortalManager, Logger, PrivateFeePaymentMethod, PublicFeePaymentMethod, PXE } from '@aztec/aztec.js';
 import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-import { deriveSigningKey } from '@aztec/stdlib/keys';
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000000n;
@@ -43,8 +42,9 @@ async function main() {
     const wallet1 = await account1.getWallet();
 
     let secretKey = Fr.random();
+    let signingKey = Fq.random();
     let salt = Fr.random();
-    let account2 = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
+    let account2 = await getSchnorrAccount(pxe, secretKey, signingKey, salt);
     const wallet2 = await account2.getWallet();
     const feeJuiceRecipient = account2.getAddress();
 
