@@ -1,5 +1,5 @@
 import { createLogger, Logger, SponsoredFeePaymentMethod, Fr, AztecAddress } from "@aztec/aztec.js";
-import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js";
+import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
@@ -29,7 +29,7 @@ async function main() {
     }
 
     logger.info(`Connecting to voting contract at: ${contractAddress}`);
-    const votingContract = await EasyPrivateVotingContract.at(
+    const votingContract = await PrivateVotingContract.at(
         AztecAddress.fromString(contractAddress),
         wallet
     );

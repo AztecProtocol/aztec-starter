@@ -2,17 +2,17 @@ mod test;
 use dep::aztec::macros::aztec;
 
 #[aztec]
-pub contract EasyPrivateVoting {
+pub contract PrivateVoting {
     use dep::aztec::{
         keys::getters::get_public_keys,
         macros::{functions::{initializer, internal, private, public, utility}, storage::storage},
     };
-    use dep::aztec::state_vars::{Map, PublicImmutable, PublicMutable};
     use dep::aztec::protocol_types::{
-        address::{AztecAddress},
-        traits::ToField,
-        traits::Hash,
+        address::AztecAddress,
+        hash::poseidon2_hash,
+        traits::{Hash, ToField},
     };
+    use dep::aztec::state_vars::{Map, PublicImmutable, PublicMutable};
 
     #[storage]
     struct Storage<Context> {
@@ -34,12 +34,13 @@ pub contract EasyPrivateVoting {
     #[private]
     // annotation to mark function as private and expose private context
     fn cast_vote(candidate: Field) {
-        let msg_sender_npk_m_hash = get_public_keys(context.msg_sender()).npk_m.hash();
+        let msg_sender_nullifier_public_key_message_hash =
+            get_public_keys(context.msg_sender()).npk_m.hash();
 
-        let secret = context.request_nsk_app(msg_sender_npk_m_hash); // get secret key of caller of function
-        let nullifier = std::hash::pedersen_hash([context.msg_sender().to_field(), secret]); // derive nullifier from sender and secret
+        let secret = context.request_nsk_app(msg_sender_nullifier_public_key_message_hash); // get secret key of caller of function
+        let nullifier = poseidon2_hash([context.msg_sender().to_field(), secret]); // derive nullifier from sender and secret
         context.push_nullifier(nullifier);
-        EasyPrivateVoting::at(context.this_address()).add_to_tally_public(candidate).enqueue(
+        PrivateVoting::at(context.this_address()).add_to_tally_public(candidate).enqueue(
             &mut context,
         );
     }

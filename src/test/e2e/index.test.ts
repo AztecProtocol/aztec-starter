@@ -1,4 +1,4 @@
-import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../../artifacts/EasyPrivateVoting.js"
+import { PrivateVotingContractArtifact, PrivateVotingContract } from "../../artifacts/PrivateVoting.js"
 import { AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger, ContractInstanceWithAddress } from "@aztec/aztec.js";
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
@@ -62,7 +62,7 @@ describe("Voting", () => {
 
     it("Deploys the contract", async () => {
         const salt = Fr.random();
-        const VotingContractArtifact = EasyPrivateVotingContractArtifact
+        const VotingContractArtifact = PrivateVotingContractArtifact
         const accounts = await Promise.all(
             (await generateSchnorrAccounts(2)).map(
                 async a => await getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
@@ -109,7 +109,7 @@ describe("Voting", () => {
     it("It casts a vote", async () => {
         const candidate = new Fr(1)
 
-        const contract = await EasyPrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({
+        const contract = await PrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({
             from: firstWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed();
@@ -126,7 +126,7 @@ describe("Voting", () => {
     it("It should fail when trying to vote twice", async () => {
         const candidate = new Fr(1)
 
-        const votingContract = await EasyPrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({
+        const votingContract = await PrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({
             from: firstWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed();

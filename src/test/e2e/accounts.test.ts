@@ -1,4 +1,4 @@
-import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../../artifacts/EasyPrivateVoting.js"
+import { PrivateVotingContractArtifact, PrivateVotingContract } from "../../artifacts/PrivateVoting.js"
 import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger } from "@aztec/aztec.js";
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
@@ -114,11 +114,11 @@ describe("Accounts", () => {
         }
 
         // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
-        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
+        await PrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
             from: ownerWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed(); // deploy contract with first funded wallet
-        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
+        await PrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
             from: ownerWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed(); // deploy contract with first funded wallet
@@ -153,7 +153,7 @@ describe("Accounts", () => {
 
     it("Sponsored contract deployment", async () => {
         const salt = Fr.random();
-        const VotingContractArtifact = EasyPrivateVotingContractArtifact
+        const VotingContractArtifact = PrivateVotingContractArtifact
         const accounts = await Promise.all(
             (await generateSchnorrAccounts(2)).map(
                 async a => await getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)

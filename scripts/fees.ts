@@ -6,7 +6,7 @@ import { foundry } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts';
 import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { FPCContract } from "@aztec/noir-contracts.js/FPC";
-import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
+import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 // TODO: replace with import from aztec.js when published
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
@@ -67,7 +67,7 @@ async function main() {
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({
+    const votingContract = await PrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({
         from: wallet1.getAddress(),
         fee: { paymentMethod }
     }).deployed();
