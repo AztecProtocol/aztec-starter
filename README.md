@@ -45,7 +45,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 2.0.2
+aztec-up 2.0.3
 ```
 
 Start the sandbox with:
