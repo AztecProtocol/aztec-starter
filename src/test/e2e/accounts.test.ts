@@ -1,8 +1,12 @@
-import { EasyPrivateVotingContractArtifact, EasyPrivateVotingContract } from "../../artifacts/EasyPrivateVoting.js"
-import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger } from "@aztec/aztec.js";
+import { PrivateVotingContractArtifact, PrivateVotingContract } from "../../artifacts/PrivateVoting.js"
+import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger, Fq } from "@aztec/aztec.js";
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
+<<<<<<< HEAD
 import { deriveSigningKey } from '@aztec/stdlib/keys';
+=======
+import { spawn, spawnSync } from 'child_process';
+>>>>>>> origin
 
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getFeeJuiceBalance, type L2AmountClaim, L1FeeJuicePortalManager, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
@@ -10,7 +14,11 @@ import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+<<<<<<< HEAD
 import { getEnv, getL1RpcUrl, getTimeouts } from "../../utils/environment.js";
+=======
+import { sign } from "crypto";
+>>>>>>> origin
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -55,6 +63,7 @@ describe("Accounts", () => {
         );
 
         let secretKey = Fr.random();
+        let signingKey = Fq.random();
         let salt = Fr.random();
         let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt)
         await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
@@ -92,11 +101,11 @@ describe("Accounts", () => {
         }
 
         // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
-        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
+        await PrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
             from: ownerWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed(); // deploy contract with first funded wallet
-        await EasyPrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
+        await PrivateVotingContract.deploy(ownerWallet, ownerWallet.getAddress()).send({
             from: ownerWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed(); // deploy contract with first funded wallet
@@ -131,7 +140,7 @@ describe("Accounts", () => {
 
     it("Sponsored contract deployment", async () => {
         const salt = Fr.random();
-        const VotingContractArtifact = EasyPrivateVotingContractArtifact
+        const VotingContractArtifact = PrivateVotingContractArtifact
         const accounts = await Promise.all(
             (await generateSchnorrAccounts(2)).map(
                 async a => await getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)

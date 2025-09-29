@@ -1,7 +1,6 @@
-import { waitForPXE, getContractInstanceFromInstantiationParams, Fr, ContractInstanceWithAddress, AztecAddress, SponsoredFeePaymentMethod, createAztecNodeClient } from "@aztec/aztec.js";
+import { waitForPXE, getContractInstanceFromInstantiationParams, Fr, ContractInstanceWithAddress, AztecAddress, SponsoredFeePaymentMethod, createAztecNodeClient, Fq } from "@aztec/aztec.js";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { deriveSigningKey } from "@aztec/stdlib/keys";
 import { getSchnorrAccount } from "@aztec/accounts/schnorr";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { createPXEService, getPXEServiceConfig } from '@aztec/pxe/server';
@@ -26,13 +25,13 @@ const store2 = await createStore('pxe2', {
 });
 
 const setupPxe1 = async () => {
-    const pxe = await createPXEService(node, fullConfig, {store: store1});
+    const pxe = await createPXEService(node, fullConfig, { store: store1 });
     await waitForPXE(pxe);
     return pxe;
 };
 
 const setupPxe2 = async () => {
-    const pxe = await createPXEService(node, fullConfig, {store: store2});
+    const pxe = await createPXEService(node, fullConfig, { store: store2 });
     await waitForPXE(pxe);
     return pxe;
 };
@@ -66,8 +65,9 @@ async function main() {
     // deploy token contract
 
     let secretKey = Fr.random();
+    let signingKey = Fq.random();
     let salt = Fr.random();
-    let schnorrAccount = await getSchnorrAccount(pxe1, secretKey, deriveSigningKey(secretKey), salt);
+    let schnorrAccount = await getSchnorrAccount(pxe1, secretKey, signingKey, salt);
     let tx = await schnorrAccount.deploy({ fee: { paymentMethod } }).wait();
     let ownerWallet = await schnorrAccount.getWallet();
     let ownerAddress = ownerWallet.getAddress();
@@ -82,8 +82,9 @@ async function main() {
     await pxe2.registerSender(ownerAddress)
 
     let secretKey2 = Fr.random();
+    let signingKey2 = Fq.random();
     let salt2 = Fr.random();
-    let schnorrAccount2 = await getSchnorrAccount(pxe2, secretKey2, deriveSigningKey(secretKey2), salt2);
+    let schnorrAccount2 = await getSchnorrAccount(pxe2, secretKey2, signingKey2, salt2);
 
     // deploy account on 2nd pxe
     let tx2 = await schnorrAccount2.deploy({ fee: { paymentMethod } }).wait();

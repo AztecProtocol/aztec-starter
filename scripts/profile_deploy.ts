@@ -1,4 +1,4 @@
-import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
+import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
 import { createLogger, PXE, Logger, SponsoredFeePaymentMethod, Fr } from "@aztec/aztec.js";
 import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
@@ -21,7 +21,7 @@ async function main() {
     const wallet = await accountManager.getWallet();
     const address = await accountManager.getAddress();
 
-    const profileTx = await EasyPrivateVotingContract.deploy(wallet, address).profile({ profileMode: "full", from: address });
+    const profileTx = await PrivateVotingContract.deploy(wallet, address).profile({ profileMode: "full", from: address });
     console.dir(profileTx, { depth: 2 });
 }
 

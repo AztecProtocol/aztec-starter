@@ -6,7 +6,7 @@ import { foundry } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts';
 import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { FPCContract } from "@aztec/noir-contracts.js/FPC";
-import { EasyPrivateVotingContract } from "../src/artifacts/EasyPrivateVoting.js"
+import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 // TODO: replace with import from aztec.js when published
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
@@ -14,11 +14,10 @@ import { getDeployedSponsoredFPCAddress, getSponsoredFPCInstance } from "../src/
 import { createEthereumChain, createExtendedL1Client } from "@aztec/ethereum";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { setupPXE } from "../src/utils/setup_pxe.js";
-import { createLogger, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, Fr, L1FeeJuicePortalManager, Logger, PrivateFeePaymentMethod, PublicFeePaymentMethod, PXE } from '@aztec/aztec.js';
+import { createLogger, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, Fq, Fr, L1FeeJuicePortalManager, Logger, PrivateFeePaymentMethod, PublicFeePaymentMethod, PXE } from '@aztec/aztec.js';
 import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-import { deriveSigningKey } from '@aztec/stdlib/keys';
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000000n;
@@ -43,8 +42,9 @@ async function main() {
     const wallet1 = await account1.getWallet();
 
     let secretKey = Fr.random();
+    let signingKey = Fq.random();
     let salt = Fr.random();
-    let account2 = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt);
+    let account2 = await getSchnorrAccount(pxe, secretKey, signingKey, salt);
     const wallet2 = await account2.getWallet();
     const feeJuiceRecipient = account2.getAddress();
 
@@ -67,7 +67,7 @@ async function main() {
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
-    const votingContract = await EasyPrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({
+    const votingContract = await PrivateVotingContract.deploy(wallet1, wallet1.getAddress()).send({
         from: wallet1.getAddress(),
         fee: { paymentMethod }
     }).deployed();
