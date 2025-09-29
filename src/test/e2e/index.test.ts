@@ -10,8 +10,7 @@ import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deriveSigningKey } from "@aztec/stdlib/keys";
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { getL1RpcUrl, getTimeouts } from "../../utils/environment.js";
 
 describe("Voting", () => {
     let pxe: PXE;
@@ -24,7 +23,7 @@ describe("Voting", () => {
 
     beforeAll(async () => {
         logger = createLogger('aztec:aztec-starter:voting');
-        logger.info("Aztec-Starter tests running.")
+        logger.info(`Aztec-Starter tests running.`)
 
         pxe = await setupPXE();
 
@@ -34,7 +33,7 @@ describe("Voting", () => {
 
         // create default ethereum clients
         const nodeInfo = await pxe.getNodeInfo();
-        const chain = createEthereumChain(['http://localhost:8545'], nodeInfo.l1ChainId);
+        const chain = createEthereumChain([getL1RpcUrl()], nodeInfo.l1ChainId);
         const DefaultMnemonic = 'test test test test test test test test test test test junk';
         const l1Client = createExtendedL1Client(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
 
@@ -49,7 +48,7 @@ describe("Voting", () => {
         let secretKey = Fr.random();
         let salt = Fr.random();
         let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt)
-        await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
+        await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
         firstWallet = await schnorrAccount.getWallet();
         const existingSenders = await pxe.getSenders();
         await Promise.all(
@@ -58,7 +57,7 @@ describe("Voting", () => {
                 .map(sender => pxe.removeSender(sender))
         );
         await firstWallet.registerSender(firstWallet.getAddress());
-    })
+    }, 600000)
 
     it("Deploys the contract", async () => {
         const salt = Fr.random();
@@ -68,7 +67,7 @@ describe("Voting", () => {
                 async a => await getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
             )
         );
-        await Promise.all(accounts.map(a => a.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()));
+        await Promise.all(accounts.map(a => a.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout })));
         const daWallets = await Promise.all(accounts.map(a => a.getWallet()));
         const [deployerWallet, adminWallet] = daWallets;
         const [deployerAddress, adminAddress] = daWallets.map(w => w.getAddress());
@@ -94,7 +93,7 @@ describe("Voting", () => {
             }),
         );
 
-        const receiptAfterMined = await tx.wait({ wallet: deployerWallet });
+        const receiptAfterMined = await tx.wait({ wallet: deployerWallet, timeout: getTimeouts().deployTimeout });
         expect(await pxe.getContractMetadata(deploymentData.address)).toBeDefined();
         expect((await pxe.getContractMetadata(deploymentData.address)).contractInstance).toBeTruthy();
         expect(receiptAfterMined).toEqual(
@@ -104,7 +103,7 @@ describe("Voting", () => {
         );
 
         expect(receiptAfterMined.contract.instance.address).toEqual(deploymentData.address)
-    })
+    }, 600000)
 
     it("It casts a vote", async () => {
         const candidate = new Fr(1)
@@ -112,16 +111,16 @@ describe("Voting", () => {
         const contract = await EasyPrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({
             from: firstWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
-        }).deployed();
+        }).deployed({ timeout: getTimeouts().deployTimeout });
         const tx = await contract.methods.cast_vote(candidate).send({
             from: firstWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait();
+        }).wait({ timeout: getTimeouts().txTimeout });
         let count = await contract.methods.get_vote(candidate).simulate({
             from: firstWallet.getAddress()
         });
         expect(count).toBe(1n);
-    })
+    }, 600000)
 
     it("It should fail when trying to vote twice", async () => {
         const candidate = new Fr(1)
@@ -129,11 +128,11 @@ describe("Voting", () => {
         const votingContract = await EasyPrivateVotingContract.deploy(firstWallet, firstWallet.getAddress()).send({
             from: firstWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
-        }).deployed();
+        }).deployed({ timeout: getTimeouts().deployTimeout });
         await votingContract.methods.cast_vote(candidate).send({
             from: firstWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait();
+        }).wait({ timeout: getTimeouts().txTimeout });
         expect(await votingContract.methods.get_vote(candidate).simulate({
             from: firstWallet.getAddress()
         })).toBe(1n);
@@ -143,16 +142,16 @@ describe("Voting", () => {
         await expect(votingContract.methods.cast_vote(candidate).send({
             from: firstWallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait()).rejects.toThrow(/Existing nullifier/);
+        }).wait({ timeout: getTimeouts().txTimeout })).rejects.toThrow(/Existing nullifier/);
         // if we skip simulation before submitting the tx,
         // tx will be included in a block but with app logic reverted
         await expect(
             votingContract.methods.cast_vote(candidate).send({
                 from: firstWallet.getAddress(),
                 fee: { paymentMethod: sponsoredPaymentMethod }
-            }).wait(),
+            }).wait({ timeout: getTimeouts().txTimeout }),
         ).rejects.toThrow(/Existing nullifier/);
 
-    })
+    }, 600000)
 
 });

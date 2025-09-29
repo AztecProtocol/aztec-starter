@@ -6,13 +6,14 @@ import { getSchnorrAccount } from "@aztec/accounts/schnorr";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { createPXEService, getPXEServiceConfig } from '@aztec/pxe/server';
 import { createStore } from "@aztec/kv-store/lmdb"
+import { getEnv, getAztecNodeUrl } from "../src/utils/environment.js";
 
-const { NODE_URL = 'http://localhost:8080' } = process.env;
-const node = createAztecNodeClient(NODE_URL)
+const nodeUrl = getAztecNodeUrl();
+const node = createAztecNodeClient(nodeUrl)
 const l1Contracts = await node.getL1ContractAddresses();
 const config = getPXEServiceConfig()
 const fullConfig = { ...config, l1Contracts }
-fullConfig.proverEnabled = false;
+fullConfig.proverEnabled = getEnv() !== 'sandbox';
 
 const store1 = await createStore('pxe1', {
     dataDirectory: 'store',

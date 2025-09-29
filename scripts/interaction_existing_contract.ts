@@ -4,10 +4,13 @@ import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
+import { getTimeouts } from "../src/utils/environment.js";
 
 async function main() {
     let logger: Logger;
     logger = createLogger('aztec:voting-operations-existing');
+    
+    const timeouts = getTimeouts();
 
     // Setup PXE
     const pxe = await setupPXE();
@@ -51,7 +54,7 @@ async function main() {
             from: wallet.getAddress(),
             fee: { paymentMethod: sponsoredPaymentMethod }
         })
-        .wait({ timeout: 120000 });
+        .wait({ timeout: timeouts.txTimeout });
     logger.info("Vote cast successfully!");
 
     // Second get_vote call - check updated vote count

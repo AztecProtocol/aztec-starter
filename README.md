@@ -48,11 +48,43 @@ Install the correct version of the toolkit with:
 aztec-up 2.0.2
 ```
 
+### Environment Configuration
+
+This project uses environment-specific `.env` files to manage configuration:
+
+- `.env.sandbox` - Configuration for local sandbox development
+- `.env.testnet` - Configuration for testnet deployment
+- `.env.local` - Alternative configuration for local development (optional)
+
+The system automatically loads the appropriate `.env` file based on the `ENV` environment variable. If `ENV` is not set, it defaults to `sandbox`.
+
+### Running on Sandbox (Local Development)
+
 Start the sandbox with:
 
 ```bash
 aztec start --sandbox
 ```
+
+Run scripts and tests with default sandbox configuration:
+
+```bash
+yarn deploy       # Deploy to sandbox
+yarn test         # Run tests on sandbox
+```
+
+### Running on Testnet
+
+All scripts support a `::testnet` suffix to automatically use testnet configuration:
+
+```bash
+yarn deploy::testnet              # Deploy to testnet
+yarn test::testnet                # Run tests on testnet
+yarn deploy-account::testnet      # Deploy account to testnet
+yarn interaction-existing-contract::testnet  # Interact with testnet contracts
+```
+
+The `::testnet` suffix automatically sets `ENV=testnet`, loading configuration from `.env.testnet`.
 
 ---
 
@@ -142,6 +174,7 @@ The `./src/utils/` folder contains utility functions:
 - `./src/utils/create_account_from_env.ts` provides functions to create Schnorr accounts from environment variables (SECRET and SALT), useful for account management across different environments.
 - `./src/utils/setup_pxe.ts` provides a function to set up and configure the Private Execution Environment (PXE) service with proper configuration for local development.
 - `./src/utils/deploy_account.ts` provides a function to deploy Schnorr accounts to the network with sponsored fee payment, including key generation and deployment verification.
+- `./src/utils/environment.ts` provides environment-aware configuration loading, automatically selecting the correct `.env` file based on the `ENV` variable.
 
 ## ❗ **Error Resolution**
 
