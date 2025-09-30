@@ -4,7 +4,7 @@ import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
-import { getTimeouts } from "../src/utils/environment.js";
+import { getTimeouts } from "../config/config.js";
 
 async function main() {
     let logger: Logger;

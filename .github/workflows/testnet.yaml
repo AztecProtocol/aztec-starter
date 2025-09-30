@@ -22,10 +22,7 @@ jobs:
     name: Testnet Tests
     runs-on: ubuntu-latest
     env:
-      ENV: testnet
-      NODE_URL: https://aztec-alpha-testnet-fullnode.zkv.xyz
-      L1_RPC_URL: https://ethereum-sepolia-rpc.publicnode.com
-      L1_CHAIN_ID: 11155111
+      AZTEC_ENV: testnet
 
     steps:
       - name: Checkout repository
@@ -56,9 +53,8 @@ jobs:
 
       - name: Setup testnet environment
         run: |
-          cp .env.testnet .env
-          echo "📋 Initial .env file:"
-          cat .env
+          echo "📋 Using testnet configuration from config/testnet.json"
+          cat config/testnet.json
 
       - name: Test testnet connectivity
         run: |

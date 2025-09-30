@@ -2,11 +2,8 @@ import { PrivateVotingContractArtifact, PrivateVotingContract } from "../../arti
 import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger, Fq } from "@aztec/aztec.js";
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-<<<<<<< HEAD
 import { deriveSigningKey } from '@aztec/stdlib/keys';
-=======
 import { spawn, spawnSync } from 'child_process';
->>>>>>> origin
 
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getFeeJuiceBalance, type L2AmountClaim, L1FeeJuicePortalManager, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
@@ -14,11 +11,8 @@ import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-<<<<<<< HEAD
-import { getEnv, getL1RpcUrl, getTimeouts } from "../../utils/environment.js";
-=======
+import { getEnv, getL1RpcUrl, getTimeouts } from "../../../config/config.js";
 import { sign } from "crypto";
->>>>>>> origin
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 

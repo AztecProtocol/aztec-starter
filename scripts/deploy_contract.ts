@@ -5,7 +5,7 @@ import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
-import { getTimeouts } from "../src/utils/environment.js";
+import { getTimeouts } from "../config/config.js";
 
 async function main() {
     let pxe: PXE;

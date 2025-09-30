@@ -4,8 +4,8 @@ import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getSchnorrAccount } from "@aztec/accounts/schnorr";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { createPXEService, getPXEServiceConfig } from '@aztec/pxe/server';
-import { createStore } from "@aztec/kv-store/lmdb"
-import { getEnv, getAztecNodeUrl } from "../src/utils/environment.js";
+import { createStore } from "@aztec/kv-store/lmdb"  
+import { getEnv, getAztecNodeUrl } from "../config/config.js";
 
 const nodeUrl = getAztecNodeUrl();
 const node = createAztecNodeClient(nodeUrl)

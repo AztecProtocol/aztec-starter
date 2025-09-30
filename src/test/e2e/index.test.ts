@@ -10,7 +10,7 @@ import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deriveSigningKey } from "@aztec/stdlib/keys";
-import { getL1RpcUrl, getTimeouts } from "../../utils/environment.js";
+import { getL1RpcUrl, getTimeouts } from "../../../config/config.js";
 
 describe("Voting", () => {
     let pxe: PXE;
