@@ -78,17 +78,18 @@ jobs:
           cat "$TEMP_OUTPUT"
 
           SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
+          SIGNING_KEY=$(grep -o "🖊️ Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🖊️ Signing key generated: //' || echo "")
           SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
 
           rm "$TEMP_OUTPUT"
 
-          if [ -n "$SECRET_KEY" ] && [ -n "$SALT_VALUE" ]; then
-            sed -i "s/SECRET=.*/SECRET=\"$SECRET_KEY\"/" .env
-            sed -i "s/SALT=.*/SALT=\"$SALT_VALUE\"/" .env
-            echo "📋 Updated .env file with account credentials:"
-            cat .env
+          if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ]; then
+            echo "SECRET=\"$SECRET_KEY\"" >> .env
+            echo "SIGNING_KEY=\"$SIGNING_KEY\"" >> .env
+            echo "SALT=\"$SALT_VALUE\"" >> .env
+            echo "📋 Saved credentials to .env file"
           else
-            echo "❌ Failed to extract SECRET and/or SALT from deploy output"
+            echo "❌ Failed to extract SECRET, SIGNING_KEY, and/or SALT from deploy output"
             exit 1
           fi
 
@@ -113,9 +114,8 @@ jobs:
           rm "$TEMP_OUTPUT"
 
           if [ -n "$VOTING_CONTRACT_ADDRESS" ]; then
-            sed -i "s/VOTING_CONTRACT_ADDRESS=.*/VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"/" .env
-            echo "📋 Updated .env file with contract address:"
-            cat .env
+            echo "VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"" >> .env
+            echo "📋 Saved contract address to .env file"
           else
             echo "⚠️ Warning: Could not extract contract address"
           fi
