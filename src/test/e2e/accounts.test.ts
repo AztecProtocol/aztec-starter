@@ -2,7 +2,6 @@ import { PrivateVotingContractArtifact, PrivateVotingContract } from "../../arti
 import { AccountManager, AccountWallet, ContractDeployer, createLogger, Fr, PXE, TxStatus, getContractInstanceFromInstantiationParams, Logger, Fq } from "@aztec/aztec.js";
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
-import { deriveSigningKey } from '@aztec/stdlib/keys';
 import { spawn, spawnSync } from 'child_process';
 
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
@@ -59,7 +58,7 @@ describe("Accounts", () => {
         let secretKey = Fr.random();
         let signingKey = Fq.random();
         let salt = Fr.random();
-        let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt)
+        let schnorrAccount = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
         await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
         ownerWallet = await schnorrAccount.getWallet();
     }, 600000)

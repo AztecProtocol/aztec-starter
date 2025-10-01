@@ -9,7 +9,6 @@ import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { deriveSigningKey } from "@aztec/stdlib/keys";
 import { getL1RpcUrl, getTimeouts } from "../../../config/config.js";
 
 describe("Voting", () => {
@@ -48,7 +47,7 @@ describe("Voting", () => {
         let secretKey = Fr.random();
         let signingKey = Fq.random();
         let salt = Fr.random();
-        let schnorrAccount = await getSchnorrAccount(pxe, secretKey, deriveSigningKey(secretKey), salt)
+        let schnorrAccount = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
         await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
         firstWallet = await schnorrAccount.getWallet();
         const existingSenders = await pxe.getSenders();

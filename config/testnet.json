@@ -2,7 +2,7 @@
   "name": "testnet",
   "environment": "testnet",
   "network": {
-    "nodeUrl": "https://aztec-alpha-testnet-fullnode.zkv.xyz",
+    "nodeUrl": "https://aztec-testnet-fullnode.zkv.xyz",
     "l1RpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
     "l1ChainId": 11155111
   },

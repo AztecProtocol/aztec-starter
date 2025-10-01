@@ -1,14 +1,8 @@
 name: Testnet Tests
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-  pull_request:
-    branches:
-      - main
-      - dev
+  schedule:
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       skip_deployment:
@@ -59,7 +53,7 @@ jobs:
       - name: Test testnet connectivity
         run: |
           echo "Testing testnet connectivity..."
-          curl -s https://aztec-alpha-testnet-fullnode.zkv.xyz/status || echo "Warning: Could not connect to testnet"
+          curl -s https://aztec-testnet-fullnode.zkv.xyz/status || echo "Warning: Could not connect to testnet"
 
       - name: Deploy account to testnet
         if: ${{ !inputs.skip_deployment }}
