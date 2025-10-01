@@ -30,6 +30,16 @@ If you are interested in trying out this repo with the testnet, try the [testnet
 
 ---
 
+## 📢 **Upgrading from v1.x?**
+
+See [MIGRATION.md](./MIGRATION.md) for breaking changes in v2.0.2, including:
+- **Critical:** Signing keys are now separate from secret keys (no more `deriveSigningKey`)
+- Transaction API requires `from` parameter
+- Hash function changed from `pedersen_hash` to `poseidon2_hash`
+- Various API renames and import changes
+
+---
+
 ## 🚀 **Getting Started**
 
 Use **Node.js version 22.15.0**.
@@ -45,7 +55,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 2.0.2
+aztec-up 2.0.3
 ```
 
 Start the sandbox with:
