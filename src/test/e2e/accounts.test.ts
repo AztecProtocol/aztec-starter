@@ -11,7 +11,6 @@ import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getEnv, getL1RpcUrl, getTimeouts } from "../../../config/config.js";
-import { sign } from "crypto";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
