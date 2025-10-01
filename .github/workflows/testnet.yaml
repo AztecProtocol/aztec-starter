@@ -1,0 +1,137 @@
+name: Testnet Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      skip_deployment:
+        description: "Skip deployment and use existing contracts"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  testnet-tests:
+    name: Testnet Tests
+    runs-on: ubuntu-latest
+    env:
+      AZTEC_ENV: testnet
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+
+      - name: Install Aztec CLI
+        run: |
+          curl -s https://install.aztec.network > tmp.sh
+          bash tmp.sh <<< yes "yes"
+
+      - name: Update path
+        run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
+
+      - name: Install project dependencies
+        run: yarn
+
+      - name: Compile contracts
+        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
+
+      - name: Generate contract artifacts
+        run: script -e -c "aztec codegen target --outdir src/artifacts && aztec-postprocess-contract"
+
+      - name: Setup testnet environment
+        run: |
+          echo "📋 Using testnet configuration from config/testnet.json"
+          cat config/testnet.json
+
+      - name: Test testnet connectivity
+        run: |
+          echo "Testing testnet connectivity..."
+          curl -s https://aztec-testnet-fullnode.zkv.xyz/status || echo "Warning: Could not connect to testnet"
+
+      - name: Deploy account to testnet
+        if: ${{ !inputs.skip_deployment }}
+        run: |
+          TEMP_OUTPUT=$(mktemp)
+
+          if script -e -c "yarn deploy-account::testnet" > "$TEMP_OUTPUT" 2>&1; then
+            echo "✅ Deploy account to testnet completed successfully"
+          else
+            echo "❌ Deploy account script failed"
+            cat "$TEMP_OUTPUT"
+            rm "$TEMP_OUTPUT"
+            exit 1
+          fi
+
+          cat "$TEMP_OUTPUT"
+
+          SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
+          SIGNING_KEY=$(grep -o "🖊️ Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🖊️ Signing key generated: //' || echo "")
+          SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
+
+          rm "$TEMP_OUTPUT"
+
+          if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ]; then
+            echo "SECRET=\"$SECRET_KEY\"" >> .env
+            echo "SIGNING_KEY=\"$SIGNING_KEY\"" >> .env
+            echo "SALT=\"$SALT_VALUE\"" >> .env
+            echo "📋 Saved credentials to .env file"
+          else
+            echo "❌ Failed to extract SECRET, SIGNING_KEY, and/or SALT from deploy output"
+            exit 1
+          fi
+
+      - name: Deploy contract to testnet
+        if: ${{ !inputs.skip_deployment }}
+        run: |
+          TEMP_OUTPUT=$(mktemp)
+
+          if script -e -c "yarn deploy::testnet" > "$TEMP_OUTPUT" 2>&1; then
+            echo "✅ Deploy contract to testnet completed successfully"
+          else
+            echo "❌ Deploy contract script failed"
+            cat "$TEMP_OUTPUT"
+            rm "$TEMP_OUTPUT"
+            exit 1
+          fi
+
+          cat "$TEMP_OUTPUT"
+
+          VOTING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
+
+          rm "$TEMP_OUTPUT"
+
+          if [ -n "$VOTING_CONTRACT_ADDRESS" ]; then
+            echo "VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"" >> .env
+            echo "📋 Saved contract address to .env file"
+          else
+            echo "⚠️ Warning: Could not extract contract address"
+          fi
+
+      - name: Run testnet scripts
+        run: |
+          echo "Running testnet scripts..."
+          script -e -c "yarn get-block::testnet"
+          
+      - name: Run interaction test with existing contract
+        if: ${{ inputs.skip_deployment }}
+        run: |
+          echo "Running interaction with existing contract on testnet..."
+          script -e -c "yarn interaction-existing-contract::testnet"
+
+      - name: Run JavaScript tests on testnet
+        run: |
+          echo "Running JavaScript tests against testnet..."
+          script -e -c "rm -rf store/pxe"
+          script -e -c "ENV=testnet NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json"
+
+      - name: Profile deployment on testnet
+        if: ${{ !inputs.skip_deployment }}
+        run: |
+          script -e -c "yarn profile::testnet"

@@ -1,17 +1,22 @@
-name: Run Tests and Scripts
+name: Sandbox Tests
 
 on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
       - dev
+  workflow_dispatch:
 
 jobs:
-  setup-and-run:
+  sandbox-tests:
+    name: Sandbox Tests
     runs-on: ubuntu-latest
+    env:
+      AZTEC_ENV: sandbox
 
     steps:
       - name: Checkout repository
@@ -21,10 +26,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "yarn" # Optional: cache dependencies for faster builds
+          cache: "yarn"
 
       - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Install Aztec CLI
         run: |
@@ -39,28 +44,43 @@ jobs:
           VERSION=2.0.2 aztec-up
           aztec start --sandbox &
 
+      - name: Wait for sandbox to be ready
+        run: |
+          echo "Waiting for sandbox to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/status >/dev/null 2>&1; then
+              echo "✅ Sandbox is ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 5
+          done
+
       - name: Install project dependencies
         run: yarn
 
-      - name: Compile, generate code, and run tests
+      - name: Compile contracts
         run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
 
-      - name: Codegen
+      - name: Generate contract artifacts
         run: script -e -c "aztec codegen target --outdir src/artifacts && aztec-postprocess-contract"
 
-      - name: Change ownership # to get around Docker issues
+      - name: Change ownership for nargo files
         run: sudo chown -R $(whoami) ~/nargo && sudo chown -R $(whoami) ~/nargo/github.com
 
-      - name: Run tests
-        run: script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json && aztec test"
+      - name: Run JavaScript tests
+        run: |
+          script -e -c "rm -rf store/pxe"
+          script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json"
 
-      - name: Deploy account and capture SECRET/SIGNING_KEY/SALT
+      - name: Run Aztec tests
+        run: script -e -c "aztec test"
+
+      - name: Deploy account and capture credentials
         run: |
           script -e -c "yarn clear-store"
-          # Create a temporary file to store the output
           TEMP_OUTPUT=$(mktemp)
 
-          # Run deploy-account script and capture both stdout and stderr
           if script -e -c "yarn deploy-account" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy account script completed successfully"
           else
@@ -70,40 +90,28 @@ jobs:
             exit 1
           fi
 
-          # Show the full output for debugging
           cat "$TEMP_OUTPUT"
 
-          # Extract SECRET, SIGNING_KEY, and SALT from the output
           SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
           SIGNING_KEY=$(grep -o "🖊️ Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🖊️ Signing key generated: //' || echo "")
           SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
 
-          # Clean up temp file
           rm "$TEMP_OUTPUT"
 
-          # Validate and create .env file
           if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ]; then
-            
-            # Create .env file with all necessary values
             echo "SECRET=\"$SECRET_KEY\"" >> .env
             echo "SIGNING_KEY=\"$SIGNING_KEY\"" >> .env
             echo "SALT=\"$SALT_VALUE\"" >> .env
-            echo "📋 Current .env file contents:"
-            cat .env
+            echo "📋 Saved credentials to .env file"
           else
-            echo "❌ Failed to extract SECRET, SIGNING_KEY and/or SALT from deploy output"
-            echo "🔍 SECRET_KEY: '$SECRET_KEY'"
-            echo "🔍 SIGNING_KEY: '$SIGNING_KEY'"
-            echo "🔍 SALT_VALUE: '$SALT_VALUE'"
+            echo "❌ Failed to extract SECRET, SIGNING_KEY, and/or SALT from deploy output"
             exit 1
           fi
 
       - name: Deploy contract and capture address
         run: |
-          # Create a temporary file to store the output
           TEMP_OUTPUT=$(mktemp)
 
-          # Run deploy script and capture both stdout and stderr
           if script -e -c "yarn deploy" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy script completed successfully"
           else
@@ -112,26 +120,21 @@ jobs:
             exit 1
           fi
 
-          # Show the full output for debugging
           cat "$TEMP_OUTPUT"
 
-          # Try multiple extraction patterns in order of preference
           VOTING_CONTRACT_ADDRESS=""
-
-          # Look for "Contract address:" pattern
           if [ -z "$VOTING_CONTRACT_ADDRESS" ]; then
             VOTING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
           fi
 
-          # Clean up temp file
           rm "$TEMP_OUTPUT"
 
-          # Validate and save the address
           if [ -n "$VOTING_CONTRACT_ADDRESS" ]; then
             echo "VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"" >> .env
+            echo "📋 Saved contract address to .env file"
           fi
 
-      - name: Run other scripts
+      - name: Run sandbox scripts
         run: |
           script -e -c "yarn fees"
           script -e -c "yarn multiple-pxe"

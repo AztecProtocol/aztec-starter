@@ -10,14 +10,13 @@ import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupPXE } from "../../utils/setup_pxe.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { sign } from "crypto";
+import { getEnv, getL1RpcUrl, getTimeouts } from "../../../config/config.js";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe("Accounts", () => {
     let pxe: PXE;
     let logger: Logger;
-    let sandboxInstance;
     let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
     let ownerWallet: AccountWallet;
 
@@ -27,39 +26,22 @@ describe("Accounts", () => {
 
     let l1PortalManager: L1FeeJuicePortalManager;
     let feeJuiceAddress: AztecAddress;
-    let skipSandbox: boolean;
 
     beforeAll(async () => {
         logger = createLogger('aztec:aztec-starter:accounts');
-        logger.info("Aztec-Starter tests running.")
-
-        skipSandbox = process.env.SKIP_SANDBOX === 'true';
-        const aztecBinary = process.env.AZTEC_BIN ?? 'aztec';
-        if (!skipSandbox) {
-            const { error } = spawnSync(aztecBinary, ['--version'], { stdio: 'ignore' });
-            if (error) {
-                logger.warn(`Skipping sandbox startup because ${aztecBinary} is not available: ${error.message}`);
-                skipSandbox = true;
-            }
-        }
-
-        if (!skipSandbox) {
-            sandboxInstance = spawn(aztecBinary, ["start", "--sandbox"], {
-                detached: true,
-                stdio: 'ignore'
-            })
-            await sleep(15000);
-        }
-
+        logger.info(`Aztec-Starter tests running.`)
+        
         pxe = await setupPXE('accounts');
 
-        const sponsoredFPC = await getSponsoredFPCInstance();
-        await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
-        sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
-
+        const sponsoredFPCInstance = await getContractInstanceFromInstantiationParams(SponsoredFPCContract.artifact, {
+            salt: new Fr(0),
+        });
+        await pxe.registerContract({ instance: sponsoredFPCInstance, artifact: SponsoredFPCContract.artifact });
+        sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPCInstance.address);
+        
         // create default ethereum clients
         const nodeInfo = await pxe.getNodeInfo();
-        const chain = createEthereumChain(['http://localhost:8545'], nodeInfo.l1ChainId);
+        const chain = createEthereumChain([getL1RpcUrl()], nodeInfo.l1ChainId);
         const DefaultMnemonic = 'test test test test test test test test test test test junk';
         const l1Client = createExtendedL1Client(chain.rpcUrls, DefaultMnemonic, chain.chainInfo);
 
@@ -76,11 +58,11 @@ describe("Accounts", () => {
         let signingKey = Fq.random();
         let salt = Fr.random();
         let schnorrAccount = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
-        await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait();
+        await schnorrAccount.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
         ownerWallet = await schnorrAccount.getWallet();
-    })
+    }, 600000)
 
-    beforeEach(async () => {
+    beforeEach(async () => {        
         // generate random accounts
         randomAccountManagers = await Promise.all(
             (await generateSchnorrAccounts(2)).map(
@@ -93,13 +75,9 @@ describe("Accounts", () => {
         randomAddresses = await Promise.all(randomWallets.map(async w => (await w.getCompleteAddress()).address));
     })
 
-    afterAll(async () => {
-        if (!skipSandbox) {
-            sandboxInstance!.kill('SIGINT');
-        }
-    })
-
     it("Creates accounts with fee juice", async () => {
+        if (getEnv() === 'testnet') return;
+
         // balance of each random account is 0 before bridge
         let balances = await Promise.all(randomAddresses.map(async a => getFeeJuiceBalance(a, pxe)));
         balances.forEach(b => expect(b).toBe(0n));
@@ -140,7 +118,7 @@ describe("Accounts", () => {
     it("Deploys first unfunded account from first funded account", async () => {
         const receipt = await randomAccountManagers[0]
             .deploy({ fee: { paymentMethod: sponsoredPaymentMethod }, deployWallet: ownerWallet })
-            .wait();
+            .wait({ timeout: getTimeouts().deployTimeout });
 
         expect(receipt).toEqual(
             expect.objectContaining({
@@ -160,7 +138,7 @@ describe("Accounts", () => {
                 async a => await getSchnorrAccount(pxe, a.secret, a.signingKey, a.salt)
             )
         );
-        await Promise.all(accounts.map(a => a.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait()));
+        await Promise.all(accounts.map(a => a.deploy({ fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout })));
         const daWallets = await Promise.all(accounts.map(a => a.getWallet()));
         const [deployerWallet, adminWallet] = daWallets;
         const [deployerAddress, adminAddress] = daWallets.map(w => w.getAddress());

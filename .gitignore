@@ -6,3 +6,4 @@ log/
 .DS_Store
 codegenCache.json
 store/
+.tsbuildinfo

@@ -2,8 +2,7 @@
 import { createPXEService, getPXEServiceConfig } from '@aztec/pxe/server';
 import { createStore } from "@aztec/kv-store/lmdb"
 import { createAztecNodeClient, waitForPXE } from '@aztec/aztec.js';
-
-const { NODE_URL = 'http://localhost:8080' } = process.env;
+import { getAztecNodeUrl, getEnv } from '../../config/config.js';
 
 const storeCache = new Map<string, Awaited<ReturnType<typeof createStore>>>();
 
@@ -20,16 +19,22 @@ async function getStore(label: string) {
 }
 
 export const setupPXE = async (storeLabel = 'pxe') => {
-    const node = createAztecNodeClient(NODE_URL);
+    const nodeUrl = getAztecNodeUrl();
+    const node = createAztecNodeClient(nodeUrl);
+    
     try {
         await node.getNodeInfo();
     } catch (error) {
-        throw new Error('need to run a sandbox');
+        throw new Error(`Cannot connect to node at ${nodeUrl}. ${nodeUrl.includes('localhost') ? 'Please run: aztec start --sandbox' : 'Check your connection.'}`);
     }
 
     const l1Contracts = await node.getL1ContractAddresses();
     const config = getPXEServiceConfig();
-    const fullConfig = { ...config, l1Contracts, proverEnabled: false };
+    const fullConfig = { 
+        ...config, 
+        l1Contracts, 
+        proverEnabled: getEnv() !== 'sandbox' // Enable prover for non-local nodes
+    };
 
     const store = await getStore(storeLabel);
     const pxe = await createPXEService(node, fullConfig, { store });

@@ -5,19 +5,22 @@ import { setupPXE } from "../src/utils/setup_pxe.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
+import { getTimeouts } from "../config/config.js";
 
 async function main() {
     let pxe: PXE;
     let logger: Logger;
 
     logger = createLogger('aztec:aztec-starter');
-    logger.info('🚀 Starting contract deployment process...');
+    logger.info(`🚀 Starting contract deployment process...`);
+    
+    const timeouts = getTimeouts();
 
     // Setup PXE
     logger.info('📡 Setting up PXE connection...');
     pxe = await setupPXE();
     const nodeInfo = await pxe.getNodeInfo();
-    logger.info(`📊 Node info: ${JSON.stringify(nodeInfo, null, 2)}`);
+    logger.info(`📊 Connected to node`);
 
     // Setup sponsored FPC
     logger.info('💰 Setting up sponsored fee payment contract...');
@@ -46,8 +49,8 @@ async function main() {
     });
 
     logger.info('⏳ Waiting for deployment transaction to be mined...');
-    const votingContract = await deployTx.deployed({ timeout: 120000 });
-
+    const votingContract = await deployTx.deployed({ timeout: timeouts.deployTimeout });
+    
     logger.info(`🎉 Voting Contract deployed successfully!`);
     logger.info(`📍 Contract address: ${votingContract.address}`);
     logger.info(`👤 Admin address: ${address}`);
