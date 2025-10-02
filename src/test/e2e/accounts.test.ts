@@ -164,7 +164,7 @@ describe("Accounts", () => {
             }),
         );
 
-        const receiptAfterMined = await tx.wait({ wallet: deployerWallet });
+        const receiptAfterMined = await tx.wait({ wallet: deployerWallet, timeout: getTimeouts().deployTimeout });
         expect(await pxe.getContractMetadata(deploymentData.address)).toBeDefined();
         expect((await pxe.getContractMetadata(deploymentData.address)).contractInstance).toBeTruthy();
         expect(receiptAfterMined).toEqual(
