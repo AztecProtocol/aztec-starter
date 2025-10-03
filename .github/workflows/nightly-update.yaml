@@ -54,10 +54,10 @@ jobs:
         if: steps.latest.outputs.latest != steps.current.outputs.current
         run: yarn update
 
-      - name: Update tests workflow version
+      - name: Update sandbox workflow version
         if: steps.latest.outputs.latest != steps.current.outputs.current
         run: |
-          sed -i "s/VERSION=[0-9.]*/VERSION=${TAG#v}/" .github/workflows/tests.yaml
+          sed -i "s/VERSION=[0-9.]*/VERSION=${TAG#v}/" .github/workflows/sandbox.yaml
 
       - name: Clean up temporary files
         if: steps.latest.outputs.latest != steps.current.outputs.current
