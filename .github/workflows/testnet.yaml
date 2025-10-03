@@ -135,3 +135,17 @@ jobs:
         if: ${{ !inputs.skip_deployment }}
         run: |
           script -e -c "yarn profile::testnet"
+
+      - name: Send Slack notification on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: ":x: Testnet Tests Failed"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Testnet Tests Failed* :x:\n*Repository:* ${{ github.repository }}\n*Run ID:* `${{ github.run_id }}`\n*Triggered:* ${{ github.event_name }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|:mag: View Logs and Details>"
