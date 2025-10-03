@@ -14,7 +14,7 @@ You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple i
 
 ## Testnet
 
-If you are interested in trying out this repo with the testnet, try the [testnet branch](https://github.com/AztecProtocol/aztec-starter/tree/testnet). The testnet branch is more suitable for simple interactions with the testnet via script, or as a reference to see how to do something against a live, remote network. The `main` branch should be used for getting started with writing contracts and rapid, local testing.
+This repo connects to a locally running Aztec Sandbox by default, but can be configured to connect to the testnet by specifying `AZTEC_ENV=testnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=testnet yarn deploy`.
 
 <div align="center">
 
