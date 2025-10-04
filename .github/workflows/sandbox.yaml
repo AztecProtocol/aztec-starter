@@ -41,7 +41,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=2.0.2 aztec-up
+          VERSION=2.1.0-rc.1 aztec-up
           aztec start --sandbox &
 
       - name: Wait for sandbox to be ready
