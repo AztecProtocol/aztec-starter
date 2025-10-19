@@ -8,7 +8,7 @@
 
 ## Sandbox
 
-This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec sandbox (local development environment). It includes an example contract, useful commands in `package.json` and helfpul scripts in `./scripts`.
+This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec sandbox (local development environment). It includes an example contract, useful commands in `package.json` and helpful scripts in `./scripts`.
 
 You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
 
