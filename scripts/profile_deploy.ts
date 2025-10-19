@@ -25,4 +25,7 @@ async function main() {
     console.dir(profileTx, { depth: 2 });
 }
 
-main();
+main().catch((error) => {
+    console.error("Error:", error);
+    process.exit(1);
+});

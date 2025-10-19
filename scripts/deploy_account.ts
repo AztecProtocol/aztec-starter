@@ -9,4 +9,7 @@ export async function deployAccount() {
     await deploySchnorrAccount(pxe);
 }
 
-deployAccount();
+deployAccount().catch((error) => {
+    console.error("Error:", error);
+    process.exit(1);
+});
