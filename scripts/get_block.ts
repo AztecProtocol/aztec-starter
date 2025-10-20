@@ -11,4 +11,7 @@ async function main() {
     console.log(await block?.hash())
 }
 
-main();
+main().catch((error) => {
+    console.error("Error:", error);
+    process.exit(1);
+});
