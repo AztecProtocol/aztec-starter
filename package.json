@@ -34,12 +34,12 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "2.0.2",
-    "@aztec/aztec.js": "2.0.2",
-    "@aztec/noir-contracts.js": "2.0.2",
-    "@aztec/protocol-contracts": "2.0.2",
-    "@aztec/pxe": "2.0.2",
-    "@aztec/stdlib": "2.0.2",
+    "@aztec/accounts": "2.0.4",
+    "@aztec/aztec.js": "2.0.4",
+    "@aztec/noir-contracts.js": "2.0.4",
+    "@aztec/protocol-contracts": "2.0.4",
+    "@aztec/pxe": "2.0.4",
+    "@aztec/stdlib": "2.0.4",
     "dotenv": "^17.2.2"
   },
   "devDependencies": {
