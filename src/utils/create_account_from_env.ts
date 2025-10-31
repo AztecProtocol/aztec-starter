@@ -1,11 +1,15 @@
-import { createLogger, Fr, PXE, Logger, AccountManager, Fq } from "@aztec/aztec.js";
-import { getSchnorrAccount } from '@aztec/accounts/schnorr';
+import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { AccountManager } from "@aztec/aztec.js/wallet";
+import { PXE } from "@aztec/pxe/client/bundle";
+import { setupWallet } from "./setup_wallet.js";
 import * as dotenv from 'dotenv';
+import { TestWallet } from "@aztec/test-wallet/server";
 
 // Load environment variables
 dotenv.config();
 
-export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
+export async function createAccountFromEnv(wallet: TestWallet): Promise<AccountManager> {
     let logger: Logger;
     logger = createLogger('aztec:create-account');
 
@@ -30,12 +34,12 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
 
     // Convert hex strings to Fr values
     let secretKey: Fr;
-    let signingKey: Fq;
+    let signingKey: GrumpkinScalar;
     let salt: Fr;
 
     try {
         secretKey = Fr.fromString(secretEnv);
-        signingKey = Fq.fromString(signingKeyEnv);
+        signingKey = GrumpkinScalar.fromString(signingKeyEnv);
         salt = Fr.fromString(saltEnv);
         logger.info('✅ Successfully parsed SECRET and SALT values');
     } catch (error) {
@@ -45,15 +49,15 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
 
     // Create Schnorr account with specified values
     logger.info('🏗️  Creating Schnorr account instance with environment values...');
-    let schnorrAccount = await getSchnorrAccount(pxe, secretKey, signingKey, salt);
-    const accountAddress = schnorrAccount.getAddress();
+    let schnorrAccount = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
+    const accountAddress = schnorrAccount.address;
     logger.info(`📍 Account address: ${accountAddress}`);
 
     // Check if account is already deployed
     logger.info('🔍 Checking if account is already deployed...');
     try {
-        const registeredAccounts = await pxe.getRegisteredAccounts();
-        const isRegistered = registeredAccounts.some(acc => acc.address.equals(accountAddress));
+        const registeredAccounts = await wallet.getAccounts();
+        const isRegistered = registeredAccounts.some(acc => acc.item.equals(accountAddress));
 
         if (isRegistered) {
             logger.info('✅ Account is already registered with PXE');
@@ -73,6 +77,6 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
     return schnorrAccount;
 }
 
-export async function getAccountFromEnv(pxe: PXE): Promise<AccountManager> {
-    return await createAccountFromEnv(pxe);
+export async function getAccountFromEnv(wallet: TestWallet): Promise<AccountManager> {
+    return await createAccountFromEnv(wallet);
 } 

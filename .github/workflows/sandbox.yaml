@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: sandbox
+      VERSION: 3.0.0-devnet.2
 
     steps:
       - name: Checkout repository
@@ -41,7 +42,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=2.0.2 aztec-up
+          VERSION=${{ env.VERSION }} aztec-up
           aztec start --sandbox &
 
       - name: Wait for sandbox to be ready
@@ -60,10 +61,10 @@ jobs:
         run: yarn
 
       - name: Compile contracts
-        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
+        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile && aztec-postprocess-contract"
 
       - name: Generate contract artifacts
-        run: script -e -c "aztec codegen target --outdir src/artifacts && aztec-postprocess-contract"
+        run: script -e -c "aztec codegen target --outdir src/artifacts"
 
       - name: Change ownership for nargo files
         run: sudo chown -R $(whoami) ~/nargo && sudo chown -R $(whoami) ~/nargo/github.com
@@ -92,9 +93,9 @@ jobs:
 
           cat "$TEMP_OUTPUT"
 
-          SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
-          SIGNING_KEY=$(grep -o "🖊️ Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🖊️ Signing key generated: //' || echo "")
-          SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
+          SECRET_KEY=$(grep -o "Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Secret key generated: //' || echo "")
+          SIGNING_KEY=$(grep -o "Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Signing key generated: //' || echo "")
+          SALT_VALUE=$(grep -o "Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Salt generated: //' || echo "")
 
           rm "$TEMP_OUTPUT"
 
@@ -122,21 +123,66 @@ jobs:
 
           cat "$TEMP_OUTPUT"
 
-          VOTING_CONTRACT_ADDRESS=""
-          if [ -z "$VOTING_CONTRACT_ADDRESS" ]; then
-            VOTING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
-          fi
+          # Extract contract address
+          VOTING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
+
+          # Extract salt
+          CONTRACT_SALT=$(grep -o "Salt: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Salt: //' || echo "")
+
+          # Extract deployer
+          CONTRACT_DEPLOYER=$(grep -o "Deployer: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Deployer: //' || echo "")
+
+          # Extract public keys
+          PK_NULLIFIER=$(grep -o "Master Nullifier: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Nullifier: //' || echo "")
+          PK_INCOMING=$(grep -o "Master Incoming Viewing: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Incoming Viewing: //' || echo "")
+          PK_OUTGOING=$(grep -o "Master Outgoing Viewing: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Outgoing Viewing: //' || echo "")
+          PK_TAGGING=$(grep -o "Master Tagging: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Tagging: //' || echo "")
+
+          # Extract constructor args (JSON array), strip ANSI codes, and trim whitespace
+          CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | sed 's/.*Constructor args: //' | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\n\r' | sed 's/[[:space:]]*$//' || echo "")
 
           rm "$TEMP_OUTPUT"
 
+          # Save all data to .env
           if [ -n "$VOTING_CONTRACT_ADDRESS" ]; then
             echo "VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"" >> .env
             echo "📋 Saved contract address to .env file"
           fi
 
+          if [ -n "$CONTRACT_SALT" ]; then
+            echo "CONTRACT_SALT=\"$CONTRACT_SALT\"" >> .env
+            echo "📋 Saved contract salt to .env file"
+          fi
+
+          if [ -n "$CONTRACT_DEPLOYER" ]; then
+            echo "CONTRACT_DEPLOYER=\"$CONTRACT_DEPLOYER\"" >> .env
+            echo "📋 Saved contract deployer to .env file"
+          fi
+
+          if [ -n "$PK_NULLIFIER" ]; then
+            echo "CONTRACT_PK_NULLIFIER=\"$PK_NULLIFIER\"" >> .env
+          fi
+
+          if [ -n "$PK_INCOMING" ]; then
+            echo "CONTRACT_PK_INCOMING=\"$PK_INCOMING\"" >> .env
+          fi
+
+          if [ -n "$PK_OUTGOING" ]; then
+            echo "CONTRACT_PK_OUTGOING=\"$PK_OUTGOING\"" >> .env
+          fi
+
+          if [ -n "$PK_TAGGING" ]; then
+            echo "CONTRACT_PK_TAGGING=\"$PK_TAGGING\"" >> .env
+          fi
+
+          if [ -n "$CONSTRUCTOR_ARGS" ]; then
+            echo "CONTRACT_CONSTRUCTOR_ARGS=\"$CONSTRUCTOR_ARGS\"" >> .env
+            echo "📋 Saved constructor args to .env file"
+          fi
+
       - name: Run sandbox scripts
         run: |
           script -e -c "yarn fees"
-          script -e -c "yarn multiple-pxe"
+          script -e -c "yarn multiple-wallet"
           script -e -c "yarn profile"
           script -e -c "yarn interaction-existing-contract"

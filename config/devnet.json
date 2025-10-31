@@ -1,14 +1,14 @@
 {
-  "name": "testnet",
-  "environment": "testnet",
+  "name": "devnet",
+  "environment": "devnet",
   "network": {
-    "nodeUrl": "https://aztec-testnet-fullnode.zkv.xyz",
+    "nodeUrl": "https://devnet.aztec-labs.com/",
     "l1RpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
     "l1ChainId": 11155111
   },
   "settings": {
     "skipSandbox": true,
-    "version": "2.0.2"
+    "version": "3.0.0-devnet.2"
   },
   "timeouts": {
     "deployTimeout": 1200000,

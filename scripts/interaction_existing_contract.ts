@@ -1,28 +1,32 @@
-import { createLogger, Logger, SponsoredFeePaymentMethod, Fr, AztecAddress } from "@aztec/aztec.js";
+import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { Fr } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { setupPXE } from "../src/utils/setup_pxe.js";
+import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
+import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
 
 async function main() {
     let logger: Logger;
     logger = createLogger('aztec:voting-operations-existing');
-    
+
     const timeouts = getTimeouts();
 
-    // Setup PXE
-    const pxe = await setupPXE();
+    // Setup wallet
+    const wallet = await setupWallet();
 
     // Setup sponsored fee payment
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Get account from environment variables
-    const accountManager = await getAccountFromEnv(pxe);
-    const wallet = await accountManager.getWallet();
+    const accountManager = await getAccountFromEnv(wallet);
+    const address = accountManager.address;
 
     // Connect to existing voting contract (replace with your deployed contract address)
     const contractAddress = process.env.VOTING_CONTRACT_ADDRESS;
@@ -32,10 +36,55 @@ async function main() {
     }
 
     logger.info(`Connecting to voting contract at: ${contractAddress}`);
+    // Get instantiation parameters from environment variables
+    const contractSalt = process.env.CONTRACT_SALT;
+    const contractDeployer = process.env.CONTRACT_DEPLOYER;
+    const constructorArgsJson = process.env.CONTRACT_CONSTRUCTOR_ARGS;
+
+    if (!contractSalt || !contractDeployer || !constructorArgsJson) {
+        logger.error("Missing contract instantiation data in .env file");
+        logger.error("Please ensure CONTRACT_SALT, CONTRACT_DEPLOYER, and CONTRACT_CONSTRUCTOR_ARGS are set");
+        return;
+    }
+
+    logger.info("📦 Reconstructing contract instance from environment variables...");
+
+    // Parse constructor args
+    let constructorArgs;
+    try {
+        // Clean the JSON string (handles both workflow and local usage)
+        const cleanedJson = constructorArgsJson
+            .trim()                           // Remove leading/trailing whitespace
+            .replace(/^['"]|['"]$/g, '');     // Remove surrounding quotes from .env parsing
+
+        constructorArgs = JSON.parse(cleanedJson).map((arg: string) => AztecAddress.fromString(arg));
+    } catch (error) {
+        logger.error(`Failed to parse constructor args: ${constructorArgsJson}`);
+        logger.error(`Error: ${error}`);
+        throw error;
+    }
+
+    // Reconstruct contract instance
+    const votingContractAddress = AztecAddress.fromString(contractAddress);
+
+    const instance = await getContractInstanceFromInstantiationParams(PrivateVotingContract.artifact, {
+        constructorArgs,
+        salt: Fr.fromString(contractSalt),
+        deployer: AztecAddress.fromString(contractDeployer)
+    });
+
+    logger.info("✅ Contract instance reconstructed successfully");
+
+    // Register the contract with the wallet
+    await wallet.registerContract({ instance, artifact: PrivateVotingContract.artifact });
+
+
+    // Get the contract instance from the PXE
     const votingContract = await PrivateVotingContract.at(
-        AztecAddress.fromString(contractAddress),
+        votingContractAddress,
         wallet
     );
+
 
     // Define a candidate to vote for (using a Field value)
     const candidate = Fr.fromString("1"); // Voting for candidate "1"
@@ -43,7 +92,7 @@ async function main() {
     // First get_vote call - check initial vote count
     logger.info("Getting initial vote count...");
     const initialVoteCount = await votingContract.methods.get_vote(candidate).simulate({
-        from: wallet.getAddress()
+        from: address
     });
     logger.info(`Initial vote count for candidate ${candidate}: ${initialVoteCount}`);
 
@@ -51,7 +100,7 @@ async function main() {
     logger.info("Casting vote...");
     await votingContract.methods.cast_vote(candidate)
         .send({
-            from: wallet.getAddress(),
+            from: address,
             fee: { paymentMethod: sponsoredPaymentMethod }
         })
         .wait({ timeout: timeouts.txTimeout });
@@ -60,7 +109,7 @@ async function main() {
     // Second get_vote call - check updated vote count
     logger.info("Getting updated vote count...");
     const updatedVoteCount = await votingContract.methods.get_vote(candidate).simulate({
-        from: wallet.getAddress()
+        from: address
     });
     logger.info(`Updated vote count for candidate ${candidate}: ${updatedVoteCount}`);
 
