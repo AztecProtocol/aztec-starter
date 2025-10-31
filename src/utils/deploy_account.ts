@@ -6,8 +6,9 @@ import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "./setup_wallet.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { AccountManager } from "@aztec/aztec.js/wallet";
+import { TestWallet } from "@aztec/test-wallet/server";
 
-export async function deploySchnorrAccount(): Promise<AccountManager> {
+export async function deploySchnorrAccount(wallet?: TestWallet): Promise<AccountManager> {
     let logger: Logger;
     logger = createLogger('aztec:aztec-starter');
     logger.info('👤 Starting Schnorr account deployment...');
@@ -22,8 +23,8 @@ export async function deploySchnorrAccount(): Promise<AccountManager> {
     logger.info(`🖊️ Signing key generated: ${signingKey.toString()}`);
     logger.info(`🧂 Salt generated: ${salt.toString()}`);
 
-    const wallet = await setupWallet()
-    const account = await wallet.createSchnorrAccount(secretKey, salt, signingKey)
+    const activeWallet = wallet ?? await setupWallet()
+    const account = await activeWallet.createSchnorrAccount(secretKey, salt, signingKey)
     logger.info(`📍 Account address will be: ${account.address}`);
 
     const deployMethod = await account.getDeployMethod();
@@ -34,7 +35,7 @@ export async function deploySchnorrAccount(): Promise<AccountManager> {
     logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
 
     logger.info('📝 Registering sponsored FPC contract with PXE...');
-    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await activeWallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     logger.info('✅ Sponsored fee payment method configured for account deployment');
 

@@ -1,14 +1,15 @@
 import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
-import { createLogger, PXE, Logger, SponsoredFeePaymentMethod, Fr } from "@aztec/aztec.js";
+import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { Fr } from "@aztec/aztec.js/fields";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
-import { setupPXE } from "../src/utils/setup_wallet.js";
+import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { getTimeouts } from "../config/config.js";
 
 async function main() {
-    let pxe: PXE;
     let logger: Logger;
 
     logger = createLogger('aztec:aztec-starter');
@@ -16,27 +17,25 @@ async function main() {
 
     const timeouts = getTimeouts();
 
-    // Setup PXE
-    logger.info('📡 Setting up PXE connection...');
-    pxe = await setupPXE();
-    const nodeInfo = await pxe.getNodeInfo();
-    logger.info(`📊 Connected to node`);
+    // Setup wallet
+    logger.info('📡 Setting up wallet...');
+    const wallet = await setupWallet();
+    logger.info(`📊 Wallet set up successfully`);
 
     // Setup sponsored FPC
     logger.info('💰 Setting up sponsored fee payment contract...');
     const sponsoredFPC = await getSponsoredFPCInstance();
     logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
 
-    logger.info('📝 Registering sponsored FPC contract with PXE...');
-    await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    logger.info('📝 Registering sponsored FPC contract with wallet...');
+    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     logger.info('✅ Sponsored fee payment method configured');
 
     // Deploy account
     logger.info('👤 Deploying Schnorr account...');
-    let accountManager = await deploySchnorrAccount(pxe);
-    const wallet = await accountManager.getWallet();
-    const address = await accountManager.getAddress();
+    let accountManager = await deploySchnorrAccount(wallet);
+    const address = accountManager.address;
     logger.info(`✅ Account deployed successfully at: ${address}`);
 
     // Deploy voting contract
@@ -44,7 +43,7 @@ async function main() {
     logger.info(`📋 Admin address for voting contract: ${address}`);
 
     const deployTx = PrivateVotingContract.deploy(wallet, address).send({
-        from: wallet.getAddress(),
+        from: address,
         fee: { paymentMethod: sponsoredPaymentMethod }
     });
 
@@ -61,7 +60,7 @@ async function main() {
         // Test a read operation
         logger.info('🧪 Testing contract read operation...');
         const initialVoteCount = await votingContract.methods.get_vote(Fr.fromString("1")).simulate({
-            from: wallet.getAddress()
+            from: address
         });
         logger.info(`📊 Initial vote count for candidate 1: ${initialVoteCount}`);
 

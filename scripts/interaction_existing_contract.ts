@@ -1,7 +1,10 @@
-import { createLogger, Logger, SponsoredFeePaymentMethod, Fr, AztecAddress } from "@aztec/aztec.js";
+import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { Fr } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { setupPXE } from "../src/utils/setup_wallet.js";
+import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
@@ -12,17 +15,17 @@ async function main() {
 
     const timeouts = getTimeouts();
 
-    // Setup PXE
-    const pxe = await setupPXE();
+    // Setup wallet
+    const wallet = await setupWallet();
 
     // Setup sponsored fee payment
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await pxe.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Get account from environment variables
-    const accountManager = await getAccountFromEnv(pxe);
-    const wallet = await accountManager.getWallet();
+    const accountManager = await getAccountFromEnv(wallet);
+    const address = accountManager.address;
 
     // Connect to existing voting contract (replace with your deployed contract address)
     const contractAddress = process.env.VOTING_CONTRACT_ADDRESS;
@@ -43,7 +46,7 @@ async function main() {
     // First get_vote call - check initial vote count
     logger.info("Getting initial vote count...");
     const initialVoteCount = await votingContract.methods.get_vote(candidate).simulate({
-        from: wallet.getAddress()
+        from: address
     });
     logger.info(`Initial vote count for candidate ${candidate}: ${initialVoteCount}`);
 
@@ -51,7 +54,7 @@ async function main() {
     logger.info("Casting vote...");
     await votingContract.methods.cast_vote(candidate)
         .send({
-            from: wallet.getAddress(),
+            from: address,
             fee: { paymentMethod: sponsoredPaymentMethod }
         })
         .wait({ timeout: timeouts.txTimeout });
@@ -60,7 +63,7 @@ async function main() {
     // Second get_vote call - check updated vote count
     logger.info("Getting updated vote count...");
     const updatedVoteCount = await votingContract.methods.get_vote(candidate).simulate({
-        from: wallet.getAddress()
+        from: address
     });
     logger.info(`Updated vote count for candidate ${candidate}: ${updatedVoteCount}`);
 

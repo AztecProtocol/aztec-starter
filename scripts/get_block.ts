@@ -1,12 +1,11 @@
-import { PXE } from "@aztec/aztec.js";
-import { setupPXE } from "../src/utils/setup_wallet.js";
+import { createAztecNodeClient } from "@aztec/aztec.js/node";
+import { getAztecNodeUrl } from "../config/config.js";
 
 async function main() {
 
-    let pxe: PXE;
-    pxe = await setupPXE();
-
-    let block = await pxe.getBlock(1);
+    const nodeUrl = getAztecNodeUrl();
+    const node = createAztecNodeClient(nodeUrl);
+    let block = await node.getBlock(1);
     console.log(block)
     console.log(await block?.hash())
 }

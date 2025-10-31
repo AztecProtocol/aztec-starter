@@ -4,14 +4,14 @@ import { AccountManager } from "@aztec/aztec.js/wallet";
 import { PXE } from "@aztec/pxe/client/bundle";
 import { setupWallet } from "./setup_wallet.js";
 import * as dotenv from 'dotenv';
+import { TestWallet } from "@aztec/test-wallet/server";
 
 // Load environment variables
 dotenv.config();
 
-export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
+export async function createAccountFromEnv(wallet: TestWallet): Promise<AccountManager> {
     let logger: Logger;
     logger = createLogger('aztec:create-account');
-    const wallet = await setupWallet();
 
     logger.info('🔐 Creating Schnorr account from environment variables...');
 
@@ -56,8 +56,8 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
     // Check if account is already deployed
     logger.info('🔍 Checking if account is already deployed...');
     try {
-        const registeredAccounts = await pxe.getRegisteredAccounts();
-        const isRegistered = registeredAccounts.some(acc => acc.address.equals(accountAddress));
+        const registeredAccounts = await wallet.getAccounts();
+        const isRegistered = registeredAccounts.some(acc => acc.item.equals(accountAddress));
 
         if (isRegistered) {
             logger.info('✅ Account is already registered with PXE');
@@ -77,6 +77,6 @@ export async function createAccountFromEnv(pxe: PXE): Promise<AccountManager> {
     return schnorrAccount;
 }
 
-export async function getAccountFromEnv(pxe: PXE): Promise<AccountManager> {
-    return await createAccountFromEnv(pxe);
+export async function getAccountFromEnv(wallet: TestWallet): Promise<AccountManager> {
+    return await createAccountFromEnv(wallet);
 } 
