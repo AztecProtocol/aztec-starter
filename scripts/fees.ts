@@ -93,6 +93,7 @@ async function main() {
     const maxFeesPerGas = (await node.getCurrentBaseFees()).mul(1.5);
     const gasSettings = GasSettings.default({ maxFeesPerGas });
 
+    // TODO: Fix
     // // Create a new voting contract instance, interacting from the newWallet
     // const useFeeJuice = new PublicFeePaymentMethod(feeJuiceInstance.address, account2.address, wallet, gasSettings)
     // await votingContract.methods.cast_vote(account1.address).send({

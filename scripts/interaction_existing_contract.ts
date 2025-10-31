@@ -35,6 +35,7 @@ async function main() {
     }
 
     logger.info(`Connecting to voting contract at: ${contractAddress}`);
+    wallet.registerContract(AztecAddress.fromString(contractAddress), PrivateVotingContract.artifact)
     const votingContract = await PrivateVotingContract.at(
         AztecAddress.fromString(contractAddress),
         wallet

@@ -92,6 +92,8 @@ describe("Accounts", () => {
     it("Creates accounts with fee juice", async () => {
         if (getEnv() === 'devnet') return;
 
+        // TODO: fix
+
         // console.log('Starting "Creates accounts with fee juice" test');
         // console.log(`Random addresses: ${randomAddresses.map(a => a.toString()).join(', ')}`);
 
