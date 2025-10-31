@@ -8,6 +8,7 @@ import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
+import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
 
 async function main() {
     let logger: Logger;
@@ -35,11 +36,43 @@ async function main() {
     }
 
     logger.info(`Connecting to voting contract at: ${contractAddress}`);
-    wallet.registerContract(AztecAddress.fromString(contractAddress), PrivateVotingContract.artifact)
+    // Get instantiation parameters from environment variables
+    const contractSalt = process.env.CONTRACT_SALT;
+    const contractDeployer = process.env.CONTRACT_DEPLOYER;
+    const constructorArgsJson = process.env.CONTRACT_CONSTRUCTOR_ARGS;
+
+    if (!contractSalt || !contractDeployer || !constructorArgsJson) {
+        logger.error("Missing contract instantiation data in .env file");
+        logger.error("Please ensure CONTRACT_SALT, CONTRACT_DEPLOYER, and CONTRACT_CONSTRUCTOR_ARGS are set");
+        return;
+    }
+
+    logger.info("📦 Reconstructing contract instance from environment variables...");
+
+    // Parse constructor args
+    const constructorArgs = JSON.parse(constructorArgsJson).map((arg: string) => AztecAddress.fromString(arg));
+
+    // Reconstruct contract instance
+    const votingContractAddress = AztecAddress.fromString(contractAddress);
+
+    const instance = await getContractInstanceFromInstantiationParams(PrivateVotingContract.artifact, {
+        constructorArgs,
+        salt: Fr.fromString(contractSalt),
+        deployer: AztecAddress.fromString(contractDeployer)
+    });
+
+    logger.info("✅ Contract instance reconstructed successfully");
+
+    // Register the contract with the wallet
+    await wallet.registerContract({ instance, artifact: PrivateVotingContract.artifact });
+
+
+    // Get the contract instance from the PXE
     const votingContract = await PrivateVotingContract.at(
-        AztecAddress.fromString(contractAddress),
+        votingContractAddress,
         wallet
     );
+
 
     // Define a candidate to vote for (using a Field value)
     const candidate = Fr.fromString("1"); // Voting for candidate "1"
