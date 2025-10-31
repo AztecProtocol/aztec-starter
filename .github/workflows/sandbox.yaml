@@ -93,9 +93,9 @@ jobs:
 
           cat "$TEMP_OUTPUT"
 
-          SECRET_KEY=$(grep -o "🔑 Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🔑 Secret key generated: //' || echo "")
-          SIGNING_KEY=$(grep -o "🖊️ Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🖊️ Signing key generated: //' || echo "")
-          SALT_VALUE=$(grep -o "🧂 Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/🧂 Salt generated: //' || echo "")
+          SECRET_KEY=$(grep -o "Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Secret key generated: //' || echo "")
+          SIGNING_KEY=$(grep -o "Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Signing key generated: //' || echo "")
+          SALT_VALUE=$(grep -o "Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Salt generated: //' || echo "")
 
           rm "$TEMP_OUTPUT"
 

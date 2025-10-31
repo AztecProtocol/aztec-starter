@@ -72,15 +72,15 @@ async function main() {
     const instance = votingContract.instance;
     if (instance) {
         logger.info('📦 Contract instantiation data:');
-        logger.info(`🧂 Salt: ${instance.salt}`);
-        logger.info(`👤 Deployer: ${instance.deployer}`);
+        logger.info(`Salt: ${instance.salt}`);
+        logger.info(`Deployer: ${instance.deployer}`);
         if (instance.publicKeys) {
-            logger.info(`🔑 Public Keys - Master Nullifier: ${instance.publicKeys.masterNullifierPublicKey}`);
-            logger.info(`🔑 Public Keys - Master Incoming Viewing: ${instance.publicKeys.masterIncomingViewingPublicKey}`);
-            logger.info(`🔑 Public Keys - Master Outgoing Viewing: ${instance.publicKeys.masterOutgoingViewingPublicKey}`);
-            logger.info(`🔑 Public Keys - Master Tagging: ${instance.publicKeys.masterTaggingPublicKey}`);
+            logger.info(`Public Keys - Master Nullifier: ${instance.publicKeys.masterNullifierPublicKey}`);
+            logger.info(`Public Keys - Master Incoming Viewing: ${instance.publicKeys.masterIncomingViewingPublicKey}`);
+            logger.info(`Public Keys - Master Outgoing Viewing: ${instance.publicKeys.masterOutgoingViewingPublicKey}`);
+            logger.info(`Public Keys - Master Tagging: ${instance.publicKeys.masterTaggingPublicKey}`);
         }
-        logger.info(`📝 Constructor args: ${JSON.stringify([address.toString()])}`);
+        logger.info(`Constructor args: ${JSON.stringify([address.toString()])}`);
     }
 
     logger.info('🏁 Deployment process completed successfully!');
