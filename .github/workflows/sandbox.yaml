@@ -176,7 +176,7 @@ jobs:
           fi
 
           if [ -n "$CONSTRUCTOR_ARGS" ]; then
-            echo "CONTRACT_CONSTRUCTOR_ARGS='$CONSTRUCTOR_ARGS'" >> .env
+            echo "CONTRACT_CONSTRUCTOR_ARGS=\"$CONSTRUCTOR_ARGS\"" >> .env
             echo "📋 Saved constructor args to .env file"
           fi
 

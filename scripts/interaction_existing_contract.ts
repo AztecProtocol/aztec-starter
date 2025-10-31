@@ -50,7 +50,17 @@ async function main() {
     logger.info("📦 Reconstructing contract instance from environment variables...");
 
     // Parse constructor args
-    const constructorArgs = JSON.parse(constructorArgsJson).map((arg: string) => AztecAddress.fromString(arg));
+    let constructorArgs;
+    try {
+        // Remove any surrounding quotes that might have been added
+        const cleanedJson = constructorArgsJson.trim().replace(/^['"]|['"]$/g, '');
+        logger.info(`Parsing constructor args: ${cleanedJson}`);
+        constructorArgs = JSON.parse(cleanedJson).map((arg: string) => AztecAddress.fromString(arg));
+    } catch (error) {
+        logger.error(`Failed to parse constructor args: ${constructorArgsJson}`);
+        logger.error(`Error: ${error}`);
+        throw error;
+    }
 
     // Reconstruct contract instance
     const votingContractAddress = AztecAddress.fromString(contractAddress);
