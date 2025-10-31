@@ -7,3 +7,4 @@ log/
 codegenCache.json
 store/
 .tsbuildinfo
+.env
