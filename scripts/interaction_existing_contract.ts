@@ -52,12 +52,21 @@ async function main() {
     // Parse constructor args
     let constructorArgs;
     try {
-        // Remove any surrounding quotes that might have been added
-        const cleanedJson = constructorArgsJson.trim().replace(/^['"]|['"]$/g, '');
+        // Remove any surrounding quotes, whitespace, and control characters
+        let cleanedJson = constructorArgsJson.trim();
+        // Remove surrounding quotes (single or double)
+        cleanedJson = cleanedJson.replace(/^['"]|['"]$/g, '');
+        // Remove any trailing whitespace or control characters
+        cleanedJson = cleanedJson.replace(/[\s\r\n]+$/, '');
+
         logger.info(`Parsing constructor args: ${cleanedJson}`);
+        logger.info(`Constructor args length: ${cleanedJson.length}`);
+
         constructorArgs = JSON.parse(cleanedJson).map((arg: string) => AztecAddress.fromString(arg));
     } catch (error) {
-        logger.error(`Failed to parse constructor args: ${constructorArgsJson}`);
+        logger.error(`Failed to parse constructor args`);
+        logger.error(`Raw value: ${JSON.stringify(constructorArgsJson)}`);
+        logger.error(`Raw value length: ${constructorArgsJson.length}`);
         logger.error(`Error: ${error}`);
         throw error;
     }

@@ -138,8 +138,8 @@ jobs:
           PK_OUTGOING=$(grep -o "Master Outgoing Viewing: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Outgoing Viewing: //' || echo "")
           PK_TAGGING=$(grep -o "Master Tagging: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Tagging: //' || echo "")
 
-          # Extract constructor args (JSON array)
-          CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | sed 's/.*Constructor args: //' || echo "")
+          # Extract constructor args (JSON array), strip ANSI codes, and trim whitespace
+          CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | sed 's/.*Constructor args: //' | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\n\r' | sed 's/[[:space:]]*$//' || echo "")
 
           rm "$TEMP_OUTPUT"
 
