@@ -8,7 +8,7 @@ import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getFeeJuiceBalance, type L2AmountClaim, L1FeeJuicePortalManager, FeeJuicePaymentMethodWithClaim, AztecAddress } from "@aztec/aztec.js";
 import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
-import { setupPXE } from "../../utils/setup_pxe.js";
+import { setupPXE } from "../../utils/setup_wallet.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getEnv, getL1RpcUrl, getTimeouts } from "../../../config/config.js";
 
@@ -30,7 +30,7 @@ describe("Accounts", () => {
     beforeAll(async () => {
         logger = createLogger('aztec:aztec-starter:accounts');
         logger.info(`Aztec-Starter tests running.`)
-        
+
         pxe = await setupPXE('accounts');
 
         const sponsoredFPCInstance = await getContractInstanceFromInstantiationParams(SponsoredFPCContract.artifact, {
@@ -38,7 +38,7 @@ describe("Accounts", () => {
         });
         await pxe.registerContract({ instance: sponsoredFPCInstance, artifact: SponsoredFPCContract.artifact });
         sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPCInstance.address);
-        
+
         // create default ethereum clients
         const nodeInfo = await pxe.getNodeInfo();
         const chain = createEthereumChain([getL1RpcUrl()], nodeInfo.l1ChainId);
@@ -62,7 +62,7 @@ describe("Accounts", () => {
         ownerWallet = await schnorrAccount.getWallet();
     }, 600000)
 
-    beforeEach(async () => {        
+    beforeEach(async () => {
         // generate random accounts
         randomAccountManagers = await Promise.all(
             (await generateSchnorrAccounts(2)).map(

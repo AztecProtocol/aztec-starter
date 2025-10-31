@@ -1,5 +1,5 @@
 import { PXE } from "@aztec/aztec.js";
-import { setupPXE } from "../src/utils/setup_pxe.js";
+import { setupPXE } from "../src/utils/setup_wallet.js";
 
 async function main() {
 

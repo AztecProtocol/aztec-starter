@@ -1,8 +1,8 @@
-name: Testnet Tests
+name: Devnet Tests
 
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
   workflow_dispatch:
     inputs:
       skip_deployment:
@@ -12,11 +12,11 @@ on:
         default: false
 
 jobs:
-  testnet-tests:
-    name: Testnet Tests
+  devnet-tests:
+    name: Devnet Tests
     runs-on: ubuntu-latest
     env:
-      AZTEC_ENV: testnet
+      AZTEC_ENV: devnet
 
     steps:
       - name: Checkout repository
@@ -45,23 +45,23 @@ jobs:
       - name: Generate contract artifacts
         run: script -e -c "aztec codegen target --outdir src/artifacts && aztec-postprocess-contract"
 
-      - name: Setup testnet environment
+      - name: Setup devnet environment
         run: |
-          echo "📋 Using testnet configuration from config/testnet.json"
-          cat config/testnet.json
+          echo "📋 Using devnet configuration from config/devnet.json"
+          cat config/devnet.json
 
-      - name: Test testnet connectivity
+      - name: Test devnet connectivity
         run: |
-          echo "Testing testnet connectivity..."
-          curl -s https://aztec-testnet-fullnode.zkv.xyz/status || echo "Warning: Could not connect to testnet"
+          echo "Testing devnet connectivity..."
+          curl -s https://devnet.aztec-labs.com/status || echo "Warning: Could not connect to devnet"
 
-      - name: Deploy account to testnet
+      - name: Deploy account to devnet
         if: ${{ !inputs.skip_deployment }}
         run: |
           TEMP_OUTPUT=$(mktemp)
 
-          if script -e -c "yarn deploy-account::testnet" > "$TEMP_OUTPUT" 2>&1; then
-            echo "✅ Deploy account to testnet completed successfully"
+          if script -e -c "yarn deploy-account::devnet" > "$TEMP_OUTPUT" 2>&1; then
+            echo "✅ Deploy account to devnet completed successfully"
           else
             echo "❌ Deploy account script failed"
             cat "$TEMP_OUTPUT"
@@ -87,13 +87,13 @@ jobs:
             exit 1
           fi
 
-      - name: Deploy contract to testnet
+      - name: Deploy contract to devnet
         if: ${{ !inputs.skip_deployment }}
         run: |
           TEMP_OUTPUT=$(mktemp)
 
-          if script -e -c "yarn deploy::testnet" > "$TEMP_OUTPUT" 2>&1; then
-            echo "✅ Deploy contract to testnet completed successfully"
+          if script -e -c "yarn deploy::devnet" > "$TEMP_OUTPUT" 2>&1; then
+            echo "✅ Deploy contract to devnet completed successfully"
           else
             echo "❌ Deploy contract script failed"
             cat "$TEMP_OUTPUT"
@@ -114,24 +114,24 @@ jobs:
             echo "⚠️ Warning: Could not extract contract address"
           fi
 
-      - name: Run testnet scripts
+      - name: Run devnet scripts
         run: |
-          echo "Running testnet scripts..."
-          script -e -c "yarn get-block::testnet"
-          
+          echo "Running devnet scripts..."
+          script -e -c "yarn get-block::devnet"
+
       - name: Run interaction test with existing contract
         if: ${{ inputs.skip_deployment }}
         run: |
-          echo "Running interaction with existing contract on testnet..."
-          script -e -c "yarn interaction-existing-contract::testnet"
+          echo "Running interaction with existing contract on devnet..."
+          script -e -c "yarn interaction-existing-contract::devnet"
 
-      - name: Run JavaScript tests on testnet
+      - name: Run JavaScript tests on devnet
         run: |
-          echo "Running JavaScript tests against testnet..."
+          echo "Running JavaScript tests against devnet..."
           script -e -c "rm -rf store/pxe"
-          script -e -c "ENV=testnet NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json"
+          script -e -c "ENV=devnet NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json"
 
-      - name: Profile deployment on testnet
+      - name: Profile deployment on devnet
         if: ${{ !inputs.skip_deployment }}
         run: |
-          script -e -c "yarn profile::testnet"
+          script -e -c "yarn profile::devnet"

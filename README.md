@@ -45,7 +45,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 2.0.2
+aztec-up 3.0.0-devnet.2
 ```
 
 ### Environment Configuration

@@ -1,5 +1,5 @@
 import { createLogger, Logger } from "@aztec/aztec.js";
-import { setupPXE } from "../src/utils/setup_pxe.js";
+import { setupPXE } from "../src/utils/setup_wallet.js";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 
 export async function deployAccount() {

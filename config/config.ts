@@ -19,7 +19,7 @@ export interface TimeoutConfig {
 
 export interface EnvironmentConfig {
   name: string;
-  environment: 'local' | 'testnet' | 'mainnet';
+  environment: 'local' | 'testnet' | 'devnet' | 'mainnet';
   network: NetworkConfig;
   settings: {
     skipSandbox: boolean;
@@ -66,7 +66,7 @@ export class ConfigManager {
   }
 
   public isTestnet(): boolean {
-    return this.config.environment === 'testnet';
+    return this.config.environment === 'devnet';
   }
 
   public isSandbox(): boolean {
@@ -89,7 +89,7 @@ export class ConfigManager {
     if (this.config.timeouts) {
       return this.config.timeouts;
     }
-    
+
     // Otherwise, use defaults based on environment
     if (this.isTestnet()) {
       return {
@@ -98,7 +98,7 @@ export class ConfigManager {
         waitTimeout: 60000     // 1 minute
       };
     }
-    
+
     return {
       deployTimeout: 120000, // 2 minutes
       txTimeout: 60000,      // 1 minute

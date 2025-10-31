@@ -1,6 +1,6 @@
 import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
 import { createLogger, PXE, Logger, SponsoredFeePaymentMethod, Fr } from "@aztec/aztec.js";
-import { setupPXE } from "../src/utils/setup_pxe.js";
+import { setupPXE } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";

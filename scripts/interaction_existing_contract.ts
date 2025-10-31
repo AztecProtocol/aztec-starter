@@ -1,7 +1,7 @@
 import { createLogger, Logger, SponsoredFeePaymentMethod, Fr, AztecAddress } from "@aztec/aztec.js";
 import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { setupPXE } from "../src/utils/setup_pxe.js";
+import { setupPXE } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
@@ -9,7 +9,7 @@ import { getTimeouts } from "../config/config.js";
 async function main() {
     let logger: Logger;
     logger = createLogger('aztec:voting-operations-existing');
-    
+
     const timeouts = getTimeouts();
 
     // Setup PXE

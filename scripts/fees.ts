@@ -13,7 +13,7 @@ import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { getDeployedSponsoredFPCAddress, getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { createEthereumChain, createExtendedL1Client } from "@aztec/ethereum";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
-import { setupPXE } from "../src/utils/setup_pxe.js";
+import { setupPXE } from "../src/utils/setup_wallet.js";
 import { createLogger, FeeJuicePaymentMethod, FeeJuicePaymentMethodWithClaim, Fq, Fr, L1FeeJuicePortalManager, Logger, PrivateFeePaymentMethod, PublicFeePaymentMethod, PXE } from '@aztec/aztec.js';
 import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
