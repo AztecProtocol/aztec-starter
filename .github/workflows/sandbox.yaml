@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: sandbox
+      VERSION: 3.0.0-devnet.2
 
     steps:
       - name: Checkout repository
@@ -41,7 +42,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=3.0.0-devnet.2 aztec-up
+          VERSION=${{ env.VERSION }} aztec-up
           aztec start --sandbox &
 
       - name: Wait for sandbox to be ready
@@ -60,10 +61,10 @@ jobs:
         run: yarn
 
       - name: Compile contracts
-        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
+        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile && aztec-postprocess-contract"
 
       - name: Generate contract artifacts
-        run: script -e -c "aztec codegen target --outdir src/artifacts && aztec-postprocess-contract"
+        run: script -e -c "aztec codegen target --outdir src/artifacts"
 
       - name: Change ownership for nargo files
         run: sudo chown -R $(whoami) ~/nargo && sudo chown -R $(whoami) ~/nargo/github.com

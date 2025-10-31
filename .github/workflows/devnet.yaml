@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: devnet
+      VERSION: 3.0.0-devnet.2
 
     steps:
       - name: Checkout repository
@@ -36,14 +37,18 @@ jobs:
       - name: Update path
         run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
 
+      - name: Set Aztec version
+        run: |
+          aztec-up ${{ env.VERSION }}
+
       - name: Install project dependencies
         run: yarn
 
       - name: Compile contracts
-        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile"
+        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile && aztec-postprocess-contract"
 
       - name: Generate contract artifacts
-        run: script -e -c "aztec codegen target --outdir src/artifacts && aztec-postprocess-contract"
+        run: script -e -c "aztec codegen target --outdir src/artifacts"
 
       - name: Setup devnet environment
         run: |
