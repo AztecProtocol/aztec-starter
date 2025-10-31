@@ -12,9 +12,9 @@ This repo is meant to be a starting point for learning to write Aztec contracts 
 
 You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
 
-## Testnet
+## Devnet
 
-This repo connects to a locally running Aztec Sandbox by default, but can be configured to connect to the testnet by specifying `AZTEC_ENV=testnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=testnet yarn deploy`.
+This repo connects to a locally running Aztec Sandbox by default, but can be configured to connect to the devnet by specifying `AZTEC_ENV=devnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=devnet yarn deploy`.
 
 <div align="center">
 
@@ -53,7 +53,7 @@ aztec-up 3.0.0-devnet.2
 This project uses JSON configuration files to manage environment-specific settings:
 
 - `config/sandbox.json` - Configuration for local sandbox development
-- `config/testnet.json` - Configuration for testnet deployment
+- `config/devnet.json` - Configuration for devnet deployment
 
 The system automatically loads the appropriate configuration file based on the `ENV` environment variable. If `ENV` is not set, it defaults to `sandbox`.
 
@@ -74,18 +74,18 @@ yarn deploy       # Deploy to sandbox
 yarn test         # Run tests on sandbox
 ```
 
-### Running on Testnet
+### Running on Devnet
 
-All scripts support a `::testnet` suffix to automatically use testnet configuration:
+All scripts support a `::devnet` suffix to automatically use devnet configuration:
 
 ```bash
-yarn deploy::testnet              # Deploy to testnet
-yarn test::testnet                # Run tests on testnet
-yarn deploy-account::testnet      # Deploy account to testnet
-yarn interaction-existing-contract::testnet  # Interact with testnet contracts
+yarn deploy::devnet              # Deploy to devnet
+yarn test::devnet                # Run tests on devnet
+yarn deploy-account::devnet      # Deploy account to devnet
+yarn interaction-existing-contract::devnet  # Interact with devnet contracts
 ```
 
-The `::testnet` suffix automatically sets `ENV=testnet`, loading configuration from `config/testnet.json`.
+The `::devnet` suffix automatically sets `ENV=devnet`, loading configuration from `config/devnet.json`.
 
 ---
 
