@@ -86,21 +86,11 @@ async function main() {
 
     // Pay fees yourself
 
-    const feeJuiceInstance = await getCanonicalFeeJuice();
-    wallet.registerContract(feeJuiceInstance.address, FeeJuiceContract.artifact)
-    const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet)
-
-    const maxFeesPerGas = (await node.getCurrentBaseFees()).mul(1.5);
-    const gasSettings = GasSettings.default({ maxFeesPerGas });
-
-    // TODO: Fix
-    // // Create a new voting contract instance, interacting from the newWallet
-    // const useFeeJuice = new PublicFeePaymentMethod(feeJuiceInstance.address, account2.address, wallet, gasSettings)
-    // await votingContract.methods.cast_vote(account1.address).send({
-    //     from: account2.address,
-    //     fee: { paymentMethod: useFeeJuice }
-    // }).wait()
-    // logger.info(`Vote cast from new account, paying fees via newWallet.`)
+    // Create a new voting contract instance, interacting from the newWallet
+    await votingContract.methods.cast_vote(account1.address).send({
+        from: account2.address,
+    }).wait()
+    logger.info(`Vote cast from new account, paying fees via newWallet.`)
 
     // Private Fee Payments via FPC
 
@@ -130,12 +120,18 @@ async function main() {
 
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
+    const feeJuiceInstance = await getCanonicalFeeJuice();
+    wallet.registerContract(feeJuiceInstance.address, FeeJuiceContract.artifact)
+    const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet)
 
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address }).wait()
 
     logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate({
         from: account2.address
     })}`)
+
+    const maxFeesPerGas = (await node.getCurrentBaseFees()).mul(1.5);
+    const gasSettings = GasSettings.default({ maxFeesPerGas });
 
     const privateFee = new PrivateFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings)
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
