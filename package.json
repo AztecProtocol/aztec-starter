@@ -34,13 +34,13 @@
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {
-    "@aztec/accounts": "3.0.0-devnet.2",
-    "@aztec/aztec.js": "3.0.0-devnet.2",
-    "@aztec/noir-contracts.js": "3.0.0-devnet.2",
-    "@aztec/protocol-contracts": "3.0.0-devnet.2",
-    "@aztec/pxe": "3.0.0-devnet.2",
-    "@aztec/stdlib": "3.0.0-devnet.2",
-    "@aztec/test-wallet": "3.0.0-devnet.2",
+    "@aztec/accounts": "3.0.0-devnet.4",
+    "@aztec/aztec.js": "3.0.0-devnet.4",
+    "@aztec/noir-contracts.js": "3.0.0-devnet.4",
+    "@aztec/protocol-contracts": "3.0.0-devnet.4",
+    "@aztec/pxe": "3.0.0-devnet.4",
+    "@aztec/stdlib": "3.0.0-devnet.4",
+    "@aztec/test-wallet": "3.0.0-devnet.4",
     "dotenv": "^17.2.2"
   },
   "devDependencies": {

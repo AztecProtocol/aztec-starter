@@ -16,7 +16,7 @@ let readmeContent = readFileSync(readmePath, 'utf8');
 
 // Update the aztec-up version
 const updatedContent = readmeContent.replace(
-    /aztec-up \d+\.\d+\.\d+/,
+    /aztec-up [0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?/,
     `aztec-up ${version}`
 );
 
