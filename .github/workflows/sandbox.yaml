@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: sandbox
-      VERSION: 3.0.0-devnet.2
+      VERSION: 3.0.0-devnet.5
 
     steps:
       - name: Checkout repository
@@ -42,7 +42,7 @@ jobs:
 
       - name: Set Aztec version and start sandbox
         run: |
-          VERSION=3.0.0-devnet.5${{ env.VERSION }} aztec-up
+          VERSION=${{ env.VERSION }} aztec-up
           aztec start --sandbox &
 
       - name: Wait for sandbox to be ready
