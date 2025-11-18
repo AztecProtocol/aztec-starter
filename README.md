@@ -45,7 +45,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-aztec-up 3.0.0-devnet.4
+aztec-up 3.0.0-devnet.5
 ```
 
 ### Environment Configuration
@@ -70,6 +70,7 @@ aztec start --sandbox
 Run scripts and tests with default sandbox configuration:
 
 ```bash
+yarn compile && yarn codegen  # Compile contract and generate TS
 yarn deploy       # Deploy to sandbox
 yarn test         # Run tests on sandbox
 ```
