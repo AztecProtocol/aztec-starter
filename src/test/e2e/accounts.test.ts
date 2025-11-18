@@ -20,9 +20,6 @@ import { TxStatus } from "@aztec/stdlib/tx";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import { FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from "@aztec/aztec.js/fee";
-import { GasFees, GasSettings } from "@aztec/stdlib/gas";
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe("Accounts", () => {
     let wallet: TestWallet;
@@ -70,8 +67,7 @@ describe("Accounts", () => {
         let signingKey = GrumpkinScalar.random();
         let salt = Fr.random();
         ownerAccount = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
-        (await ownerAccount.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
-        await wallet.registerSender(ownerAccount.address);
+        await (await ownerAccount.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
 
         // Set up fee juice contract
         const feeJuiceInstance = await getCanonicalFeeJuice();
@@ -92,78 +88,51 @@ describe("Accounts", () => {
     it("Creates accounts with fee juice", async () => {
         if (getEnv() === 'devnet') return;
 
-        // TODO: fix
-
-        // console.log('Starting "Creates accounts with fee juice" test');
-        // console.log(`Random addresses: ${randomAddresses.map(a => a.toString()).join(', ')}`);
+        console.log('Starting "Creates accounts with fee juice" test');
+        console.log(`Random addresses: ${randomAddresses.map(a => a.toString()).join(', ')}`);
 
         // balance of each random account is 0 before bridge
-        // console.log('Checking initial balances...');
-        // let balances = await Promise.all(randomAddresses.map(async a =>
-        //     await feeJuiceContract.methods.balance_of_public(a).simulate({ from: ownerAccount.address })
-        // ));
-        // console.log(`Initial balances: ${balances.join(', ')}`);
-        // balances.forEach(b => expect(b).toBe(0n));
+        console.log('Checking initial balances...');
+        let balances = await Promise.all(randomAddresses.map(async a =>
+            await feeJuiceContract.methods.balance_of_public(a).simulate({ from: ownerAccount.address })
+        ));
+        console.log(`Initial balances: ${balances.join(', ')}`);
+        balances.forEach(b => expect(b).toBe(0n));
 
         // bridge funds to unfunded random addresses
-        // const claimAmount = await l1PortalManager.getTokenManager().getMintAmount();
-        // console.log(`Claim amount: ${claimAmount}`);
-        // let claims: L2AmountClaim[] = [];
-        // bridge sequentially to avoid l1 txs (nonces) being processed out of order
-        // for (let i = 0; i < randomAddresses.length; i++) {
-        //     console.log(`Bridging tokens for address ${i}: ${randomAddresses[i].toString()}`);
-        //     const claim = await l1PortalManager.bridgeTokensPublic(randomAddresses[i], claimAmount, true);
-        //     claims.push(claim);
-        //     console.log(`Bridge complete for address ${i}`);
-        //     console.log(`  - claimAmount: ${claim.claimAmount.toString()}`);
-        //     console.log(`  - claimSecret: ${claim.claimSecret.toString()}`);
-        //     console.log(`  - messageLeafIndex: ${claim.messageLeafIndex.toString()}`);
-        // }
-        // console.log(`Total claims created: ${claims.length}`);
+        const claimAmount = await l1PortalManager.getTokenManager().getMintAmount();
+        console.log(`Claim amount: ${claimAmount}`);
+        let claims: L2AmountClaim[] = [];
+        // bridge sequentially to avoid l1 txs(nonces) being processed out of order
+        for (let i = 0; i < randomAddresses.length; i++) {
+            console.log(`Bridging tokens for address ${i}: ${randomAddresses[i].toString()}`);
+            const claim = await l1PortalManager.bridgeTokensPublic(randomAddresses[i], claimAmount, true);
+            claims.push(claim);
+        }
+        console.log(`Total claims created: ${claims.length}`);
 
         // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
-        // console.log('Deploying first PrivateVotingContract to progress blocks...');
-        // await PrivateVotingContract.deploy(wallet, ownerAccount.address).send({
-        //     from: ownerAccount.address,
-        //     fee: { paymentMethod: sponsoredPaymentMethod }
-        // }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
-        // console.log('First PrivateVotingContract deployed');
+        console.log('Deploying first PrivateVotingContract to progress blocks...');
+        await PrivateVotingContract.deploy(wallet, ownerAccount.address).send({
+            from: ownerAccount.address,
+            fee: { paymentMethod: sponsoredPaymentMethod }
+        }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
+        console.log('First PrivateVotingContract deployed');
 
-        // console.log('Deploying second PrivateVotingContract to progress blocks...');
-        // await PrivateVotingContract.deploy(wallet, ownerAccount.address).send({
-        //     from: ownerAccount.address,
-        //     fee: { paymentMethod: sponsoredPaymentMethod }
-        // }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
-        // console.log('Second PrivateVotingContract deployed');
-
-        // Manually claim fee juice for each random account first
-        // logger.info('Starting fee juice claims...');
-        // for (let i = 0; i < randomAccountManagers.length; i++) {
-        //     logger.info(`Claiming fee juice for address ${i}: ${randomAddresses[i].toString()}`);
-        //     await feeJuiceContract.methods.claim(
-        //         randomAddresses[i],
-        //         claims[i].claimAmount,
-        //         claims[i].claimSecret,
-        //         claims[i].messageLeafIndex
-        //     ).send({ from: ownerAccount.address, fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().txTimeout });
-        //     logger.info(`Claim successful for address ${i}`);
-        // }
-        // logger.info('All fee juice claims completed');
+        console.log('Deploying second PrivateVotingContract to progress blocks...');
+        await PrivateVotingContract.deploy(wallet, ownerAccount.address).send({
+            from: ownerAccount.address,
+            fee: { paymentMethod: sponsoredPaymentMethod }
+        }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
+        console.log('Second PrivateVotingContract deployed');
 
         // Now deploy random accounts using FeeJuicePaymentMethodWithClaim (which claims and pays in one tx)
-        // console.log('Starting account deployments with FeeJuicePaymentMethodWithClaim...');
-        // for (let i = 0; i < randomAccountManagers.length; i++) {
-        //     const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomAddresses[i], claims[i]);
-        //     const deployTx = (await randomAccountManagers[i].getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod } });
-        //     const receipt = await deployTx.wait({ timeout: getTimeouts().deployTimeout });
-        // }
-
-        // balance after deploy should still have full claimed amount (since we used sponsored payment)
-        // balances = await Promise.all(randomAddresses.map(async a =>
-        //     await feeJuiceContract.methods.balance_of_public(a).simulate({ from: ownerAccount.address })
-        // ));
-        // balances.forEach(b => expect(b).toBe(claimAmount));
-
+        console.log('Starting account deployments with FeeJuicePaymentMethodWithClaim...');
+        for (let i = 0; i < randomAccountManagers.length; i++) {
+            const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomAddresses[i], claims[i]);
+            const deployTx = (await randomAccountManagers[i].getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod } });
+            const receipt = await deployTx.wait({ timeout: getTimeouts().deployTimeout });
+        }
     });
 
     it("Deploys first unfunded account from first funded account", async () => {

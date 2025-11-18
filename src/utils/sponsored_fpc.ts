@@ -4,11 +4,8 @@ import {
   type ContractInstanceWithAddress,
 } from '@aztec/aztec.js/contracts';
 import type { Wallet } from '@aztec/aztec.js/wallet';
-import type { AztecAddress } from '@aztec/stdlib/aztec-address';
 import type { LogFn } from '@aztec/foundation/log';
 import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
-
-type PxeLike = { getContracts(): Promise<AztecAddress[]> };
 
 const SPONSORED_FPC_SALT = new Fr(0);
 
@@ -33,13 +30,4 @@ export async function setupSponsoredFPC(deployer: Wallet, log: LogFn) {
     .deployed();
 
   log(`SponsoredFPC: ${deployed.address}`);
-}
-
-export async function getDeployedSponsoredFPCAddress(pxe: PxeLike) {
-  const fpc = await getSponsoredFPCAddress();
-  const contracts = await pxe.getContracts();
-  if (!contracts.find(c => c.equals(fpc))) {
-    throw new Error('SponsoredFPC not deployed.');
-  }
-  return fpc;
 }

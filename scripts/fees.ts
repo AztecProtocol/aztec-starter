@@ -9,7 +9,7 @@ import { FPCContract } from "@aztec/noir-contracts.js/FPC";
 import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
-import { getDeployedSponsoredFPCAddress, getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
+import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { createEthereumChain, createExtendedL1Client } from "@aztec/ethereum";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { setupWallet } from "../src/utils/setup_wallet.js";
