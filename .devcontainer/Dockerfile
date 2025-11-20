@@ -1,10 +1,22 @@
-FROM --platform=linux/amd64 node:lts-bookworm-slim
+FROM --platform=linux/amd64 ubuntu:24.04
 SHELL ["/bin/bash", "-c"]
 
 ENV NVM_DIR=/root/.nvm
 ENV NODE_VERSION=22.15.0
 
-RUN apt update && apt install -y curl bash git tar gzip libc++-dev jq python3 build-essential
+# Install dependencies including newer libstdc++
+RUN apt update && apt install -y \
+    curl \
+    bash \
+    git \
+    tar \
+    gzip \
+    libc++-dev \
+    libstdc++6 \
+    jq \
+    python3 \
+    build-essential \
+    ca-certificates
 
 # Install nvm, node and npm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
