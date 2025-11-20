@@ -8,7 +8,7 @@
   },
   "settings": {
     "skipSandbox": false,
-    "version": "2.0.2"
+    "version": "3.0.0-devnet.5"
   },
   "timeouts": {
     "deployTimeout": 120000,
