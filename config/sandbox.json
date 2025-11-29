@@ -1,18 +1,39 @@
 {
+  // --- Environment Identification ---
   "name": "sandbox",
   "environment": "local",
+
+  // --- Network Configuration ---
   "network": {
+    // The RPC endpoint for the Layer 2 (L2) execution node (e.g., zkSync/Optimism L2).
     "nodeUrl": "http://localhost:8080",
+    
+    // The RPC endpoint for the Layer 1 (L1) node, used for finalization and messaging.
+    // Commonly set to a local chain like Hardhat or Foundry (31337).
     "l1RpcUrl": "http://localhost:8545",
+    
+    // The Chain ID of the underlying L1 network (31337 is the standard Hardhat/Anvil ID).
     "l1ChainId": 31337
   },
+
+  // --- General Settings ---
   "settings": {
+    // Flag to control whether the local sandbox environment setup/initialization process is skipped.
     "skipSandbox": false,
+    
+    // Version identifier for the specific dev environment or SDK components being used.
     "version": "3.0.0-devnet.5"
   },
+
+  // --- Timeouts Configuration (in milliseconds) ---
   "timeouts": {
-    "deployTimeout": 120000,
-    "txTimeout": 60000,
-    "waitTimeout": 30000
+    // Maximum time allowed for contract deployment transactions to be mined and confirmed.
+    "deployTimeout": 120000, // 120 seconds
+    
+    // Maximum time allowed for standard transactions to be mined and confirmed.
+    "txTimeout": 60000,      // 60 seconds
+    
+    // Maximum time to wait for a specific condition or event (e.g., waiting for a block).
+    "waitTimeout": 30000     // 30 seconds
   }
 }
