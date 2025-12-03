@@ -1,73 +1,137 @@
-mod test;
+// mod test;
+mod game_round_note;
+mod race;
+
 use dep::aztec::macros::aztec;
 
-/**
- * WARNING: this is no-longer considered a good example of an Aztec contract,
- * because it touches low-level functions and concepts that oughtn't be 
- * seen by a typical user.
- * The syntax and user-experience of Aztec contracts has since improved, so you
- * should seek alternative examples, please.
- */
-
 #[aztec]
-pub contract PrivateVoting {
+pub contract PodRacing {
     use dep::aztec::{
-        keys::getters::get_public_keys,
+        note::note_getter_options::NoteGetterOptions,
+        messages::message_delivery::MessageDelivery,
         macros::{functions::{external, initializer, internal}, storage::storage},
     };
-    use dep::aztec::protocol_types::{
-        address::AztecAddress,
-        hash::poseidon2_hash,
-        traits::{Hash, ToField},
-    };
-    use dep::aztec::state_vars::{Map, PublicImmutable, PublicMutable};
+    use dep::aztec::protocol_types::address::AztecAddress;
+    use dep::aztec::state_vars::{Map, PublicMutable, PrivateSet};
+
+    use crate::{game_round_note::GameRoundNote, race::Race};
+
+    global TOTAL_ROUNDS: u8 = 3;
+    global GAME_LENGTH: u32 = 300;
 
     #[storage]
     struct Storage<Context> {
-        admin: PublicMutable<AztecAddress, Context>, // admin can end vote
-        tally: Map<Field, PublicMutable<Field, Context>, Context>, // we will store candidate as key and number of votes as value
-        vote_ended: PublicMutable<bool, Context>, // vote_ended is boolean
-        active_at_block: PublicImmutable<u32, Context>, // when people can start voting
+        admin: PublicMutable<AztecAddress, Context>,
+        races: Map<Field, PublicMutable<Race, Context>, Context>,
+        progress: Map<Field, PrivateSet<GameRoundNote, Context>, Context>,
+        win_history: Map<AztecAddress, PublicMutable<u64, Context>, Context>,
     }
 
     #[external("public")]
     #[initializer]
-    // annotation to mark function as a constructor
     fn constructor(admin: AztecAddress) {
         storage.admin.write(admin);
-        storage.vote_ended.write(false);
-        storage.active_at_block.initialize(context.block_number());
+    }
+
+    #[external("public")]
+    fn create_game(game_id: Field) {
+        assert(storage.races.at(game_id).read().player1.eq(AztecAddress::zero()));
+
+        let game = Race::new(context.msg_sender().unwrap(), TOTAL_ROUNDS, context.block_number() + GAME_LENGTH);
+        storage.races.at(game_id).write(game);
+    }
+
+    #[external("public")]
+    fn join_game(game_id: Field) {
+        let maybe_existing_game = storage.races.at(game_id).read();
+
+        let joined_game = maybe_existing_game.join(context.msg_sender().unwrap());
+        storage.races.at(game_id).write(joined_game);
     }
 
     #[external("private")]
-    // annotation to mark function as private and expose private context
-    fn cast_vote(candidate: Field) {
-        let msg_sender_nullifier_public_key_message_hash =
-            get_public_keys(context.msg_sender().unwrap()).npk_m.hash();
+    fn play_round(game_id: Field, round: u8, track1: u8, track2: u8, track3: u8, track4: u8, track5: u8) {
+        assert(track1 + track2 + track3 + track4 + track5 < 10);
 
-        let secret = context.request_nsk_app(msg_sender_nullifier_public_key_message_hash); // get secret key of caller of function
-        let nullifier = poseidon2_hash([context.msg_sender().unwrap().to_field(), secret]); // derive nullifier from sender and secret
-        context.push_nullifier(nullifier);
-        PrivateVoting::at(context.this_address()).add_to_tally_public(candidate).enqueue(
+        storage.progress.at(game_id).insert(GameRoundNote::new(
+            track1,
+            track2,
+            track3,
+            track4,
+            track5,
+            round,
+            context.msg_sender().unwrap(),
+        )).emit(context.msg_sender().unwrap(), MessageDelivery.CONSTRAINED_ONCHAIN);
+
+        PodRacing::at(context.this_address()).validate_and_play_round(context.msg_sender().unwrap(), game_id, round).enqueue(
             &mut context,
         );
     }
 
     #[external("public")]
     #[internal]
-    fn add_to_tally_public(candidate: Field) {
-        assert(storage.vote_ended.read() == false, "Vote has ended"); // assert that vote has not ended
-        let new_tally = storage.tally.at(candidate).read() + 1;
-        storage.tally.at(candidate).write(new_tally);
+    fn validate_and_play_round(player: AztecAddress, game_id: Field, round: u8) {
+        let game_in_progress = storage.races.at(game_id).read();
+        storage.races.at(game_id).write(game_in_progress.increment_player_round(player, round));
+    }
+
+    #[external("private")]
+    fn finish_game(player: AztecAddress, game_id: Field, round: u8) {
+        let totals = storage.progress.at(game_id).get_notes(NoteGetterOptions::new());
+
+        let mut total_track1: u64= 0;
+        let mut total_track2: u64= 0;
+        let mut total_track3: u64= 0;
+        let mut total_track4: u64= 0;
+        let mut total_track5: u64= 0;
+
+        for i in 0..TOTAL_ROUNDS {
+            total_track1 += totals.get(i as u32).note.track1 as u64;
+            total_track2 += totals.get(i as u32).note.track2 as u64;
+            total_track3 += totals.get(i as u32).note.track3 as u64;
+            total_track4 += totals.get(i as u32).note.track4 as u64;
+            total_track5 += totals.get(i as u32).note.track5 as u64;
+        }
+
+        PodRacing::at(context.this_address()).validate_finish_game_and_reveal(
+            context.msg_sender().unwrap(),
+            game_id,
+            total_track1,
+            total_track2,
+            total_track3,
+            total_track4,
+            total_track5,
+            ).enqueue(
+            &mut context,
+        );
     }
 
     #[external("public")]
-    fn end_vote() {
-        assert(storage.admin.read().eq(context.msg_sender().unwrap()), "Only admin can end votes"); // assert that caller is admin
-        storage.vote_ended.write(true);
+    #[internal]
+    fn validate_finish_game_and_reveal(
+        player: AztecAddress,
+        game_id: Field,
+        total_track1: u64,
+        total_track2: u64,
+        total_track3: u64,
+        total_track4: u64,
+        total_track5: u64
+    ) {
+        let game_in_progress = storage.races.at(game_id).read();
+    
+        storage.races.at(game_id).write(game_in_progress.set_player_scores(player, total_track1, total_track2, total_track3, total_track4, total_track5));
     }
-    #[external("utility")]
-    unconstrained fn get_vote(candidate: Field) -> Field {
-        storage.tally.at(candidate).read()
+
+    #[external("public")]
+    fn finalize_game(
+        game_id: Field
+    ) {
+        let game_in_progress = storage.races.at(game_id).read();
+
+        let winner = game_in_progress.calculate_winner(context.block_number());
+
+        let previous_wins = storage.win_history.at(winner).read();
+
+        storage.win_history.at(winner).write(previous_wins + 1);
     }
 }
