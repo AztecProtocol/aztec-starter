@@ -139,6 +139,14 @@ Then run an example contract deployment profile with:
 yarn profile
 ```
 
+You can specify the bb binary path for faster native proving, e.g.
+
+```bash
+BB_BINARY_PATH="/home/user/.bb/bb" BB_WORKING_DIRECTORY="/tmp/bb" CRS_PATH="/tmp/bb" yarn profile
+```
+
+See the [demo-wallet for an example](https://github.com/AztecProtocol/demo-wallet/blob/main/app/scripts/copyBB.js) of how to fetch the appropriate bb binary (version and OS) in an application.
+
 ## 🧪 **Test**
 
 **Make sure the sandbox is running before running tests.**
