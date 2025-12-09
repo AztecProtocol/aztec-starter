@@ -1,5 +1,5 @@
 [package]
-name = "private_voting_contract"
+name = "pod_racing_contract"
 type = "contract"
 authors = [ "" ]
 compiler_version = ">=0.18.0"
