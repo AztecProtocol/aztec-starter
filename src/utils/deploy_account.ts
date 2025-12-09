@@ -13,7 +13,7 @@ export async function deploySchnorrAccount(wallet?: TestWallet): Promise<Account
     logger = createLogger('aztec:aztec-starter');
     logger.info('👤 Starting Schnorr account deployment...');
 
-    // // Generate account keys
+    // Generate account keys
     logger.info('🔐 Generating account keys...');
     let secretKey = Fr.random();
     let signingKey = GrumpkinScalar.random();
