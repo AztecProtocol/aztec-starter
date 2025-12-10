@@ -157,6 +157,20 @@ Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./s
 
 Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once the TS tests are complete.
 
+### Recursion "Local Loop" example (no sandbox required)
+
+Phase 1 of the job workflow lives in `examples/recursion-local-loop/` and demonstrates recursive proof verification entirely locally (no PXE or sandbox).
+
+```bash
+# build the inner/outer Noir circuits
+yarn recursion:build
+
+# run the local recursion test
+NODE_OPTIONS="--max-old-space-size=4096" yarn recursion:test
+```
+
+If the test complains about verification key or proof lengths, rebuild and update the constants in `leader_aggregator/src/main.nr` and `worker_recursive.test.ts` to match the emitted artifact sizes.
+
 ---
 
 ## Scripts

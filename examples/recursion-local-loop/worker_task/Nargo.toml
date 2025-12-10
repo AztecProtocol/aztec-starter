@@ -1,0 +1,9 @@
+[package]
+name = "worker_task"
+type = "bin"
+version = "0.1.0"
+authors = ["aztec-starter"]
+compiler_version = ">=0.18.0"
+
+[dependencies]
+# Use the compiler-bundled standard library (no external dependency).

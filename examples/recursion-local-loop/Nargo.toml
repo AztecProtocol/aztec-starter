@@ -1,0 +1,2 @@
+[workspace]
+members = ["worker_task", "leader_aggregator"]

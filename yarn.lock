@@ -645,6 +645,19 @@
     pino "^9.5.0"
     tslib "^2.4.0"
 
+"@aztec/bb.js@3.0.0-nightly.20251104":
+  version "3.0.0-nightly.20251104"
+  resolved "https://registry.yarnpkg.com/@aztec/bb.js/-/bb.js-3.0.0-nightly.20251104.tgz#c60a3809948573ece133eed57a17a607d4b12ad3"
+  integrity sha512-gLuPbivmU/yCq/eeMU9srQkyef9f7W4zUy2WJY+FOv3VBqmErz66AAVdVKj8MuKcFmtfXK1Lor1ZHomv8Ak95g==
+  dependencies:
+    comlink "^4.4.1"
+    commander "^12.1.0"
+    idb-keyval "^6.2.1"
+    msgpackr "^1.11.2"
+    pako "^2.1.0"
+    pino "^9.5.0"
+    tslib "^2.4.0"
+
 "@aztec/blob-lib@3.0.0-devnet.5":
   version "3.0.0-devnet.5"
   resolved "https://registry.yarnpkg.com/@aztec/blob-lib/-/blob-lib-3.0.0-devnet.5.tgz#698cd11f67a8f234af914e252d3fecfb9b0067bb"
@@ -1721,6 +1734,41 @@
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.8.0.tgz#cee43d801fcef9644b11b8194857695acd5f815a"
   integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
+
+"@noir-lang/acvm_js@1.0.0-beta.15":
+  version "1.0.0-beta.15"
+  resolved "https://registry.yarnpkg.com/@noir-lang/acvm_js/-/acvm_js-1.0.0-beta.15.tgz#8bdddd0fb1662ea149877e26d0987a519facc3f2"
+  integrity sha512-WQNMycnVGj0J369BDcsa0N6n0IlISqXEznzDBHiP2yugHgTAoxiDzXizRW10K6u/w0EOVrl+bybLxNxLIPUSYQ==
+
+"@noir-lang/noir_js@1.0.0-beta.15":
+  version "1.0.0-beta.15"
+  resolved "https://registry.yarnpkg.com/@noir-lang/noir_js/-/noir_js-1.0.0-beta.15.tgz#5d011b95b51e0e498ac65ad82ec0d0bf303fdbdc"
+  integrity sha512-ffN3rWzcqaO+FmBF6quFqgXhEK1gyJ8TQ9V4V3A+PIKYE94BOB0L84McxofbRqt3TFuSloBymGiFrJ/Gx8Q8eQ==
+  dependencies:
+    "@noir-lang/acvm_js" "1.0.0-beta.15"
+    "@noir-lang/noirc_abi" "1.0.0-beta.15"
+    "@noir-lang/types" "1.0.0-beta.15"
+    pako "^2.1.0"
+
+"@noir-lang/noir_wasm@1.0.0-beta.15":
+  version "1.0.0-beta.15"
+  resolved "https://registry.yarnpkg.com/@noir-lang/noir_wasm/-/noir_wasm-1.0.0-beta.15.tgz#396a6b9a8dd9a512113909bd279f912a0ffc3b3c"
+  integrity sha512-HDv69Wr/wSXZ4ywmZa9oNSDaWJ57DhGb6GLqMLJw8s2I7q2oG/BHR1Or4tcTZWK5NfPIkW8Hqa3frQqBXBtpKg==
+  dependencies:
+    "@noir-lang/types" "1.0.0-beta.15"
+    pako "^2.1.0"
+
+"@noir-lang/noirc_abi@1.0.0-beta.15":
+  version "1.0.0-beta.15"
+  resolved "https://registry.yarnpkg.com/@noir-lang/noirc_abi/-/noirc_abi-1.0.0-beta.15.tgz#da65ce20737cfd5ef46d64b23be23b876c29e3c8"
+  integrity sha512-ZJ5pUSKiZ6Nyj6DcXmLkf/+OA12cApYq/XPYePxX7v1Z2mLLl1/Gj8dO/greHUYRD47ziXIgyaZQWryE3+4ifw==
+  dependencies:
+    "@noir-lang/types" "1.0.0-beta.15"
+
+"@noir-lang/types@1.0.0-beta.15":
+  version "1.0.0-beta.15"
+  resolved "https://registry.yarnpkg.com/@noir-lang/types/-/types-1.0.0-beta.15.tgz#b62207153f7f6db732248e90492451efbca5d4f5"
+  integrity sha512-FCydHArW6+oOSCxSIsprOExDaBMmxh0a9+ZhXigxFDZF6j96wzy3WvA0XLgczZzAjWOiBPCr4voTW1bsM0Ca2A==
 
 "@opentelemetry/api-logs@0.55.0", "@opentelemetry/api-logs@^0.55.0":
   version "0.55.0"
