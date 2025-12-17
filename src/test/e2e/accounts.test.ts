@@ -1,4 +1,4 @@
-import { PrivateVotingContractArtifact, PrivateVotingContract } from "../../artifacts/PrivateVoting.js"
+import { PodRacingContractArtifact, PodRacingContract } from "../../artifacts/PodRacing.js"
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
@@ -112,19 +112,19 @@ describe("Accounts", () => {
         console.log(`Total claims created: ${claims.length}`);
 
         // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
-        console.log('Deploying first PrivateVotingContract to progress blocks...');
-        await PrivateVotingContract.deploy(wallet, ownerAccount.address).send({
+        console.log('Deploying first PodRacingContract to progress blocks...');
+        await PodRacingContract.deploy(wallet, ownerAccount.address).send({
             from: ownerAccount.address,
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
-        console.log('First PrivateVotingContract deployed');
+        console.log('First PodRacingContract deployed');
 
-        console.log('Deploying second PrivateVotingContract to progress blocks...');
-        await PrivateVotingContract.deploy(wallet, ownerAccount.address).send({
+        console.log('Deploying second PodRacingContract to progress blocks...');
+        await PodRacingContract.deploy(wallet, ownerAccount.address).send({
             from: ownerAccount.address,
             fee: { paymentMethod: sponsoredPaymentMethod }
         }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
-        console.log('Second PrivateVotingContract deployed');
+        console.log('Second PodRacingContract deployed');
 
         // Now deploy random accounts using FeeJuicePaymentMethodWithClaim (which claims and pays in one tx)
         console.log('Starting account deployments with FeeJuicePaymentMethodWithClaim...');
@@ -154,7 +154,7 @@ describe("Accounts", () => {
         logger.info('Starting "Sponsored contract deployment" test');
         const salt = Fr.random();
         logger.info(`Using salt: ${salt.toString()}`);
-        const VotingContractArtifact = PrivateVotingContractArtifact
+        const PodRacingArtifact = PodRacingContractArtifact
 
         logger.info('Generating 2 Schnorr accounts...');
         const accounts = await Promise.all(
@@ -177,13 +177,13 @@ describe("Accounts", () => {
         logger.info(`Deployer address: ${deployerAddress.toString()}`);
         logger.info(`Admin address: ${adminAddress.toString()}`);
 
-        const deploymentData = await getContractInstanceFromInstantiationParams(VotingContractArtifact,
+        const deploymentData = await getContractInstanceFromInstantiationParams(PodRacingArtifact,
             {
                 constructorArgs: [adminAddress],
                 salt,
                 deployer: deployerAccount.getAddress()
             });
-        const deployer = new ContractDeployer(VotingContractArtifact, wallet);
+        const deployer = new ContractDeployer(PodRacingArtifact, wallet);
         const tx = deployer.deploy(adminAddress).send({
             from: deployerAddress,
             contractAddressSalt: salt,

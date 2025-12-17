@@ -1,4 +1,4 @@
-import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
+import { PodRacingContract } from "../src/artifacts/PodRacing.js"
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
@@ -19,7 +19,7 @@ async function main() {
     let accountManager = await deploySchnorrAccount(wallet);
     const address = accountManager.address;
 
-    const profileTx = await PrivateVotingContract.deploy(wallet, address).profile({ profileMode: "full", from: address });
+    const profileTx = await PodRacingContract.deploy(wallet, address).profile({ profileMode: "full", from: address });
     console.dir(profileTx, { depth: 2 });
 }
 

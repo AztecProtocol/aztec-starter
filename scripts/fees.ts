@@ -6,7 +6,7 @@ import { foundry } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts';
 import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { FPCContract } from "@aztec/noir-contracts.js/FPC";
-import { PrivateVotingContract } from "../src/artifacts/PrivateVoting.js"
+import { PodRacingContract } from "../src/artifacts/PodRacing.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
@@ -69,7 +69,7 @@ async function main() {
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
-    const votingContract = await PrivateVotingContract.deploy(wallet, account1.address).send({
+    const podRacingContract = await PodRacingContract.deploy(wallet, account1.address).send({
         from: account1.address,
         fee: { paymentMethod }
     }).deployed();
@@ -86,11 +86,12 @@ async function main() {
 
     // Pay fees yourself
 
-    // Create a new voting contract instance, interacting from the newWallet
-    await votingContract.methods.cast_vote(account1.address).send({
+    // Create a new game on the pod racing contract, interacting from the newWallet
+    const gameId = Fr.random();
+    await podRacingContract.methods.create_game(gameId).send({
         from: account2.address,
     }).wait()
-    logger.info(`Vote cast from new account, paying fees via newWallet.`)
+    logger.info(`Game created from new account, paying fees via newWallet.`)
 
     // Private Fee Payments via FPC
 

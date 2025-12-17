@@ -10,7 +10,9 @@
 
 This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec sandbox (local development environment). It includes an example contract, useful commands in `package.json` and helpful scripts in `./scripts`.
 
-You can find the **Easy Private Voting contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
+You can find the **Pod Racing Game contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
+
+The Pod Racing contract is a two-player competitive game where players allocate points across 5 tracks over multiple rounds. The game demonstrates Aztec's private state capabilities - round choices remain private until players reveal their final scores.
 
 ## Devnet
 
@@ -176,7 +178,7 @@ You can find a handful of scripts in the `./scripts` folder.
 - `./scripts/fees.ts` is an example of how to pay for a contract deployment using various fee payment methods.
 - `./scripts/multiple_wallet.ts` is an example of how to deploy a contract from one wallet instance and interact with it from another.
 - `./scripts/profile_deploy.ts` shows how to profile a transaction and print the results.
-- `./scripts/interaction_existing_contract.ts` demonstrates how to interact with an already deployed voting contract, including casting votes and checking vote counts.
+- `./scripts/interaction_existing_contract.ts` demonstrates how to interact with an already deployed pod racing contract, including creating games.
 - `./scripts/get_block.ts` is an example of how to retrieve and display block information from the Aztec node.
 
 ### Utility Functions
