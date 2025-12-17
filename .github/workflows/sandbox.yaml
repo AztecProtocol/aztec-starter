@@ -124,7 +124,7 @@ jobs:
           cat "$TEMP_OUTPUT"
 
           # Extract contract address
-          VOTING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
+          POD_RACING_CONTRACT_ADDRESS=$(grep -o "Contract address: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Contract address: //' || echo "")
 
           # Extract salt
           CONTRACT_SALT=$(grep -o "Salt: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Salt: //' || echo "")
@@ -144,8 +144,8 @@ jobs:
           rm "$TEMP_OUTPUT"
 
           # Save all data to .env
-          if [ -n "$VOTING_CONTRACT_ADDRESS" ]; then
-            echo "VOTING_CONTRACT_ADDRESS=\"$VOTING_CONTRACT_ADDRESS\"" >> .env
+          if [ -n "$POD_RACING_CONTRACT_ADDRESS" ]; then
+            echo "POD_RACING_CONTRACT_ADDRESS=\"$POD_RACING_CONTRACT_ADDRESS\"" >> .env
             echo "📋 Saved contract address to .env file"
           fi
 
