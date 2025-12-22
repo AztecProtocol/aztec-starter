@@ -1,4 +1,4 @@
-name: Sandbox Tests
+name: Local Network Tests
 
 on:
   push:
@@ -12,12 +12,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  sandbox-tests:
-    name: Sandbox Tests
+  local-network-tests:
+    name: Local Network Tests
     runs-on: ubuntu-latest
     env:
-      AZTEC_ENV: sandbox
-      VERSION: 3.0.0-devnet.5
+      AZTEC_ENV: local-network
+      VERSION: 3.0.0-devnet.20251212
 
     steps:
       - name: Checkout repository
@@ -40,17 +40,17 @@ jobs:
       - name: Update path
         run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
 
-      - name: Set Aztec version and start sandbox
+      - name: Set Aztec version and start local network
         run: |
           VERSION=${{ env.VERSION }} aztec-up
-          aztec start --sandbox &
+          aztec start --local-network &
 
-      - name: Wait for sandbox to be ready
+      - name: Wait for local network to be ready
         run: |
-          echo "Waiting for sandbox to start..."
+          echo "Waiting for local network to start..."
           for i in {1..30}; do
             if curl -s http://localhost:8080/status >/dev/null 2>&1; then
-              echo "✅ Sandbox is ready!"
+              echo "✅ Local network is ready!"
               break
             fi
             echo "Waiting... ($i/30)"
@@ -180,7 +180,7 @@ jobs:
             echo "📋 Saved constructor args to .env file"
           fi
 
-      - name: Run sandbox scripts
+      - name: Run local network scripts
         run: |
           script -e -c "yarn fees"
           script -e -c "yarn multiple-wallet"

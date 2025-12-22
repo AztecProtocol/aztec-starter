@@ -65,7 +65,7 @@ async function main() {
 
     // set up sponsored fee payments
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
@@ -122,7 +122,7 @@ async function main() {
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
-    wallet.registerContract(feeJuiceInstance.address, FeeJuiceContract.artifact)
+    await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact)
     const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet)
 
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address }).wait()

@@ -6,9 +6,9 @@
 
 # Aztec Starter
 
-## Sandbox
+## Local Network
 
-This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec sandbox (local development environment). It includes an example contract, useful commands in `package.json` and helpful scripts in `./scripts`.
+This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec local network (local development environment). It includes an example contract, useful commands in `package.json` and helpful scripts in `./scripts`.
 
 You can find the **Pod Racing Game contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
 
@@ -16,7 +16,7 @@ The Pod Racing contract is a two-player competitive game where players allocate 
 
 ## Devnet
 
-This repo connects to a locally running Aztec Sandbox by default, but can be configured to connect to the devnet by specifying `AZTEC_ENV=devnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=devnet yarn deploy`.
+This repo connects to a locally running Aztec local network by default, but can be configured to connect to the devnet by specifying `AZTEC_ENV=devnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=devnet yarn deploy`.
 
 <div align="center">
 
@@ -38,7 +38,7 @@ Use **Node.js version 22.15.0**.
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
-Get the **sandbox, aztec-cli, and other tooling** with this command:
+Get the **local network, aztec-cli, and other tooling** with this command:
 
 ```bash
 bash -i <(curl -s https://install.aztec.network)
@@ -47,7 +47,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-export VERSION=3.0.0-devnet.5
+export VERSION=3.0.0-devnet.20251212
 aztec-up && docker pull aztecprotocol/aztec:$VERSION && docker tag aztecprotocol/aztec:$VERSION aztecprotocol/aztec:latest
 ```
 
@@ -55,27 +55,27 @@ aztec-up && docker pull aztecprotocol/aztec:$VERSION && docker tag aztecprotocol
 
 This project uses JSON configuration files to manage environment-specific settings:
 
-- `config/sandbox.json` - Configuration for local sandbox development
+- `config/local-network.json` - Configuration for local network development
 - `config/devnet.json` - Configuration for devnet deployment
 
-The system automatically loads the appropriate configuration file based on the `ENV` environment variable. If `ENV` is not set, it defaults to `sandbox`.
+The system automatically loads the appropriate configuration file based on the `ENV` environment variable. If `ENV` is not set, it defaults to `local-network`.
 
 The configuration files contain network URLs, timeouts, and environment-specific settings. You can modify these files to customize your development environment.
 
-### Running on Sandbox (Local Development)
+### Running on Local Network (Local Development)
 
-Start the sandbox with:
+Start the local network with:
 
 ```bash
-aztec start --sandbox
+aztec start --local-network
 ```
 
-Run scripts and tests with default sandbox configuration:
+Run scripts and tests with default local network configuration:
 
 ```bash
 yarn compile && yarn codegen  # Compile contract and generate TS
-yarn deploy       # Deploy to sandbox
-yarn test         # Run tests on sandbox
+yarn deploy       # Deploy to local network
+yarn test         # Run tests on local network
 ```
 
 ### Running on Devnet
@@ -104,7 +104,7 @@ yarn install
 ## 🏗 **Compile**
 
 ```bash
-aztec-nargo compile
+aztec compile
 ```
 
 or
@@ -125,14 +125,14 @@ yarn codegen
 
 ---
 
-:warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the sandbox, you will need to delete the `./store` directory to avoid errors.
+:warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the local network, you will need to delete the `./store` directory to avoid errors.
 
 ## Transaction Profiling
 
-**Make sure the sandbox is running before profiling.**
+**Make sure the local network is running before profiling.**
 
 ```bash
-aztec start --sandbox
+aztec start --local-network
 ```
 
 Then run an example contract deployment profile with:
@@ -151,10 +151,10 @@ See the [demo-wallet for an example](https://github.com/AztecProtocol/demo-walle
 
 ## 🧪 **Test**
 
-**Make sure the sandbox is running before running tests.**
+**Make sure the local network is running before running tests.**
 
 ```bash
-aztec start --sandbox
+aztec start --local-network
 ```
 
 Then test with:
@@ -165,7 +165,7 @@ yarn test
 
 Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test/e2e`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
 
-Note: The Typescript tests spawn an instance of the sandbox to test against, and close it once the TS tests are complete.
+Note: The Typescript tests spawn an instance of the local network to test against, and close it once the TS tests are complete.
 
 ---
 
@@ -193,7 +193,7 @@ The `./src/utils/` folder contains utility functions:
 
 ## ❗ **Error Resolution**
 
-:warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the sandbox, you will need to delete the `./store` directory to avoid errors.
+:warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the local network, you will need to delete the `./store` directory to avoid errors.
 
 ### 🔄 **Update Node.js and Noir Dependencies**
 

@@ -17,7 +17,7 @@ const node = createAztecNodeClient(nodeUrl)
 const l1Contracts = await node.getL1ContractAddresses();
 const config = getPXEConfig()
 const fullConfig = { ...config, l1Contracts }
-fullConfig.proverEnabled = getEnv() !== 'sandbox';
+fullConfig.proverEnabled = getEnv() !== 'local-network';
 
 const store1 = await createStore('pxe1', {
     dataDirectory: 'store',
@@ -60,8 +60,8 @@ async function main() {
     const wallet1 = await setupWallet1();
     const wallet2 = await setupWallet2();
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet1.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
-    await wallet2.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await wallet1.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet2.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     // deploy token contract
 
@@ -107,10 +107,7 @@ async function main() {
     // setup token on 2nd pxe
 
     const l2TokenContractInstance = await getL2TokenContractInstance(ownerAddress, ownerAddress)
-    await wallet2.registerContract({
-        instance: l2TokenContractInstance,
-        artifact: TokenContract.artifact
-    })
+    await wallet2.registerContract(l2TokenContractInstance, TokenContract.artifact)
 
     const l2TokenContract = await TokenContract.at(
         l2TokenContractInstance.address,

@@ -1,12 +1,12 @@
 # Repository guidelines for Codex agents
 
-This repository contains TypeScript scripts and Noir contracts for the Aztec sandbox.  
+This repository contains TypeScript scripts and Noir contracts for the Aztec local network.
 Follow these guidelines when contributing:
 
 ## Setup
 - Use **Node.js v22** with Yarn.
 - Install dependencies with `yarn install`.
-- Start the Aztec sandbox using `aztec start --sandbox` before running tests or scripts.
+- Start the Aztec local network using `aztec start --local-network` before running tests or scripts.
 
 ## Development
 - Compile contracts with `yarn compile` and generate TypeScript artifacts with `yarn codegen`.
