@@ -96,7 +96,7 @@ describe("Pod Racing Game", () => {
         wallet = await setupWallet();
 
         sponsoredFPC = await getSponsoredFPCInstance();
-        await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+        await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
         sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
         // Create two player accounts
