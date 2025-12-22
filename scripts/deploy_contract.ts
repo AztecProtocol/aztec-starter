@@ -1,8 +1,6 @@
 import { PodRacingContract } from "../src/artifacts/PodRacing.js"
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
-import { Fr } from "@aztec/aztec.js/fields";
-import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
@@ -42,13 +40,13 @@ async function main() {
     logger.info('🏎️  Starting pod racing contract deployment...');
     logger.info(`📋 Admin address for pod racing contract: ${address}`);
 
-    const deployTx = PodRacingContract.deploy(wallet, address).send({
+    const deployMethod = PodRacingContract.deploy(wallet, address).send({
         from: address,
         fee: { paymentMethod: sponsoredPaymentMethod }
     });
 
     logger.info('⏳ Waiting for deployment transaction to be mined...');
-    const podRacingContract = await deployTx.deployed({ timeout: timeouts.deployTimeout });
+    const podRacingContract = await deployMethod.deployed({ timeout: timeouts.deployTimeout });
 
     logger.info(`🎉 Pod Racing Contract deployed successfully!`);
     logger.info(`📍 Contract address: ${podRacingContract.address}`);
@@ -59,7 +57,7 @@ async function main() {
     logger.info('✅ Contract deployed and ready for game creation');
 
     // Get contract instance for instantiation data
-    const instance = podRacingContract.instance;
+    const instance = await deployMethod.getInstance();
     if (instance) {
         logger.info('📦 Contract instantiation data:');
         logger.info(`Salt: ${instance.salt}`);
@@ -72,7 +70,6 @@ async function main() {
         }
         logger.info(`Constructor args: ${JSON.stringify([address.toString()])}`);
     }
-
     logger.info('🏁 Deployment process completed successfully!');
     logger.info(`📋 Summary:`);
     logger.info(`   - Contract Address: ${podRacingContract.address}`);
