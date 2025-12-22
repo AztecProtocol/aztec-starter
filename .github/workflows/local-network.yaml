@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: local-network
-      VERSION: 3.0.0-devnet.20251212
+      AZTEC_VERSION: 3.0.0-devnet.20251212
 
     steps:
       - name: Checkout repository
@@ -30,7 +30,7 @@ jobs:
           cache: "yarn"
 
       - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Install Aztec CLI
         run: |
@@ -42,12 +42,12 @@ jobs:
 
       - name: Set Aztec version
         run: |
-          VERSION=${{ env.VERSION }} aztec-up
+          VERSION=${{ env.AZTEC_VERSION }} aztec-up
 
       # This is a temporary hack to fix a problem with v3 releases.
       - name: Manually tag the aztec version as `latest`
         run: |
-          docker tag aztecprotocol/aztec:${{ env.VERSION }} aztecprotocol/aztec:latest
+          docker tag aztecprotocol/aztec:${{ env.AZTEC_VERSION }} aztecprotocol/aztec:latest
 
       - name: Start local Aztec network
         run: aztec start --local-network &
