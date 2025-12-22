@@ -68,7 +68,7 @@ jobs:
         run: yarn
 
       - name: Compile contracts
-        run: script -e -c "${AZTEC_NARGO:-aztec-nargo} compile && aztec-postprocess-contract"
+        run: script -e -c "aztec compile"
 
       - name: Generate contract artifacts
         run: script -e -c "aztec codegen target --outdir src/artifacts"
