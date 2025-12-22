@@ -10,7 +10,8 @@ import { PodRacingContract } from "../src/artifacts/PodRacing.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { createEthereumChain, createExtendedL1Client } from "@aztec/ethereum";
+import { createEthereumChain } from '@aztec/ethereum/chain';
+import { createExtendedL1Client } from '@aztec/ethereum/client';
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { Logger, createLogger } from '@aztec/aztec.js/log';
