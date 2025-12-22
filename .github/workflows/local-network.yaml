@@ -34,7 +34,7 @@ jobs:
 
       - name: Install Aztec CLI
         run: |
-          curl -s https://install.aztec.network/devnet > tmp.sh
+          curl -s https://install.aztec.network/$VERSION > tmp.sh
           bash tmp.sh <<< yes "yes"
 
       - name: Update path
