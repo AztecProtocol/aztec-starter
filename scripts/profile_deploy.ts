@@ -14,7 +14,7 @@ async function main() {
     const wallet = await setupWallet();
 
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
 
     let accountManager = await deploySchnorrAccount(wallet);
     const address = accountManager.address;

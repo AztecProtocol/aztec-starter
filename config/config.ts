@@ -22,7 +22,7 @@ export interface EnvironmentConfig {
   environment: 'local' | 'testnet' | 'devnet' | 'mainnet';
   network: NetworkConfig;
   settings: {
-    skipSandbox: boolean;
+    skipLocalNetwork: boolean;
     version: string;
   };
   timeouts?: TimeoutConfig;
@@ -34,7 +34,7 @@ export class ConfigManager {
   private configPath: string;
 
   private constructor() {
-    const env = process.env.AZTEC_ENV || 'sandbox';
+    const env = process.env.AZTEC_ENV || 'local-network';
     this.configPath = path.resolve(process.cwd(), `config/${env}.json`);
     this.loadConfig();
     console.log(`Loaded configuration: ${this.config.name} environment`);
@@ -69,7 +69,7 @@ export class ConfigManager {
     return this.config.environment === 'devnet';
   }
 
-  public isSandbox(): boolean {
+  public isLocalNetwork(): boolean {
     return this.config.environment === 'local';
   }
 

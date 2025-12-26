@@ -10,7 +10,8 @@ import { PodRacingContract } from "../src/artifacts/PodRacing.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { createEthereumChain, createExtendedL1Client } from "@aztec/ethereum";
+import { createEthereumChain } from '@aztec/ethereum/chain';
+import { createExtendedL1Client } from '@aztec/ethereum/client';
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { Logger, createLogger } from '@aztec/aztec.js/log';
@@ -65,7 +66,7 @@ async function main() {
 
     // set up sponsored fee payments
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
@@ -122,7 +123,7 @@ async function main() {
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
-    wallet.registerContract(feeJuiceInstance.address, FeeJuiceContract.artifact)
+    await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact)
     const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet)
 
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address }).wait()

@@ -1,7 +1,8 @@
 import { PodRacingContractArtifact, PodRacingContract } from "../../artifacts/PodRacing.js"
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
-import { createEthereumChain, createExtendedL1Client } from '@aztec/ethereum';
+import { createEthereumChain } from '@aztec/ethereum/chain';
+import { createExtendedL1Client } from '@aztec/ethereum/client';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupWallet } from "../../utils/setup_wallet.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
@@ -44,7 +45,7 @@ describe("Accounts", () => {
         wallet = await setupWallet();
 
         sponsoredFPC = await getSponsoredFPCInstance();
-        await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+        await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
         sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
         // create default ethereum clients
@@ -208,7 +209,7 @@ describe("Accounts", () => {
             }),
         );
 
-        expect(receiptAfterMined.contract.instance.address).toEqual(deploymentData.address)
+        expect(receiptAfterMined.contract.address).toEqual(deploymentData.address)
     })
 
 });

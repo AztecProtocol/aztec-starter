@@ -21,7 +21,7 @@ async function main() {
 
     // Setup sponsored fee payment
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract({ instance: sponsoredFPC, artifact: SponsoredFPCContract.artifact });
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Get account from environment variables
@@ -76,7 +76,7 @@ async function main() {
     logger.info("✅ Contract instance reconstructed successfully");
 
     // Register the contract with the wallet
-    await wallet.registerContract({ instance, artifact: PodRacingContract.artifact });
+    await wallet.registerContract(instance, PodRacingContract.artifact);
 
     // Get the contract instance from the PXE
     const podRacingContract = await PodRacingContract.at(
