@@ -1,5 +1,5 @@
 use crate::test::{utils, helpers};
-use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
+use dep::aztec::protocol_types::{address::AztecAddress, storage::map::derive_storage_slot_in_map};
 use crate::PodRacing;
 
 // ============================================================================
@@ -382,4 +382,119 @@ unconstrained fn test_fail_double_reveal() {
 
     // Try to finish again (should fail)
     env.call_private(player1, PodRacing::at(contract_address).finish_game(game_id));
+}
+
+// ============================================================================
+// FORFEIT TESTS
+// ============================================================================
+
+// Test: Player 1 can forfeit and player 2 wins
+#[test]
+unconstrained fn test_forfeit_game_player1_forfeits() {
+    let (mut env, contract_address, _) = utils::setup();
+    let player1 = env.create_light_account();
+    let player2 = env.create_light_account();
+    let game_id = helpers::TEST_GAME_ID_11;
+
+    // Setup game with both players
+    helpers::setup_two_player_game(&mut env, contract_address, player1, player2, game_id);
+
+    // Player 1 forfeits
+    env.call_public(player1, PodRacing::at(contract_address).forfeit_game(game_id));
+
+    // Verify player 2's win count increased
+    env.public_context_at(contract_address, |context| {
+        let win_slot = derive_storage_slot_in_map(PodRacing::storage_layout().win_history.slot, player2);
+        let player2_wins = context.storage_read(win_slot);
+        assert_eq(player2_wins, 1);
+    });
+
+    // Verify game was reset (player1 should be zero address)
+    env.public_context_at(contract_address, |context| {
+        let race_slot = derive_storage_slot_in_map(PodRacing::storage_layout().races.slot, game_id);
+        let stored_player1 = context.storage_read(race_slot);
+        assert_eq(stored_player1, AztecAddress::zero());
+    });
+}
+
+// Test: Player 2 can forfeit and player 1 wins
+#[test]
+unconstrained fn test_forfeit_game_player2_forfeits() {
+    let (mut env, contract_address, _) = utils::setup();
+    let player1 = env.create_light_account();
+    let player2 = env.create_light_account();
+    let game_id = helpers::TEST_GAME_ID_12;
+
+    // Setup game with both players
+    helpers::setup_two_player_game(&mut env, contract_address, player1, player2, game_id);
+
+    // Player 2 forfeits
+    env.call_public(player2, PodRacing::at(contract_address).forfeit_game(game_id));
+
+    // Verify player 1's win count increased
+    env.public_context_at(contract_address, |context| {
+        let win_slot = derive_storage_slot_in_map(PodRacing::storage_layout().win_history.slot, player1);
+        let player1_wins = context.storage_read(win_slot);
+        assert_eq(player1_wins, 1);
+    });
+}
+
+// Test: Player can forfeit mid-game (after playing some rounds)
+#[test]
+unconstrained fn test_forfeit_game_mid_game() {
+    let (mut env, contract_address, _) = utils::setup();
+    let player1 = env.create_light_account();
+    let player2 = env.create_light_account();
+    let game_id = helpers::TEST_GAME_ID_13;
+
+    // Setup game
+    helpers::setup_two_player_game(&mut env, contract_address, player1, player2, game_id);
+
+    // Both players play round 1
+    helpers::play_round_with_allocation(
+        &mut env, contract_address, player1, game_id, 1, helpers::balanced_allocation()
+    );
+    helpers::play_round_with_allocation(
+        &mut env, contract_address, player2, game_id, 1, helpers::balanced_allocation()
+    );
+
+    // Player 1 forfeits mid-game
+    env.call_public(player1, PodRacing::at(contract_address).forfeit_game(game_id));
+
+    // Verify player 2 wins
+    env.public_context_at(contract_address, |context| {
+        let win_slot = derive_storage_slot_in_map(PodRacing::storage_layout().win_history.slot, player2);
+        let player2_wins = context.storage_read(win_slot);
+        assert_eq(player2_wins, 1);
+    });
+}
+
+// Test: Cannot forfeit a game that hasn't started (no player2)
+#[test(should_fail_with = "Game has not started yet")]
+unconstrained fn test_fail_forfeit_game_not_started() {
+    let (mut env, contract_address, _) = utils::setup();
+    let player1 = env.create_light_account();
+    let game_id = helpers::TEST_GAME_ID_11;
+
+    // Create game but don't join
+    env.call_public(player1, PodRacing::at(contract_address).create_game(game_id));
+
+    // Try to forfeit before player2 joins (should fail)
+    env.call_public(player1, PodRacing::at(contract_address).forfeit_game(game_id));
+}
+
+// Test: Non-player cannot forfeit a game
+#[test(should_fail_with = "Caller is not a player in this game")]
+unconstrained fn test_fail_forfeit_game_not_a_player() {
+    let (mut env, contract_address, _) = utils::setup();
+    let player1 = env.create_light_account();
+    let player2 = env.create_light_account();
+    let outsider = env.create_light_account();
+    let game_id = helpers::TEST_GAME_ID_12;
+
+    // Setup game with both players
+    helpers::setup_two_player_game(&mut env, contract_address, player1, player2, game_id);
+
+    // Outsider tries to forfeit (should fail)
+    env.call_public(outsider, PodRacing::at(contract_address).forfeit_game(game_id));
 }
