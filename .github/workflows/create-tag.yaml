@@ -1,0 +1,83 @@
+name: Create Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g., v1.0.0)'
+        required: true
+        type: string
+      branch:
+        description: 'Branch to create tag from'
+        required: true
+        type: string
+        default: 'main'
+      tag_message:
+        description: 'Tag message/description'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  create-tag:
+    name: Create Tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Validate tag name
+        run: |
+          TAG_NAME="${{ inputs.tag_name }}"
+          if [[ ! "$TAG_NAME" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "⚠️ Warning: Tag name '$TAG_NAME' doesn't follow semantic versioning (vX.Y.Z)"
+          fi
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "❌ Error: Tag '$TAG_NAME' already exists"
+            exit 1
+          fi
+          echo "✅ Tag name '$TAG_NAME' is available"
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          TAG_NAME="${{ inputs.tag_name }}"
+          TAG_MESSAGE="${{ inputs.tag_message }}"
+
+          if [ -n "$TAG_MESSAGE" ]; then
+            git tag -a "$TAG_NAME" -m "$TAG_MESSAGE"
+          else
+            git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+          fi
+
+          git push origin "$TAG_NAME"
+          echo "✅ Successfully created and pushed tag '$TAG_NAME'"
+
+      - name: Output tag info
+        run: |
+          echo "## Tag Created Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag:** ${{ inputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ inputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** $(git rev-parse HEAD)" >> $GITHUB_STEP_SUMMARY
+          TAG_MESSAGE="${{ inputs.tag_message }}"
+          echo "- **Message:** ${TAG_MESSAGE:-Release ${{ inputs.tag_name }}}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: ${{ inputs.tag_name }}
+          body: ${{ inputs.tag_message || format('Release {0}', inputs.tag_name) }}
+          draft: false
+          prerelease: ${{ contains(inputs.tag_name, '-') }}
