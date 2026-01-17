@@ -163,7 +163,12 @@ async function main() {
     logger.info(`Transfer paid with fees from Sponsored FPC.`)
 }
 
-main();
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("Error:", error);
+    process.exit(1);
+  });
 
 // from here: https://github.com/AztecProtocol/aztec-packages/blob/ecbd59e58006533c8885a8b2fadbd9507489300c/yarn-project/end-to-end/src/fixtures/utils.ts#L534
 function getL1WalletClient(rpcUrl: string, index: number) {

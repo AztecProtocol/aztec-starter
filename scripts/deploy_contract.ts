@@ -77,9 +77,11 @@ async function main() {
     logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
 }
 
-main().catch((error) => {
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
     const logger = createLogger('aztec:aztec-starter');
     logger.error(`❌ Deployment failed: ${error.message}`);
     logger.error(`📋 Error details: ${error.stack}`);
     process.exit(1);
-});
+  });
