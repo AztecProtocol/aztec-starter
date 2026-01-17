@@ -100,7 +100,9 @@ async function main() {
     logger.info("To join this game, another player would call join_game with the same game ID.");
 }
 
-main().catch((error) => {
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
     console.error("Error:", error);
     process.exit(1);
-});
+  });
