@@ -35,14 +35,10 @@ jobs:
       - name: Install Aztec CLI
         run: |
           curl -s https://install.aztec.network > tmp.sh
-          bash tmp.sh <<< yes "yes"
+          VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
 
       - name: Update path
         run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
-
-      - name: Set Aztec version
-        run: |
-          VERSION=${{ env.AZTEC_VERSION }} aztec-up
 
       # This is a temporary hack to fix a problem with v3 releases.
       - name: Manually tag the aztec version as `latest`
