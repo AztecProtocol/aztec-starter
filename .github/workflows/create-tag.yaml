@@ -11,7 +11,7 @@ on:
         description: 'Branch to create tag from'
         required: true
         type: string
-        default: 'main'
+        default: 'next'
       tag_message:
         description: 'Tag message/description'
         required: false
