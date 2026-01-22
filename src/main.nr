@@ -230,4 +230,55 @@ pub contract PodRacing {
         let previous_wins = self.storage.win_history.at(winner).read();
         self.storage.win_history.at(winner).write(previous_wins + 1);
     }
+
+    // Returns the current state of a game
+    // Useful for frontends to display game progress
+    #[external("utility")]
+    unconstrained fn get_game_state(game_id: Field) -> pub Race {
+        self.storage.races.at(game_id).read()
+    }
+
+    // Returns the total career wins for a player
+    #[external("utility")]
+    unconstrained fn get_player_wins(player: AztecAddress) -> pub u64 {
+        self.storage.win_history.at(player).read()
+    }
+
+    // Allows player1 to cancel a game if player2 hasn't joined yet
+    // Useful if no opponent shows up and player1 wants to reclaim the game slot
+    #[external("public")]
+    fn cancel_game(game_id: Field) {
+        let game = self.storage.races.at(game_id).read();
+
+        // Only player1 can cancel
+        assert(game.player1.eq(self.context.msg_sender().unwrap()));
+
+        // Can only cancel if no player2 has joined
+        assert(game.player2.eq(AztecAddress::zero()));
+
+        // Reset the game slot by writing a zeroed Race
+        self.storage.races.at(game_id).write(Race::empty());
+    }
+
+    // Allows a player to forfeit an in-progress game
+    // The opponent is automatically awarded the win
+    // Can only be called after player2 has joined (game has started)
+    #[external("public")]
+    fn forfeit_game(game_id: Field) {
+        let game = self.storage.races.at(game_id).read();
+        let caller = self.context.msg_sender().unwrap();
+
+        // Game must have started (player2 joined)
+        assert(!game.player2.eq(AztecAddress::zero()), "Game has not started yet");
+
+        // Get the opponent (also validates caller is a player)
+        let winner = game.get_opponent(caller);
+
+        // Award the win to the opponent
+        let previous_wins = self.storage.win_history.at(winner).read();
+        self.storage.win_history.at(winner).write(previous_wins + 1);
+
+        // Reset the game slot
+        self.storage.races.at(game_id).write(Race::empty());
+    }
 }

@@ -14,6 +14,9 @@ pub global TEST_GAME_ID_7: Field = 7;
 pub global TEST_GAME_ID_8: Field = 8;
 pub global TEST_GAME_ID_9: Field = 9;
 pub global TEST_GAME_ID_10: Field = 10;
+pub global TEST_GAME_ID_11: Field = 11;
+pub global TEST_GAME_ID_12: Field = 12;
+pub global TEST_GAME_ID_13: Field = 13;
 
 // Common point allocations for testing
 // Balanced strategy: distribute points evenly

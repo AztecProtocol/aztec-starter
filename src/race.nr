@@ -38,6 +38,28 @@ pub struct Race {
 }
 
 impl Race {
+    // Creates an empty/zeroed Race for resetting game slots
+    pub fn empty() -> Race {
+        Self {
+            player1: AztecAddress::zero(),
+            player2: AztecAddress::zero(),
+            total_rounds: 0,
+            player1_round: 0,
+            player2_round: 0,
+            player1_track1_final: 0,
+            player1_track2_final: 0,
+            player1_track3_final: 0,
+            player1_track4_final: 0,
+            player1_track5_final: 0,
+            player2_track1_final: 0,
+            player2_track2_final: 0,
+            player2_track3_final: 0,
+            player2_track4_final: 0,
+            player2_track5_final: 0,
+            end_block: 0,
+        }
+    }
+
     // Creates a new game with player1 set, waiting for player2 to join
     // All track scores initialized to 0, rounds start at 0
     pub fn new(player1: AztecAddress, total_rounds: u8, end_block: u32) -> Race {
@@ -208,6 +230,19 @@ impl Race {
         };
 
         ret.unwrap()
+    }
+
+    // Returns the opponent's address for a given player
+    // Asserts if the caller is not a player in this game
+    pub fn get_opponent(self, player: AztecAddress) -> AztecAddress {
+        if player.eq(self.player1) {
+            self.player2
+        } else if player.eq(self.player2) {
+            self.player1
+        } else {
+            assert(false, "Caller is not a player in this game");
+            AztecAddress::zero() // unreachable, but needed for return type
+        }
     }
 
     // Determines the game winner by comparing track scores
