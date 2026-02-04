@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: local-network
-      AZTEC_VERSION: 3.0.0-devnet.6-patch.1
+      AZTEC_VERSION: 4.0.0-nightly.20260204
 
     steps:
       - name: Checkout repository
@@ -34,20 +34,10 @@ jobs:
 
       - name: Install Aztec CLI
         run: |
-          curl -s https://install.aztec.network > tmp.sh
-          bash tmp.sh <<< yes "yes"
+          VERSION=${{ env.AZTEC_VERSION }} bash -i <(curl -sL https://install.aztec.network/${{ env.AZTEC_VERSION }})
 
       - name: Update path
         run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
-
-      - name: Set Aztec version
-        run: |
-          VERSION=${{ env.AZTEC_VERSION }} aztec-up
-
-      # This is a temporary hack to fix a problem with v3 releases.
-      - name: Manually tag the aztec version as `latest`
-        run: |
-          docker tag aztecprotocol/aztec:${{ env.AZTEC_VERSION }} aztecprotocol/aztec:latest
 
       - name: Start local Aztec network
         run: aztec start --local-network &
