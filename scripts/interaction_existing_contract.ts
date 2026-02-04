@@ -1,9 +1,9 @@
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { type Logger, createLogger } from "@aztec/foundation/log";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { Fr } from "@aztec/aztec.js/fields";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { PodRacingContract } from "../src/artifacts/PodRacing.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
@@ -21,7 +21,7 @@ async function main() {
 
     // Setup sponsored fee payment
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Get account from environment variables
@@ -92,8 +92,7 @@ async function main() {
         .send({
             from: address,
             fee: { paymentMethod: sponsoredPaymentMethod }
-        })
-        .wait({ timeout: timeouts.txTimeout });
+        });
     logger.info("Game created successfully!");
 
     logger.info(`Game ${gameId} is now waiting for a second player to join.`);

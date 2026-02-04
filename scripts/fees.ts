@@ -8,20 +8,20 @@ import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { FPCContract } from "@aztec/noir-contracts.js/FPC";
 import { PodRacingContract } from "../src/artifacts/PodRacing.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
+import { SponsoredFeePaymentMethod, FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { createEthereumChain } from '@aztec/ethereum/chain';
 import { createExtendedL1Client } from '@aztec/ethereum/client';
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { setupWallet } from "../src/utils/setup_wallet.js";
-import { Logger, createLogger } from '@aztec/aztec.js/log';
-import { FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from '@aztec/aztec.js/fee';
-import { Fr, GrumpkinScalar } from '@aztec/aztec.js/fields';
+import { type Logger, createLogger } from '@aztec/foundation/log';
+import { Fr } from '@aztec/aztec.js/fields';
+import { GrumpkinScalar } from '@aztec/foundation/curves/grumpkin';
 import { L1FeeJuicePortalManager } from '@aztec/aztec.js/ethereum';
-import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
+import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
-import { AztecAddress } from '@aztec/stdlib/aztec-address';
+import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { getAztecNodeUrl } from '../config/config.js';
 import { GasSettings } from '@aztec/stdlib/gas';
 
@@ -66,23 +66,24 @@ async function main() {
 
     // set up sponsored fee payments
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
     // Two arbitrary txs to make the L1 message available on L2
     const podRacingContract = await PodRacingContract.deploy(wallet, account1.address).send({
         from: account1.address,
         fee: { paymentMethod }
-    }).deployed();
+    });
     const bananaCoin = await TokenContract.deploy(wallet, account1.address, "bananaCoin", "BNC", 18).send({
         from: account1.address,
         fee: { paymentMethod }
-    }).deployed()
+    });
 
     // Claim Fee Juice & Pay Fees yourself
 
-    const claimAndPay = new FeeJuicePaymentMethodWithClaim(account2.address, claim)
-    await (await account2.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod: claimAndPay } }).wait()
+    const claimAndPay = new FeeJuicePaymentMethodWithClaim(account2.address, claim);
+    const deployMethod = await account2.getDeployMethod();
+    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: claimAndPay } });
     logger.info(`New account at ${account2.address} deployed using claimed funds for fees.`)
 
     // Pay fees yourself
@@ -91,7 +92,7 @@ async function main() {
     const gameId = Fr.random();
     await podRacingContract.methods.create_game(gameId).send({
         from: account2.address,
-    }).wait()
+    });
     logger.info(`Game created from new account, paying fees via newWallet.`)
 
     // Private Fee Payments via FPC
@@ -103,53 +104,53 @@ async function main() {
     const fpc = await FPCContract.deploy(wallet, bananaCoin.address, account1.address).send({
         from: account1.address,
         fee: { paymentMethod }
-    }).deployed()
+    });
     const fpcClaim = await feeJuicePortalManager.bridgeTokensPublic(fpc.address, FEE_FUNDING_FOR_TESTER_ACCOUNT, true);
     // 2 public txs to make the bridged fee juice available
     // Mint some bananaCoin and send to the newWallet to pay fees privately
     await bananaCoin.methods.mint_to_private(account2.address, FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
         from: account1.address,
         fee: { paymentMethod }
-    }).wait()
+    });
     // mint some public bananaCoin to the newWallet to pay fees publicly
     await bananaCoin.methods.mint_to_public(account2.address, FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
         from: account1.address,
         fee: { paymentMethod }
-    }).wait()
+    });
     const bananaBalance = await bananaCoin.methods.balance_of_private(account2.address).simulate({
         from: account2.address
-    })
+    });
 
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
-    await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact)
-    const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet)
+    await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact);
+    const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet);
 
-    await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address }).wait()
+    await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address });
 
     logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate({
         from: account2.address
-    })}`)
+    })}`);
 
-    const maxFeesPerGas = (await node.getCurrentBaseFees()).mul(1.5);
+    const maxFeesPerGas = (await node.getCurrentMinFees()).mul(1.5);
     const gasSettings = GasSettings.default({ maxFeesPerGas });
 
-    const privateFee = new PrivateFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings)
+    const privateFee = new PrivateFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings);
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
         from: account2.address,
         fee: { paymentMethod: privateFee }
-    }).wait()
+    });
 
     logger.info(`Transfer paid with fees via the FPC, privately.`)
 
     // Public Fee Payments via FPC
 
-    const publicFee = new PublicFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings)
+    const publicFee = new PublicFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings);
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
         from: account2.address,
         fee: { paymentMethod: publicFee }
-    }).wait()
+    });
     logger.info(`Transfer paid with fees via the FPC, publicly.`)
 
     // Sponsored Fee Payment
@@ -159,7 +160,7 @@ async function main() {
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
         from: account2.address,
         fee: { paymentMethod: sponsoredPaymentMethod }
-    }).wait()
+    });
     logger.info(`Transfer paid with fees from Sponsored FPC.`)
 }
 

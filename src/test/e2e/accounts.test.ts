@@ -1,26 +1,25 @@
 import { PodRacingContractArtifact, PodRacingContract } from "../../artifacts/PodRacing.js"
 import { generateSchnorrAccounts } from "@aztec/accounts/testing"
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
+import { SponsoredFeePaymentMethod, FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { createEthereumChain } from '@aztec/ethereum/chain';
 import { createExtendedL1Client } from '@aztec/ethereum/client';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupWallet } from "../../utils/setup_wallet.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { getAztecNodeUrl, getEnv, getL1RpcUrl, getTimeouts } from "../../../config/config.js";
 import { TestWallet } from "@aztec/test-wallet/server";
-import { AztecNode, createAztecNodeClient } from "@aztec/aztec.js/node";
-import { L1FeeJuicePortalManager, L2AmountClaim } from "@aztec/aztec.js/ethereum";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { getContractInstanceFromInstantiationParams } from "@aztec/stdlib/contract";
+import { type AztecNode, createAztecNodeClient } from "@aztec/aztec.js/node";
+import { L1FeeJuicePortalManager, type L2AmountClaim } from "@aztec/aztec.js/ethereum";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { type Logger, createLogger } from "@aztec/foundation/log";
+import { type ContractInstanceWithAddress, getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { ContractDeployer } from "@aztec/aztec.js/deployment";
 import { TxStatus } from "@aztec/stdlib/tx";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
-import { FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from "@aztec/aztec.js/fee";
 
 describe("Accounts", () => {
     let wallet: TestWallet;
@@ -45,7 +44,7 @@ describe("Accounts", () => {
         wallet = await setupWallet();
 
         sponsoredFPC = await getSponsoredFPCInstance();
-        await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+        await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
         sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
         // create default ethereum clients
@@ -68,7 +67,11 @@ describe("Accounts", () => {
         let signingKey = GrumpkinScalar.random();
         let salt = Fr.random();
         ownerAccount = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
-        await (await ownerAccount.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
+        await (await ownerAccount.getDeployMethod()).send({
+            from: AztecAddress.ZERO,
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout }
+        });
 
         // Set up fee juice contract
         const feeJuiceInstance = await getCanonicalFeeJuice();
@@ -116,36 +119,41 @@ describe("Accounts", () => {
         console.log('Deploying first PodRacingContract to progress blocks...');
         await PodRacingContract.deploy(wallet, ownerAccount.address).send({
             from: ownerAccount.address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout }
+        });
         console.log('First PodRacingContract deployed');
 
         console.log('Deploying second PodRacingContract to progress blocks...');
         await PodRacingContract.deploy(wallet, ownerAccount.address).send({
             from: ownerAccount.address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).deployed({ timeout: getTimeouts().deployTimeout }); // deploy contract with first funded wallet
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout }
+        });
         console.log('Second PodRacingContract deployed');
 
         // Now deploy random accounts using FeeJuicePaymentMethodWithClaim (which claims and pays in one tx)
         console.log('Starting account deployments with FeeJuicePaymentMethodWithClaim...');
         for (let i = 0; i < randomAccountManagers.length; i++) {
             const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomAddresses[i], claims[i]);
-            const deployTx = (await randomAccountManagers[i].getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod } });
-            const receipt = await deployTx.wait({ timeout: getTimeouts().deployTimeout });
+            await (await randomAccountManagers[i].getDeployMethod()).send({
+                from: AztecAddress.ZERO,
+                fee: { paymentMethod },
+                wait: { timeout: getTimeouts().deployTimeout }
+            });
         }
     });
 
     it("Deploys first unfunded account from first funded account", async () => {
         const receipt = await (await randomAccountManagers[0].getDeployMethod())
-            .send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod } })
-            .wait({ timeout: getTimeouts().deployTimeout });
+            .send({
+                from: AztecAddress.ZERO,
+                fee: { paymentMethod: sponsoredPaymentMethod },
+                wait: { timeout: getTimeouts().deployTimeout, returnReceipt: true }
+            });
 
-        expect(receipt).toEqual(
-            expect.objectContaining({
-                status: TxStatus.SUCCESS,
-            }),
-        );
+        // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(receipt.status);
 
         const deployedAccount = await randomAccountManagers[0].getAccount();
         expect(deployedAccount.getAddress()).toEqual(randomAccountManagers[0].address);
@@ -168,7 +176,11 @@ describe("Accounts", () => {
         logger.info('Deploying accounts...');
         await Promise.all(accounts.map(async (a, i) => {
             logger.info(`Deploying account ${i}: ${a.address.toString()}`);
-            return (await a.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: getTimeouts().deployTimeout });
+            return (await a.getDeployMethod()).send({
+                from: AztecAddress.ZERO,
+                fee: { paymentMethod: sponsoredPaymentMethod },
+                wait: { timeout: getTimeouts().deployTimeout }
+            });
         }));
         logger.info('All accounts deployed');
 
@@ -185,31 +197,19 @@ describe("Accounts", () => {
                 deployer: deployerAccount.getAddress()
             });
         const deployer = new ContractDeployer(PodRacingArtifact, wallet);
-        const tx = deployer.deploy(adminAddress).send({
+        const receipt = await deployer.deploy(adminAddress).send({
             from: deployerAddress,
             contractAddressSalt: salt,
-            fee: { paymentMethod: sponsoredPaymentMethod } // without the sponsoredFPC the deployment fails, thus confirming it works
-        })
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout, returnReceipt: true }
+        });
 
-        const receipt = await tx.getReceipt();
-
-        expect(receipt).toEqual(
-            expect.objectContaining({
-                status: TxStatus.PENDING,
-                error: ''
-            }),
-        );
-
-        const receiptAfterMined = await tx.wait({ wallet, timeout: getTimeouts().deployTimeout });
         expect(await wallet.getContractMetadata(deploymentData.address)).toBeDefined();
-        expect((await wallet.getContractMetadata(deploymentData.address)).contractInstance).toBeTruthy();
-        expect(receiptAfterMined).toEqual(
-            expect.objectContaining({
-                status: TxStatus.SUCCESS,
-            }),
-        );
-
-        expect(receiptAfterMined.contract.address).toEqual(deploymentData.address)
+        const metadata = await wallet.getContractMetadata(deploymentData.address);
+        expect(metadata.instance).toBeTruthy();
+        // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(receipt.status);
+        expect(receipt.contract.address).toEqual(deploymentData.address);
     })
 
 });
