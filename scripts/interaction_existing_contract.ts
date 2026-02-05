@@ -91,7 +91,8 @@ async function main() {
     await podRacingContract.methods.create_game(gameId)
         .send({
             from: address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: timeouts.txTimeout }
         });
     logger.info("Game created successfully!");
 
