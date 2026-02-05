@@ -32,8 +32,10 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
       - name: Install Aztec CLI
-        shell: bash -ieo pipefail {0}
         run: |
           VERSION=${{ env.AZTEC_VERSION }} bash <(curl -sL https://install.aztec.network/${{ env.AZTEC_VERSION }})
 
