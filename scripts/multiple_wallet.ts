@@ -106,9 +106,23 @@ async function main() {
     });
 
 
-    // Note: In v4, registering a contract deployed by another PXE triggers sync_state
-    // which is now forbidden. Multi-PXE contract sharing requires a different approach.
-    console.log("Token minted successfully to wallet2 address:", wallet2Address.toString())
+    // In v4, get the contract instance from the node instead of reconstructing locally
+    const tokenInstance = await node.getContract(token.address);
+    if (!tokenInstance) {
+        throw new Error("Token contract not found on node");
+    }
+    await wallet2.registerContract(tokenInstance, TokenContract.artifact);
+
+    const l2TokenContract = await TokenContract.at(
+        token.address,
+        wallet2
+    )
+
+    // Check balance
+    const balance = await l2TokenContract.methods.balance_of_private(wallet2Address).simulate({
+        from: wallet2Address
+    })
+    console.log("private balance should be 100", balance)
 
 }
 
