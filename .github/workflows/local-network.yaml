@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: local-network
-      AZTEC_VERSION: 3.0.0-devnet.6-patch.1
+      AZTEC_VERSION: 4.0.0-nightly.20260204
 
     steps:
       - name: Checkout repository
@@ -29,21 +29,20 @@ jobs:
           node-version: "22"
           cache: "yarn"
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Install Aztec CLI
         run: |
-          curl -s https://install.aztec.network > tmp.sh
+          INSTALL_URL="https://install.aztec.network/${{ env.AZTEC_VERSION }}/"
+          curl -sL $INSTALL_URL > tmp.sh
           VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
 
       - name: Update path
-        run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
-
-      # This is a temporary hack to fix a problem with v3 releases.
-      - name: Manually tag the aztec version as `latest`
         run: |
-          docker tag aztecprotocol/aztec:${{ env.AZTEC_VERSION }} aztecprotocol/aztec:latest
+          echo "$HOME/.aztec/current/bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/current/node_modules/.bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/bin" >> $GITHUB_PATH
 
       - name: Start local Aztec network
         run: aztec start --local-network &

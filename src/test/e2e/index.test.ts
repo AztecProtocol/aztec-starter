@@ -2,15 +2,16 @@
 // Tests the full game lifecycle on a real Aztec network
 
 import { PodRacingContract } from "../../artifacts/PodRacing.js"
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
+import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { getSponsoredFPCInstance } from "../../utils/sponsored_fpc.js";
 import { setupWallet } from "../../utils/setup_wallet.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getTimeouts } from "../../../config/config.js";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { type Logger, createLogger } from "@aztec/foundation/log";
+import { type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { TxStatus } from "@aztec/stdlib/tx";
 import { TestWallet } from '@aztec/test-wallet/server';
 import { AccountManager } from "@aztec/aztec.js/wallet";
@@ -57,8 +58,9 @@ async function playRound(
         strategy.track5
     ).send({
         from: playerAccount,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    }).wait({ timeout });
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout }
+    });
 }
 
 // Helper to setup a game (create + join)
@@ -72,13 +74,15 @@ async function setupGame(
 ) {
     await contract.methods.create_game(gameId).send({
         from: player1Address,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    }).wait({ timeout });
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout }
+    });
 
     await contract.methods.join_game(gameId).send({
         from: player2Address,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    }).wait({ timeout });
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout }
+    });
 }
 
 describe("Pod Racing Game", () => {
@@ -96,7 +100,7 @@ describe("Pod Racing Game", () => {
         wallet = await setupWallet();
 
         sponsoredFPC = await getSponsoredFPCInstance();
-        await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+        await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
         sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
 
         // Create two player accounts
@@ -107,8 +111,9 @@ describe("Pod Racing Game", () => {
         player1Account = await wallet.createSchnorrAccount(secretKey1, salt1, signingKey1);
         await (await player1Account.getDeployMethod()).send({
             from: AztecAddress.ZERO,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout }
+        });
 
         let secretKey2 = Fr.random();
         let signingKey2 = GrumpkinScalar.random();
@@ -116,8 +121,9 @@ describe("Pod Racing Game", () => {
         player2Account = await wallet.createSchnorrAccount(secretKey2, salt2, signingKey2);
         await (await player2Account.getDeployMethod()).send({
             from: AztecAddress.ZERO,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout }
+        });
 
         await wallet.registerSender(player1Account.address);
         await wallet.registerSender(player2Account.address);
@@ -128,8 +134,9 @@ describe("Pod Racing Game", () => {
         const adminAddress = player1Account.address;
         contract = await PodRacingContract.deploy(wallet, adminAddress).send({
             from: adminAddress,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).deployed({ timeout: getTimeouts().deployTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().deployTimeout }
+        });
 
         logger.info(`Contract deployed at: ${contract.address.toString()}`);
     }, 600000)
@@ -146,10 +153,12 @@ describe("Pod Racing Game", () => {
 
         const tx = await contract.methods.create_game(gameId).send({
             from: player1Account.address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().txTimeout }
+        });
 
-        expect(tx.status).toBe(TxStatus.SUCCESS);
+        // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.status);
         logger.info('Game created successfully');
     }, 600000)
 
@@ -195,7 +204,8 @@ describe("Pod Racing Game", () => {
             getTimeouts().txTimeout
         );
 
-        expect(playTx.status).toBe(TxStatus.SUCCESS);
+        // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(playTx.status);
         logger.info('Round played successfully');
     }, 600000)
 
@@ -296,13 +306,15 @@ describe("Pod Racing Game", () => {
         // Both players reveal their scores
         await contract.methods.finish_game(gameId).send({
             from: player1Account.address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().txTimeout }
+        });
 
         await contract.methods.finish_game(gameId).send({
             from: player2Account.address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
-        }).wait({ timeout: getTimeouts().txTimeout });
+            fee: { paymentMethod: sponsoredPaymentMethod },
+            wait: { timeout: getTimeouts().txTimeout }
+        });
 
         logger.info('Both players finished and revealed scores');
         logger.info('Full game flow completed successfully');
@@ -360,7 +372,8 @@ describe("Pod Racing Game", () => {
             getTimeouts().txTimeout
         );
 
-        expect(tx.status).toBe(TxStatus.SUCCESS);
+        // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.status);
         logger.info('Max points allocation successful');
     }, 600000)
 
@@ -388,7 +401,8 @@ describe("Pod Racing Game", () => {
             getTimeouts().txTimeout
         );
 
-        expect(tx.status).toBe(TxStatus.SUCCESS);
+        // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.status);
         logger.info('Zero points allocation successful');
     }, 600000)
 });

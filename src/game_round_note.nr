@@ -1,4 +1,4 @@
-use aztec::{macros::notes::note, protocol_types::{traits::Packable, address::AztecAddress}};
+use aztec::{macros::notes::note, protocol::{traits::Packable, address::AztecAddress}};
 
 // GameRoundNote is a private note that stores a player's point allocation for one round
 // These notes remain private until the player calls finish_game to reveal their totals

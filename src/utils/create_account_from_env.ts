@@ -1,7 +1,7 @@
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { PXE } from "@aztec/pxe/client/bundle";
 import { setupWallet } from "./setup_wallet.js";
 import * as dotenv from 'dotenv';
 import { TestWallet } from "@aztec/test-wallet/server";

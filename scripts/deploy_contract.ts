@@ -1,9 +1,9 @@
 import { PodRacingContract } from "../src/artifacts/PodRacing.js"
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { type Logger, createLogger } from "@aztec/foundation/log";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 import { getTimeouts } from "../config/config.js";
 
@@ -26,7 +26,7 @@ async function main() {
     logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
 
     logger.info('📝 Registering sponsored FPC contract with wallet...');
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     logger.info('✅ Sponsored fee payment method configured');
 
@@ -40,13 +40,12 @@ async function main() {
     logger.info('🏎️  Starting pod racing contract deployment...');
     logger.info(`📋 Admin address for pod racing contract: ${address}`);
 
-    const deployMethod = PodRacingContract.deploy(wallet, address).send({
-        from: address,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    });
-
     logger.info('⏳ Waiting for deployment transaction to be mined...');
-    const podRacingContract = await deployMethod.deployed({ timeout: timeouts.deployTimeout });
+    const { contract: podRacingContract, instance } = await PodRacingContract.deploy(wallet, address).send({
+        from: address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+    });
 
     logger.info(`🎉 Pod Racing Contract deployed successfully!`);
     logger.info(`📍 Contract address: ${podRacingContract.address}`);
@@ -56,8 +55,7 @@ async function main() {
     logger.info('🔍 Verifying contract deployment...');
     logger.info('✅ Contract deployed and ready for game creation');
 
-    // Get contract instance for instantiation data
-    const instance = await deployMethod.getInstance();
+    // Log contract instantiation data
     if (instance) {
         logger.info('📦 Contract instantiation data:');
         logger.info(`Salt: ${instance.salt}`);

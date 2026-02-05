@@ -1,8 +1,8 @@
 import { PodRacingContract } from "../src/artifacts/PodRacing.js"
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
 
 async function main() {
@@ -14,7 +14,7 @@ async function main() {
     const wallet = await setupWallet();
 
     const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
 
     let accountManager = await deploySchnorrAccount(wallet);
     const address = accountManager.address;
