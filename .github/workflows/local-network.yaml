@@ -34,16 +34,18 @@ jobs:
 
       - name: Install Aztec CLI
         run: |
-          VERSION=${{ env.AZTEC_VERSION }} bash <(curl -sL https://install.aztec.network/${{ env.AZTEC_VERSION }})
-          ls -la ~/.aztec/bin/
-          echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
+          INSTALL_URL="https://install.aztec.network/${{ env.AZTEC_VERSION }}/"
+          curl -sL $INSTALL_URL > tmp.sh
+          VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
+
+      - name: Update path
+        run: |
+          echo "$HOME/.aztec/current/bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/current/node_modules/.bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/bin" >> $GITHUB_PATH
 
       - name: Start local Aztec network
-        run: |
-          echo "PATH: $PATH"
-          which aztec || echo "aztec not in PATH"
-          ls -la /home/runner/.aztec/bin/ || true
-          /home/runner/.aztec/bin/aztec start --local-network &
+        run: aztec start --local-network &
 
       - name: Wait for local network to be ready
         run: |
