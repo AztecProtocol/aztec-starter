@@ -9,7 +9,7 @@ import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getPXEConfig } from "@aztec/pxe/config";
 import { createStore } from "@aztec/kv-store/lmdb"
-import { getEnv, getAztecNodeUrl } from "../config/config.js";
+import { getEnv, getAztecNodeUrl, getTimeouts } from "../config/config.js";
 import { TestWallet } from "@aztec/test-wallet/server";
 
 const nodeUrl = getAztecNodeUrl();
@@ -65,17 +65,20 @@ async function main() {
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     // deploy token contract
 
+    const timeouts = getTimeouts();
+
     let secretKey = Fr.random();
     let signingKey = GrumpkinScalar.random();
     let salt = Fr.random();
     let schnorrAccount = await wallet1.createSchnorrAccount(secretKey, salt, signingKey);
     const deployMethod = await schnorrAccount.getDeployMethod();
-    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod } });
+    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let ownerAddress = schnorrAccount.address;
     const token = await TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6).send({
         from: ownerAddress,
         contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
-        fee: { paymentMethod }
+        fee: { paymentMethod },
+        wait: { timeout: timeouts.deployTimeout }
     });
 
     // setup account on 2nd pxe
@@ -89,7 +92,7 @@ async function main() {
 
     // deploy account on 2nd pxe
     const deployMethod2 = await schnorrAccount2.getDeployMethod();
-    await deployMethod2.send({ from: AztecAddress.ZERO, fee: { paymentMethod } });
+    await deployMethod2.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let wallet2Address = schnorrAccount2.address;
     await wallet2.registerSender(ownerAddress)
 
@@ -97,12 +100,14 @@ async function main() {
 
     const private_mint_tx = await token.methods.mint_to_private(schnorrAccount2.address, 100).send({
         from: ownerAddress,
-        fee: { paymentMethod }
+        fee: { paymentMethod },
+        wait: { timeout: timeouts.txTimeout }
     });
     console.log(await node.getTxEffect(private_mint_tx.txHash))
     await token.methods.mint_to_public(schnorrAccount2.address, 100).send({
         from: ownerAddress,
-        fee: { paymentMethod }
+        fee: { paymentMethod },
+        wait: { timeout: timeouts.txTimeout }
     });
 
 
