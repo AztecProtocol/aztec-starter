@@ -37,10 +37,8 @@ jobs:
 
       - name: Install Aztec CLI
         run: |
-          yes | VERSION=${{ env.AZTEC_VERSION }} bash <(curl -sL https://install.aztec.network/${{ env.AZTEC_VERSION }})
-
-      - name: Update path
-        run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
+          VERSION=${{ env.AZTEC_VERSION }} bash <(curl -sL https://install.aztec.network/${{ env.AZTEC_VERSION }})
+          echo "$HOME/.aztec/bin" >> $GITHUB_PATH
 
       - name: Start local Aztec network
         run: aztec start --local-network &
