@@ -3,7 +3,8 @@
     "context": ".",
     "dockerfile": "Dockerfile"
   },
-  "postCreateCommand": "yarn && curl -fsSL https://install.aztec.network/4.0.0-nightly.20260204 | VERSION=4.0.0-nightly.20260204 NON_INTERACTIVE=1 BIN_PATH=/usr/local/bin bash -s",  "customizations": {
+  "postCreateCommand": "yarn ",  
+  "customizations": {
     // Configure properties specific to VS Code.
   "vscode": {
     // Set *default* container specific settings.json values on container create.
