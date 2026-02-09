@@ -10,6 +10,8 @@
 
 This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec local network (local development environment). It includes an example contract, useful commands in `package.json` and helpful scripts in `./scripts`.
 
+**New to Aztec? Start with the [Onboarding Guide](./ONBOARDING.md)** — a progressive walkthrough that takes Ethereum developers from reading code to deploying on devnet.
+
 You can find the **Pod Racing Game contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
 
 The Pod Racing contract is a two-player competitive game where players allocate points across 5 tracks over multiple rounds. The game demonstrates Aztec's private state capabilities - round choices remain private until players reveal their final scores.
