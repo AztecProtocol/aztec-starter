@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile"
   },
   "features": { "ghcr.io/devcontainers/features/docker-in-docker:2": {} },
-  "postCreateCommand": "yarn && curl -s https://install.aztec.network | NON_INTERACTIVE=1 BIN_PATH=/usr/local/bin bash -s",
+  "postCreateCommand": "yarn && VERSION=4.0.0-nightly.20260204 bash -i <(curl -sL https://install.aztec.network/4.0.0-nightly.20260204) | NON_INTERACTIVE=1 BIN_PATH=/usr/local/bin bash -s",
   "customizations": {
     // Configure properties specific to VS Code.
     "vscode": {
