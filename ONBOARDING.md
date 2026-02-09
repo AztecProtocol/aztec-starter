@@ -304,6 +304,8 @@ Two functions are marked `#[only_self]`, meaning they can only be called by the 
 
 **Key insight:** On Ethereum, commit-reveal requires at least 2 transactions (one to commit, one to reveal after a delay). On Aztec, the "commit" happens automatically when a private function creates a note — the data is committed on-chain (as a hash) without ever being visible. The "reveal" is a separate transaction, but the privacy was enforced by the protocol the whole time.
 
+But the deeper point isn't just "commit-reveal is easier." The real benefit of Aztec is **composability in private execution**. In `play_round`, a private function validates a constraint (`track1 + ... < 10`), stores an encrypted note, and enqueues a public state update — all in one atomic transaction. On a public blockchain, you simply cannot compose contract logic over hidden inputs like this. Any "private" scheme on Ethereum (e.g. commit-reveal, ZK proofs submitted to a verifier contract) requires the application developer to build all the privacy infrastructure themselves, and each private component is an isolated island. On Aztec, private functions call other private functions, read private state, and interact with public state through a unified execution model — privacy is a first-class property of the entire contract system, not a bolt-on per application.
+
 ### 1.6 — Game Flow: What's Private, What's Public
 
 Here's exactly what an outside observer can and cannot see at each step:
