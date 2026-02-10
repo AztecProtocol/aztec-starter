@@ -8,7 +8,12 @@
     // Configure properties specific to VS Code.
     "vscode": {
       // Set *default* container specific settings.json values on container create.
-      "settings": {},
+      "settings": {
+// Noir syntax highlighting may not work in Codespaces; use Rust as fallback
+        "files.associations": {
+          "*.nr": "rust"
+        }
+      },
       "extensions": ["noir-lang.vscode-noir"]
     }
   },
