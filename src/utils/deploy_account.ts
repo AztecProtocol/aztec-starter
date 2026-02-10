@@ -1,10 +1,11 @@
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { Fr } from "@aztec/aztec.js/fields";
+import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
+import { type Logger, createLogger } from "@aztec/foundation/log";
 import { setupWallet } from "./setup_wallet.js";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { TestWallet } from "@aztec/test-wallet/server";
 
@@ -35,15 +36,14 @@ export async function deploySchnorrAccount(wallet?: TestWallet): Promise<Account
     logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
 
     logger.info('📝 Registering sponsored FPC contract with PXE...');
-    await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     logger.info('✅ Sponsored fee payment method configured for account deployment');
 
     // Deploy account
-    let tx = await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: 120000 });
+    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod }, wait: { timeout: 120000 } });
 
     logger.info(`✅ Account deployment transaction successful!`);
-    logger.info(`📋 Transaction hash: ${tx.txHash}`);
 
     return account;
 }
