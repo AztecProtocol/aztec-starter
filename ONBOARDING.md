@@ -379,7 +379,7 @@ Tests live in `src/test/`:
 - `helpers.nr` — reusable helpers (strategies, game setup, round playing)
 - `pod_racing.nr` — the actual test cases
 
-#### Key test patterns in `src/test/pod_racing.nr`
+#### Key test patterns in [`src/test/pod_racing.nr`](./src/test/pod_racing.nr)
 
 **Basic initialization test:**
 
