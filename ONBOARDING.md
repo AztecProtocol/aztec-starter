@@ -324,6 +324,8 @@ The critical privacy window is between steps 3 and 4: both players have committe
 
 ## Phase 2: Compile and Test in the Cloud (Zero Install)
 
+:warning: **Important:** This phase uses GitHub Codespaces to provide a cloud-based dev environment with all dependencies pre-installed. This can be slow to run on a basic codespace instance, you may want to jump directly to running this on your local machine in [Phase 3](#phase-3-local-development-setup).
+
 **Goal:** Get hands-on with compilation and Noir tests using only a GitHub Codespace.
 
 ### 2.1 — Launch a GitHub Codespace
