@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying on devnet" â
 - **Phases 1-2** need only a browser (read code, compile in a Codespace)
 - **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `3.0.0-devnet.6-patch.1`
+**Aztec version pinned in this repo:** `4.0.0-nightly.20260204` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -466,14 +466,8 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 **Aztec toolkit:**
 
 ```bash
-bash -i <(curl -s https://install.aztec.network)
-```
-
-Install the correct version:
-
-```bash
-export VERSION=3.0.0-devnet.6-patch.1
-aztec-up && docker pull aztecprotocol/aztec:$VERSION && docker tag aztecprotocol/aztec:$VERSION aztecprotocol/aztec:latest
+export VERSION=4.0.0-nightly.20260204
+bash -i <(curl -sL https://install.aztec.network/$VERSION)
 ```
 
 **Project dependencies:**
@@ -560,7 +554,7 @@ Key exports from `config/config.ts`:
 
 Every Aztec account is a smart contract. There are no Externally Owned Accounts (EOAs). You must deploy your account before you can send transactions.
 
-**How it works (`src/utils/deploy_account.ts`):**
+**How it works ([`src/utils/deploy_account.ts`](src/utils/deploy_account.ts)):**
 
 1. Generate keys: `Fr.random()` for the secret key and salt, `GrumpkinScalar.random()` for the signing key
 2. Create a Schnorr account: `wallet.createSchnorrAccount(secretKey, salt, signingKey)`
@@ -696,7 +690,7 @@ Add a `forfeit_game` function to `src/main.nr` that lets a player concede:
 #[external("public")]
 fn forfeit_game(game_id: Field) {
     let game = self.storage.races.at(game_id).read();
-    let caller = self.context.msg_sender().unwrap();
+    let caller = self.context.maybe_msg_sender().unwrap();
 
     // Only a player in this game can forfeit
     assert(caller.eq(game.player1) | caller.eq(game.player2));
@@ -773,15 +767,18 @@ it("Allows a player to forfeit", async () => {
     getTimeouts().txTimeout,
   );
 
-  const tx = await contract.methods
-    .forfeit_game(gameId)
-    .send({
-      from: player1Account.address,
-      fee: { paymentMethod: sponsoredPaymentMethod },
-    })
-    .wait({ timeout: getTimeouts().txTimeout });
+  const tx = await contract.methods.forfeit_game(gameId).send({
+    from: player1Account.address,
+    fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: getTimeouts().txTimeout },
+  });
 
-  expect(tx.status).toBe(TxStatus.SUCCESS);
+  expect([
+    TxStatus.PROPOSED,
+    TxStatus.CHECKPOINTED,
+    TxStatus.PROVEN,
+    TxStatus.FINALIZED,
+  ]).toContain(tx.status);
 }, 600000);
 ```
 

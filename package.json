@@ -10,7 +10,7 @@
   "scripts": {
     "fees": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/fees.ts",
     "fees::devnet": "NODE_NO_WARNINGS=1 AZTEC_ENV=devnet node --loader ts-node/esm scripts/fees.ts",
-    "clean": "rm -rf ./src/artifacts ./target",
+    "clean": "rm -rf ./src/artifacts ./target ./codegenCache.json",
     "clear-store": "rm -rf ./store",
     "codegen": "aztec codegen target --outdir src/artifacts",
     "compile": "aztec compile",
