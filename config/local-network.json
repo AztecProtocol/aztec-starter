@@ -8,7 +8,7 @@
   },
   "settings": {
     "skipLocalNetwork": false,
-    "version": "3.0.0-devnet.6-patch.1"
+    "version": "4.0.0-devnet.1-patch.0"
   },
   "timeouts": {
     "deployTimeout": 120000,

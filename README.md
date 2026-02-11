@@ -47,7 +47,7 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-export VERSION=3.0.0-devnet.6-patch.1
+export VERSION=4.0.0-devnet.1-patch.0
 aztec-up && docker pull aztecprotocol/aztec:$VERSION && docker tag aztecprotocol/aztec:$VERSION aztecprotocol/aztec:latest
 ```
 
