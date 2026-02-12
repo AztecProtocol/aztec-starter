@@ -18,18 +18,18 @@ mod test;
 mod game_round_note;
 mod race;
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 #[aztec]
 pub contract PodRacing {
-    use dep::aztec::{
+    use ::aztec::{
         macros::{functions::{external, initializer, only_self}, storage::storage},
         messages::message_delivery::MessageDelivery,
         note::note_getter_options::NoteGetterOptions,
         oracle::debug_log::debug_log_format,
     };
-    use dep::aztec::protocol::{address::AztecAddress, traits::ToField};
-    use dep::aztec::state_vars::{Map, Owned, PrivateSet, PublicMutable};
+    use ::aztec::protocol::{address::AztecAddress, traits::ToField};
+    use ::aztec::state_vars::{Map, Owned, PrivateSet, PublicMutable};
 
     use crate::{game_round_note::GameRoundNote, race::Race};
 
