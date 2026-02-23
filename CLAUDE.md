@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aztec Starter — a template repo for learning Aztec smart contract development. Contains a **Pod Racing** game contract (Noir) with TypeScript scripts and tests. The contract is a two-player competitive game using private state for commit-reveal mechanics.
 
-**Aztec version pinned:** `4.0.0-nightly.20260204` (check `Nargo.toml` and `package.json` for source of truth).
+**Aztec version pinned:** `4.0.0-devnet.2-patch.1` (check `Nargo.toml` and `package.json` for source of truth).
 
 ## Commands
 

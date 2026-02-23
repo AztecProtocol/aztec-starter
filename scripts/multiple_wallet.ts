@@ -7,35 +7,11 @@ import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { getPXEConfig } from "@aztec/pxe/config";
-import { createStore } from "@aztec/kv-store/lmdb"
-import { getEnv, getAztecNodeUrl, getTimeouts } from "../config/config.js";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { getAztecNodeUrl, getTimeouts } from "../config/config.js";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 const nodeUrl = getAztecNodeUrl();
-const node = createAztecNodeClient(nodeUrl)
-const l1Contracts = await node.getL1ContractAddresses();
-const config = getPXEConfig()
-const fullConfig = { ...config, l1Contracts }
-fullConfig.proverEnabled = getEnv() !== 'local-network';
-
-const store1 = await createStore('pxe1', {
-    dataDirectory: 'store',
-    dataStoreMapSizeKb: 1e6,
-});
-
-const store2 = await createStore('pxe2', {
-    dataDirectory: 'store',
-    dataStoreMapSizeKb: 1e6,
-});
-
-const setupWallet1 = async () => {
-    return await TestWallet.create(node, fullConfig, { store: store1 });
-};
-
-const setupWallet2 = async () => {
-    return await TestWallet.create(node, fullConfig, { store: store2 });
-};
+const node = createAztecNodeClient(nodeUrl);
 
 const L2_TOKEN_CONTRACT_SALT = Fr.random();
 
@@ -57,8 +33,8 @@ export async function getL2TokenContractInstance(deployerAddress: any, ownerAzte
 
 async function main() {
 
-    const wallet1 = await setupWallet1();
-    const wallet2 = await setupWallet2();
+    const wallet1 = await EmbeddedWallet.create(node, { ephemeral: true });
+    const wallet2 = await EmbeddedWallet.create(node, { ephemeral: true });
     const sponsoredFPC = await getSponsoredFPCInstance();
     await wallet1.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     await wallet2.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
@@ -83,7 +59,7 @@ async function main() {
 
     // setup account on 2nd pxe
 
-    await wallet2.registerSender(ownerAddress)
+    await wallet2.registerSender(ownerAddress, '')
 
     let secretKey2 = Fr.random();
     let signingKey2 = GrumpkinScalar.random();
@@ -94,7 +70,7 @@ async function main() {
     const deployMethod2 = await schnorrAccount2.getDeployMethod();
     await deployMethod2.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let wallet2Address = schnorrAccount2.address;
-    await wallet2.registerSender(ownerAddress)
+    await wallet2.registerSender(ownerAddress, '')
 
     // mint to account on 2nd pxe
 
