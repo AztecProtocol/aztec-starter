@@ -33,17 +33,17 @@ Aztec is an L2 on Ethereum with **native privacy**. Three core ideas separate it
 
 #### Ethereum-to-Aztec comparison table
 
-| Ethereum                   | Aztec                                   |
-| -------------------------- | --------------------------------------- |
-| Solidity                   | Noir                                    |
-| `mapping(address => uint)` | `Map<AztecAddress, PublicMutable<u64>>` |
-| No equivalent              | Notes (private encrypted state)         |
-| `msg.sender`               | `context.msg_sender()`                  |
-| `public` function          | `#[external("public")]`                 |
-| No native equivalent       | `#[external("private")]`                |
-| Manual commit-reveal       | Built into the protocol                 |
-| EOA accounts               | Account abstraction                     |
-| ETH for gas                | Fee Payment Contracts, sponsored fees   |
+| Concept                          | Ethereum                   | Aztec                                   |
+| -------------------------------- | -------------------------- | --------------------------------------- |
+| **Language**                     | Solidity                   | Noir                                    |
+| **Public state mapping**         | `mapping(address => uint)` | `Map<AztecAddress, PublicMutable<u64>>` |
+| **Private state model**          | No equivalent              | Notes, private encrypted state          |
+| **Caller context**               | `msg.sender`               | `context.msg_sender()`                  |
+| **Public function declaration**  | `public function`          | `#[external("public")]`                 |
+| **Private function declaration** | No native equivalent       | `#[external("private")]`                |
+| **Commit-reveal pattern**        | Manual commit-reveal       | Built into the protocol                 |
+| **Account model**                | EOA accounts               | Account abstraction                     |
+| **Gas payment model**            | ETH for gas                | Fee Payment Contracts, sponsored fees   |
 
 **Key concepts in more detail:**
 
@@ -53,6 +53,8 @@ Aztec is an L2 on Ethereum with **native privacy**. Three core ideas separate it
 - **Account abstraction** — Every Aztec account is a smart contract. There are no EOAs. This repo uses Schnorr signature accounts. ([Aztec docs: Accounts](https://docs.aztec.network/aztec/concepts/accounts))
 
 ### 1.2 — The Pod Racing Game: What It Does
+
+Think of managing a pod racing team: you have limited resources (crew, fuel, parts) and 5 race tracks to compete on over 3 rounds. Each round you secretly decide how to spread your resources across the tracks — go all-in on a few, or spread thin across all five? After all rounds, your totals are revealed and whoever dominated more tracks wins the series. The game isn't about speed — it's about strategy under hidden information, which is exactly what Aztec's private state enables.
 
 The Pod Racing contract ([`src/main.nr`](./src/main.nr)) is a two-player competitive game where players allocate points across 5 tracks over 3 rounds. It naturally requires commit-reveal (players shouldn't see each other's moves), making it a perfect Aztec demo.
 
@@ -81,12 +83,25 @@ Open `src/main.nr` and look at the `Storage` struct (lines 39-56):
 ```rust
 #[storage]
 struct Storage<Context> {
+    // Contract administrator address
     admin: PublicMutable<AztecAddress, Context>,
+
+    // Maps game_id -> Race struct containing public game state
+    // Stores player addresses, round progress, and final track scores
     races: Map<Field, PublicMutable<Race, Context>, Context>,
+
+    // Maps game_id -> player_address -> private notes containing that player's round choices
+    // Each GameRoundNote stores the point allocation for one round
+    // This data remains private until the player calls finish_game
     progress: Map<Field, Owned<PrivateSet<GameRoundNote, Context>, Context>, Context>,
+
+    // Maps player address -> total number of wins
+    // Public leaderboard tracking career victories
     win_history: Map<AztecAddress, PublicMutable<u64, Context>, Context>,
 }
 ```
+
+**What is `Context`?** You'll notice `Context` appears as a generic parameter throughout the storage definition. In Aztec, the context is the execution environment passed to every function — it's how your contract accesses blockchain state like `context.msg_sender()` (the caller's address) and `context.block_number()`. Think of it as an expanded version of Solidity's global variables (`msg.sender`, `block.number`, etc.), but packaged as an object. The `<Context>` generic on storage types lets the same storage struct work in both public and private execution contexts. You don't need to construct it yourself — the framework provides `self.context` automatically in every contract function.
 
 What each field does:
 
@@ -138,9 +153,14 @@ Sets the admin address. The `#[initializer]` macro means this runs once at deplo
 ```rust
 #[external("public")]
 fn create_game(game_id: Field) {
+    // Ensure this game_id hasn't been used yet (player1 must be zero address)
     assert(self.storage.races.at(game_id).read().player1.eq(AztecAddress::zero()));
+
+    let player1 = self.context.maybe_msg_sender().unwrap();
+
+    // Initialize a new Race with the caller as player1
     let game = Race::new(
-        self.context.msg_sender().unwrap(),
+        player1,
         TOTAL_ROUNDS,
         self.context.block_number() + GAME_LENGTH,
     );
@@ -156,7 +176,11 @@ Creates a new game. Checks the game ID isn't taken (player1 must be zero address
 #[external("public")]
 fn join_game(game_id: Field) {
     let maybe_existing_game = self.storage.races.at(game_id).read();
-    let joined_game = maybe_existing_game.join(self.context.msg_sender().unwrap());
+
+    let player2 = self.context.maybe_msg_sender().unwrap();
+
+    // Add the caller as player2 (validates that player1 exists and player2 is empty)
+    let joined_game = maybe_existing_game.join(player2);
     self.storage.races.at(game_id).write(joined_game);
 }
 ```
@@ -169,7 +193,11 @@ A second player joins. The `Race::join()` method validates that player1 exists, 
 #[external("public")]
 fn finalize_game(game_id: Field) {
     let game_in_progress = self.storage.races.at(game_id).read();
+
+    // Calculate winner by comparing track scores (validates game has ended)
     let winner = game_in_progress.calculate_winner(self.context.block_number());
+
+    // Update the winner's total win count in the public leaderboard
     let previous_wins = self.storage.win_history.at(winner).read();
     self.storage.win_history.at(winner).write(previous_wins + 1);
 }
@@ -221,19 +249,21 @@ fn play_round(
     round: u8,
     track1: u8, track2: u8, track3: u8, track4: u8, track5: u8,
 ) {
-    // 1. Validate point budget
+    // Validate that total points don't exceed 9 (you can't max out all tracks)
     assert(track1 + track2 + track3 + track4 + track5 < 10);
 
-    let player = self.context.msg_sender().unwrap();
+    let player = self.context.maybe_msg_sender().unwrap();
 
-    // 2. Create a private note with the player's choices
+    // Store the round choices privately as a note in the player's own storage
+    // This creates a private commitment that can only be read by the player
     self.storage.progress
         .at(game_id)
         .at(player)
         .insert(GameRoundNote::new(track1, track2, track3, track4, track5, round, player))
-        .deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
+        .deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 
-    // 3. Enqueue a public call to increment the round counter
+    // Enqueue a public function call to update the round counter
+    // This reveals that a round was played, but not the point allocation
     self.enqueue(PodRacing::at(self.context.this_address()).validate_and_play_round(
         player, game_id, round,
     ));
@@ -251,21 +281,24 @@ Three things happen here that have no direct Ethereum equivalent:
 ```rust
 #[external("private")]
 fn finish_game(game_id: Field) {
-    let player = self.context.msg_sender().unwrap();
+    let player = self.context.maybe_msg_sender().unwrap();
 
-    // Read all private notes for this player in this game
+    // Retrieve all private notes for this player in this game
     let totals = self.storage.progress.at(game_id).at(player)
         .get_notes(NoteGetterOptions::new());
 
-    // Sum up points per track across all rounds
+    // Sum up points allocated to each track across all rounds
     let mut total_track1: u64 = 0;
     // ... (same for tracks 2-5)
+
+    // Iterate through exactly TOTAL_ROUNDS notes (only this player's notes)
     for i in 0..TOTAL_ROUNDS {
         total_track1 += totals.get(i as u32).note.track1 as u64;
         // ... (same for tracks 2-5)
     }
 
-    // Enqueue public call to store the revealed totals
+    // Enqueue public function to store the revealed totals on-chain
+    // Now the revealing player's track totals will be publicly visible
     self.enqueue(PodRacing::at(self.context.this_address()).validate_finish_game_and_reveal(
         player, game_id,
         total_track1, total_track2, total_track3, total_track4, total_track5,
@@ -304,19 +337,56 @@ Two functions are marked `#[only_self]`, meaning they can only be called by the 
 
 **Key insight:** On Ethereum, commit-reveal requires at least 2 transactions (one to commit, one to reveal after a delay). On Aztec, the "commit" happens automatically when a private function creates a note — the data is committed on-chain (as a hash) without ever being visible. The "reveal" is a separate transaction, but the privacy was enforced by the protocol the whole time.
 
-But the deeper point isn't just "commit-reveal is easier." The real benefit of Aztec is **composability in private execution**. In `play_round`, a private function validates a constraint (`track1 + ... < 10`), stores an encrypted note, and enqueues a public state update — all in one atomic transaction. On a public blockchain, you simply cannot compose contract logic over hidden inputs like this. Any "private" scheme on Ethereum (e.g. commit-reveal, ZK proofs submitted to a verifier contract) requires the application developer to build all the privacy infrastructure themselves, and each private component is an isolated island. On Aztec, private functions call other private functions, read private state, and interact with public state through a unified execution model — privacy is a first-class property of the entire contract system, not a bolt-on per application.
+But the deeper point isn't just "commit-reveal is easier." The real benefit of Aztec is **composability in private execution**. In `play_round`, a private function validates a constraint (`track1 + ... < 10`), stores an encrypted note, and enqueues a public state update — all in one atomic transaction. On a public blockchain, you simply cannot compose contract logic over hidden inputs like this. Any "private" scheme on Ethereum (e.g. commit-reveal, ZK proofs submitted to a verifier contract) requires the application developer to build all the privacy infrastructure themselves, and each private component is an isolated island — not just within one app, but across apps too. A private game on Ethereum cannot automatically privately compose with a private token or a private identity contract, because each one rolls its own incompatible privacy scheme. On Aztec, private functions call other private functions, read private state, and interact with public state through a unified execution model — privacy is a first-class property of the entire contract system, not a bolt-on per application. A private game can call a private token's `transfer` in the same transaction, and both sides stay private.
+
+```mermaid
+graph TD
+    subgraph Ethereum["<b>Ethereum: Privacy is DIY</b>"]
+        direction TB
+        E_Game["Private Game<br/><i>custom commit-reveal</i>"]
+        E_Token["Private Token<br/><i>custom ZK proofs</i>"]
+        E_Identity["Private Identity<br/><i>custom encryption</i>"]
+        E_Game -.-|"cannot compose"| E_Token
+        E_Token -.-|"cannot compose"| E_Identity
+        E_Game -.-|"cannot compose"| E_Identity
+
+        style E_Game fill:#fee,stroke:#c33
+        style E_Token fill:#fee,stroke:#c33
+        style E_Identity fill:#fee,stroke:#c33
+    end
+
+    subgraph Aztec["<b>Aztec: Privacy is Built In</b>"]
+        direction TB
+        A_Game["Private Game<br/><i>play_round</i>"]
+        A_Token["Private Token<br/><i>transfer</i>"]
+        A_Identity["Private Identity<br/><i>verify</i>"]
+        A_Game -->|"private call"| A_Token
+        A_Token -->|"private call"| A_Identity
+        A_Game -->|"private call"| A_Identity
+
+        style A_Game fill:#efe,stroke:#3a3
+        style A_Token fill:#efe,stroke:#3a3
+        style A_Identity fill:#efe,stroke:#3a3
+    end
+
+    Ethereum ~~~ Aztec
+```
+
+> **Reading the diagram:** On Ethereum (left), each private application builds its own incompatible privacy infrastructure — they cannot compose with each other. A private game can't privately call a private token. On Aztec (right), any private contract can call any other private contract in a single atomic transaction. Privacy composes across the entire ecosystem, not just within one app.
 
 ### 1.6 — Game Flow: What's Private, What's Public
 
-Here's exactly what an outside observer can and cannot see at each step:
+Here's exactly what an outside observer can and cannot see at each step.
 
-| Step | Function        | Type              | Observer **CAN** see                                      | Observer **CANNOT** see                        |
-| ---- | --------------- | ----------------- | --------------------------------------------------------- | ---------------------------------------------- |
-| 1    | `create_game`   | public            | Game created, player1 address, expiration block           | Nothing hidden                                 |
-| 2    | `join_game`     | public            | Player2 joined, both addresses                            | Nothing hidden                                 |
-| 3    | `play_round`    | private -> public | Round counter incremented (e.g. "player1 played round 1") | Point allocation across tracks                 |
-| 4    | `finish_game`   | private -> public | Final track totals revealed (e.g. "player1: 7,7,7,3,3")   | Individual round allocations                   |
-| 5    | `finalize_game` | public            | Winner declared, leaderboard updated                      | Nothing hidden (all data public at this point) |
+Some functions are labeled **"private, then public"** in the Type column. On Aztec, there are only two function types: `#[private]` and `#[public]`. But a private function can _enqueue_ a public function to run after it — within the same transaction. The private part runs first (on the user's machine, hidden from everyone), then the public part runs on-chain (visible to all). This is how the contract hides sensitive data while still updating shared public state.
+
+| Step | Function        | Type                | Observer **CAN** see                                      | Observer **CANNOT** see                        |
+| ---- | --------------- | ------------------- | --------------------------------------------------------- | ---------------------------------------------- |
+| 1    | `create_game`   | public              | Game created, player1 address, expiration block           | Nothing hidden                                 |
+| 2    | `join_game`     | public              | Player2 joined, both addresses                            | Nothing hidden                                 |
+| 3    | `play_round`    | private, then public | Round counter incremented (e.g. "player1 played round 1") | Point allocation across tracks                 |
+| 4    | `finish_game`   | private, then public | Final track totals revealed (e.g. "player1: 7,7,7,3,3")  | Individual round allocations                   |
+| 5    | `finalize_game` | public              | Winner declared, leaderboard updated                      | Nothing hidden (all data public at this point) |
 
 The critical privacy window is between steps 3 and 4: both players have committed their strategies (as private notes), but neither can see the other's choices. This prevents the second player from gaining an advantage by observing the first player's moves.
 
@@ -586,7 +656,7 @@ yarn deploy-account
 
 Save the output (secret key, signing key, salt) to a `.env` file. See `.env.example` for the format:
 
-```
+```bash
 SECRET="0x..."
 SIGNING_KEY="0x..."
 SALT="0x..."
