@@ -38,17 +38,11 @@ Use **Node.js version 22.15.0**.
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
-Get the **local network, aztec-cli, and other tooling** with this command:
+Install the **Aztec toolkit** (local network, CLI, and other tooling) at the correct version:
 
 ```bash
-bash -i <(curl -s https://install.aztec.network)
-```
-
-Install the correct version of the toolkit with:
-
-```bash
-export VERSION=4.0.0-devnet.1-patch.0
-aztec-up && docker pull aztecprotocol/aztec:$VERSION && docker tag aztecprotocol/aztec:$VERSION aztecprotocol/aztec:latest
+export VERSION=4.0.0-devnet.2-patch.1
+curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 
 ### Environment Configuration
@@ -58,7 +52,7 @@ This project uses JSON configuration files to manage environment-specific settin
 - `config/local-network.json` - Configuration for local network development
 - `config/devnet.json` - Configuration for devnet deployment
 
-The system automatically loads the appropriate configuration file based on the `ENV` environment variable. If `ENV` is not set, it defaults to `local-network`.
+The system automatically loads the appropriate configuration file based on the `AZTEC_ENV` environment variable. If `AZTEC_ENV` is not set, it defaults to `local-network`.
 
 The configuration files contain network URLs, timeouts, and environment-specific settings. You can modify these files to customize your development environment.
 
@@ -89,7 +83,7 @@ yarn deploy-account::devnet      # Deploy account to devnet
 yarn interaction-existing-contract::devnet  # Interact with devnet contracts
 ```
 
-The `::devnet` suffix automatically sets `ENV=devnet`, loading configuration from `config/devnet.json`.
+The `::devnet` suffix automatically sets `AZTEC_ENV=devnet`, loading configuration from `config/devnet.json`.
 
 ---
 
@@ -163,9 +157,9 @@ Then test with:
 yarn test
 ```
 
-Testing will run the **TypeScript tests** defined in `index.test.ts` inside `./src/test/e2e`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`first.nr`](./src/test/first.nr) (imported in the contract file with `mod test;`).
+Testing will run the **TypeScript E2E tests** defined in `./src/test/e2e/`, as well as the [Aztec Testing eXecution Environment (TXE)](https://docs.aztec.network/developers/guides/smart_contracts/testing) tests defined in [`./src/test/`](./src/test/) (imported in the contract file with `mod test;`).
 
-Note: The Typescript tests spawn an instance of the local network to test against, and close it once the TS tests are complete.
+Note: The TypeScript tests require a running local network. The Noir TXE tests (`yarn test:nr`) run without a network.
 
 ---
 
@@ -186,7 +180,7 @@ You can find a handful of scripts in the `./scripts` folder.
 The `./src/utils/` folder contains utility functions:
 
 - `./src/utils/create_account_from_env.ts` provides functions to create Schnorr accounts from environment variables (SECRET, SIGNING_KEY, and SALT), useful for account management across different environments.
-- `./src/utils/setup_wallet.ts` provides a function to set up and configure the TestWallet with proper configuration based on the environment.
+- `./src/utils/setup_wallet.ts` provides a function to set up and configure the EmbeddedWallet with proper configuration based on the environment.
 - `./src/utils/deploy_account.ts` provides a function to deploy Schnorr accounts to the network with sponsored fee payment, including key generation and deployment verification.
 - `./src/utils/sponsored_fpc.ts` provides functions to deploy and manage the SponsoredFPC (Fee Payment Contract) for handling sponsored transaction fees.
 - `./config/config.ts` provides environment-aware configuration loading, automatically selecting the correct JSON config file based on the `ENV` variable.
@@ -195,24 +189,13 @@ The `./src/utils/` folder contains utility functions:
 
 :warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the local network, you will need to delete the `./store` directory to avoid errors.
 
-### 🔄 **Update Node.js and Noir Dependencies**
+### 🔄 **Update Contract from Monorepo**
 
-```bash
-yarn update
-```
-
-### 🔄 **Update Contract**
-
-Get the **contract code from the monorepo**. The script will look at the versions defined in `./Nargo.toml` and fetch that version of the code from the monorepo.
-
-```bash
-yarn update
-```
-
-You may need to update permissions with:
+Get the **contract code from the monorepo**. The script will look at the versions defined in `./Nargo.toml` and fetch that version of the code from the monorepo:
 
 ```bash
 chmod +x .github/scripts/update_contract.sh
+.github/scripts/update_contract.sh <version-tag>
 ```
 
 ## AI Agent Contributor Guide

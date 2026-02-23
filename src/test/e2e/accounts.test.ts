@@ -8,7 +8,7 @@ import { setupWallet } from "../../utils/setup_wallet.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { getAztecNodeUrl, getEnv, getL1RpcUrl, getTimeouts } from "../../../config/config.js";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { type AztecNode, createAztecNodeClient } from "@aztec/aztec.js/node";
 import { L1FeeJuicePortalManager, type L2AmountClaim } from "@aztec/aztec.js/ethereum";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
@@ -22,7 +22,7 @@ import { AccountManager } from "@aztec/aztec.js/wallet";
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 
 describe("Accounts", () => {
-    let wallet: TestWallet;
+    let wallet: EmbeddedWallet;
     let logger: Logger;
     let sponsoredFPC: ContractInstanceWithAddress;
     let sponsoredPaymentMethod: SponsoredFeePaymentMethod;

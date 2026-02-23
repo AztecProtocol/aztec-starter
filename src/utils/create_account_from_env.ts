@@ -4,12 +4,12 @@ import { type Logger, createLogger } from "@aztec/foundation/log";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { setupWallet } from "./setup_wallet.js";
 import * as dotenv from 'dotenv';
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 // Load environment variables
 dotenv.config();
 
-export async function createAccountFromEnv(wallet: TestWallet): Promise<AccountManager> {
+export async function createAccountFromEnv(wallet: EmbeddedWallet): Promise<AccountManager> {
     let logger: Logger;
     logger = createLogger('aztec:create-account');
 
@@ -77,6 +77,6 @@ export async function createAccountFromEnv(wallet: TestWallet): Promise<AccountM
     return schnorrAccount;
 }
 
-export async function getAccountFromEnv(wallet: TestWallet): Promise<AccountManager> {
+export async function getAccountFromEnv(wallet: EmbeddedWallet): Promise<AccountManager> {
     return await createAccountFromEnv(wallet);
 } 
