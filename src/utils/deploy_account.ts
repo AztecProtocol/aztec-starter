@@ -7,9 +7,9 @@ import { type Logger, createLogger } from "@aztec/foundation/log";
 import { setupWallet } from "./setup_wallet.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
-export async function deploySchnorrAccount(wallet?: TestWallet): Promise<AccountManager> {
+export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
     let logger: Logger;
     logger = createLogger('aztec:aztec-starter');
     logger.info('👤 Starting Schnorr account deployment...');

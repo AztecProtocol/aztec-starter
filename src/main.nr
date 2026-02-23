@@ -26,7 +26,7 @@ pub contract PodRacing {
         macros::{functions::{external, initializer, only_self}, storage::storage},
         messages::message_delivery::MessageDelivery,
         note::note_getter_options::NoteGetterOptions,
-        oracle::debug_log::debug_log_format,
+        oracle::logging::debug_log_format,
     };
     use ::aztec::protocol::{address::AztecAddress, traits::ToField};
     use ::aztec::state_vars::{Map, Owned, PrivateSet, PublicMutable};

@@ -1,6 +1,6 @@
 // Test to verify public function debug logging works
 //
-// NOTE: When using TestWallet with a remote node, simulation is forwarded to the node.
+// NOTE: When using EmbeddedWallet with a remote node, simulation is forwarded to the node.
 // The debug_log_format output appears in the NODE's logs, not in this test's output.
 //
 // To see debug logs:
@@ -20,14 +20,14 @@ import { type Logger, createLogger } from "@aztec/foundation/log";
 import { type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
 import { AccountManager } from "@aztec/aztec.js/wallet";
 
 describe("Public Function Logging", () => {
     let logger: Logger;
     let sponsoredFPC: ContractInstanceWithAddress;
     let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
-    let wallet: TestWallet;
+    let wallet: EmbeddedWallet;
     let player1Account: AccountManager;
     let player2Account: AccountManager;
     let contract: PodRacingContract;
@@ -63,8 +63,8 @@ describe("Public Function Logging", () => {
             wait: { timeout: getTimeouts().deployTimeout }
         });
 
-        await wallet.registerSender(player1Account.address);
-        await wallet.registerSender(player2Account.address);
+        await wallet.registerSender(player1Account.address, 'player1');
+        await wallet.registerSender(player2Account.address, 'player2');
         logger.info('Player accounts created and registered');
 
         // Deploy the contract
