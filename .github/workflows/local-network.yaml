@@ -18,6 +18,7 @@ jobs:
     env:
       AZTEC_ENV: local-network
       AZTEC_VERSION: 4.0.0-devnet.2-patch.1
+      FOUNDRY_DIR: "$HOME/.foundry" 
 
     steps:
       - name: Checkout repository
@@ -35,7 +36,7 @@ jobs:
       - name: Install Aztec CLI
         run: |
           INSTALL_URL="https://install.aztec.network/${{ env.AZTEC_VERSION }}/"
-          FOUNDRY_DIR="$HOME/.foundry" curl -sL $INSTALL_URL > tmp.sh
+          curl -sL $INSTALL_URL > tmp.sh
           VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
 
       - name: Update path
