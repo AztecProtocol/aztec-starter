@@ -35,7 +35,7 @@ jobs:
       - name: Install Aztec CLI
         run: |
           INSTALL_URL="https://install.aztec.network/${{ env.AZTEC_VERSION }}/"
-          curl -sL $INSTALL_URL > tmp.sh
+          FOUNDRY_DIR="$HOME/.foundry" curl -sL $INSTALL_URL > tmp.sh
           VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
 
       - name: Update path
