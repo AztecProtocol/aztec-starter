@@ -18,7 +18,6 @@ jobs:
     env:
       AZTEC_ENV: local-network
       AZTEC_VERSION: 4.0.0-devnet.2-patch.1
-      FOUNDRY_DIR: "$HOME/.foundry" 
 
     steps:
       - name: Checkout repository
@@ -30,11 +29,10 @@ jobs:
           node-version: "22"
           cache: "yarn"
 
-      # - name: Install Foundry
-      #   uses: foundry-rs/foundry-toolchain@v1
-
       - name: Install Aztec CLI
         run: |
+          echo "FOUNDRY_DIR=$HOME/.foundry" >> $GITHUB_ENV
+          export FOUNDRY_DIR="$HOME/.foundry"
           INSTALL_URL="https://install.aztec.network/${{ env.AZTEC_VERSION }}/"
           curl -sL $INSTALL_URL > tmp.sh
           VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
