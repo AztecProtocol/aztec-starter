@@ -1,3 +1,6 @@
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { PodRacingContract } from "../src/artifacts/PodRacing.js"
 import { type Logger, createLogger } from "@aztec/foundation/log";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
@@ -5,7 +8,10 @@ import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
-import { getTimeouts } from "../config/config.js";
+import { getTimeouts, getAztecScanConfig } from "../config/config.js";
+import { verifyArtifactOnAztecScan, verifyInstanceOnAztecScan } from "../src/utils/verify_on_aztecscan.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function main() {
     let logger: Logger;
@@ -51,10 +57,6 @@ async function main() {
     logger.info(`📍 Contract address: ${podRacingContract.address}`);
     logger.info(`👤 Admin address: ${address}`);
 
-    // Verify deployment
-    logger.info('🔍 Verifying contract deployment...');
-    logger.info('✅ Contract deployed and ready for game creation');
-
     // Log contract instantiation data
     if (instance) {
         logger.info('📦 Contract instantiation data:');
@@ -68,6 +70,65 @@ async function main() {
         }
         logger.info(`Constructor args: ${JSON.stringify([address.toString()])}`);
     }
+
+    // Verify on AztecScan (best-effort — deploy succeeds regardless)
+    const aztecscanConfig = getAztecScanConfig();
+    if (aztecscanConfig && instance) {
+        logger.info('🔍 Verifying contract on AztecScan...');
+
+        const contractClassId = instance.currentContractClassId.toString();
+        const publicKeysString = instance.publicKeys
+            ? instance.publicKeys.toString()
+            : "0x" + "0".repeat(512);
+        const constructorArgs = [address.toString()];
+
+        // Load the raw JSON artifact (Noir compiler output) — NOT the codegen'd
+        // ContractArtifact. The server expects the original JSON with base64 bytecode
+        // strings, snake_case keys, etc. The codegen'd artifact has Buffer objects,
+        // camelCase keys, and transformed function structure that the server can't parse.
+        const rawArtifactPath = join(__dirname, "../target/pod_racing_contract-PodRacing.json");
+        const rawArtifact = JSON.parse(readFileSync(rawArtifactPath, "utf8"));
+
+        try {
+            // Wait for the AztecScan indexer to pick up the on-chain data
+            logger.info('⏳ Waiting 15s for AztecScan indexer...');
+            await new Promise(resolve => setTimeout(resolve, 15_000));
+
+            // 1. Verify artifact (contract class)
+            const artifactResult = await verifyArtifactOnAztecScan(
+                aztecscanConfig,
+                contractClassId,
+                1,
+                rawArtifact,
+            );
+            logger.info(`📋 Artifact verification: ${artifactResult.status} ${artifactResult.statusText}`);
+
+            // 2. Verify instance (deployment)
+            const instanceResult = await verifyInstanceOnAztecScan(
+                aztecscanConfig,
+                podRacingContract.address.toString(),
+                {
+                    publicKeysString,
+                    deployer: instance.deployer.toString(),
+                    salt: instance.salt.toString(),
+                    constructorArgs,
+                },
+                rawArtifact,
+            );
+            logger.info(`📋 Instance verification: ${instanceResult.status} ${instanceResult.statusText}`);
+
+            if (artifactResult.ok && instanceResult.ok) {
+                logger.info('✅ Contract verified on AztecScan');
+            } else {
+                logger.warn('⚠️ AztecScan verification returned non-OK status (contract still deployed successfully)');
+            }
+        } catch (err) {
+            logger.warn(`⚠️ AztecScan verification failed (contract still deployed successfully): ${err}`);
+        }
+    } else if (!aztecscanConfig) {
+        logger.info('ℹ️ AztecScan not configured for this environment, skipping verification');
+    }
+
     logger.info('🏁 Deployment process completed successfully!');
     logger.info(`📋 Summary:`);
     logger.info(`   - Contract Address: ${podRacingContract.address}`);

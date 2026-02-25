@@ -17,6 +17,11 @@ export interface TimeoutConfig {
   waitTimeout: number;
 }
 
+export interface AztecScanConfig {
+  apiUrl: string;
+  apiKey: string;
+}
+
 export interface EnvironmentConfig {
   name: string;
   environment: 'local' | 'testnet' | 'devnet' | 'mainnet';
@@ -26,6 +31,7 @@ export interface EnvironmentConfig {
     version: string;
   };
   timeouts?: TimeoutConfig;
+  aztecscan?: AztecScanConfig;
 }
 
 export class ConfigManager {
@@ -136,6 +142,13 @@ export function getEnv(): string {
  */
 export function getTimeouts(): TimeoutConfig {
   return configManager.getTimeouts();
+}
+
+/**
+ * Gets AztecScan configuration, or undefined if not configured for this environment.
+ */
+export function getAztecScanConfig(): AztecScanConfig | undefined {
+  return configManager.getConfig().aztecscan;
 }
 
 // Export the singleton instance for direct access if needed

@@ -8,6 +8,7 @@ import { setupWallet } from "./setup_wallet.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
+import { getTimeouts } from "../../config/config.js";
 
 export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
     let logger: Logger;
@@ -41,7 +42,8 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
     logger.info('✅ Sponsored fee payment method configured for account deployment');
 
     // Deploy account
-    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod }, wait: { timeout: 120000 } });
+    const timeouts = getTimeouts();
+    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod }, wait: { timeout: timeouts.deployTimeout } });
 
     logger.info(`✅ Account deployment transaction successful!`);
 

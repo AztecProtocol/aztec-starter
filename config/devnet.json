@@ -14,5 +14,9 @@
     "deployTimeout": 1200000,
     "txTimeout": 180000,
     "waitTimeout": 60000
+  },
+  "aztecscan": {
+    "apiUrl": "https://api.devnet.aztecscan.xyz",
+    "apiKey": "temporary-api-key"
   }
 }
