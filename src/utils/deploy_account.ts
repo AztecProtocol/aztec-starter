@@ -41,7 +41,11 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
     logger.info('✅ Sponsored fee payment method configured for account deployment');
 
     // Deploy account
-    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod }, wait: { timeout: 120000 } });
+    await deployMethod.send({
+        from: AztecAddress.ZERO,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+        wait: { timeout: 120 },
+    });
 
     logger.info(`✅ Account deployment transaction successful!`);
 
