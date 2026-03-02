@@ -105,6 +105,36 @@ yarn profile              # Profile a transaction deployment
 - **Wallet setup**: `EmbeddedWallet.create()` with `ephemeral: true` for tests; prover is enabled only on devnet.
 - **PXE store**: Data persists in `./store`. Must delete after local network restart to avoid stale state errors.
 
+## Simulate Before Send (IMPORTANT)
+
+**Always call `.simulate()` before `.send()` for every state-changing transaction.** Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction will hang until the send timeout (up to 600s) with an opaque error.
+
+```typescript
+// Simulate first — surfaces revert reasons instantly
+await contract.methods.create_game(gameId).simulate({ from: address });
+
+// Then send — only after simulation succeeds
+await contract.methods.create_game(gameId).send({
+    from: address,
+    fee: { paymentMethod },
+    wait: { timeout: timeouts.txTimeout }
+});
+```
+
+For deployments, store the deploy request to avoid constructing it twice:
+
+```typescript
+const deployRequest = MyContract.deploy(wallet, ...args);
+await deployRequest.simulate({ from: address });
+const contract = await deployRequest.send({ ... });
+```
+
+**Checklist:**
+
+- Every `.send()` call must be preceded by a `.simulate()` call
+- `.simulate()` does not need fee parameters — only `from` is required
+- View/read-only calls (e.g. `balance_of_private`) already use `.simulate()` to return values — no `.send()` needed for those
+
 ## Version Update Procedure
 
 When updating the Aztec version, update all of these locations:

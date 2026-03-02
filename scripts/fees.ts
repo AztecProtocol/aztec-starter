@@ -71,12 +71,18 @@ async function main() {
     const timeouts = getTimeouts();
 
     // Two arbitrary txs to make the L1 message available on L2
-    const podRacingContract = await PodRacingContract.deploy(wallet, account1.address).send({
+    // Simulate before sending to surface revert reasons
+    const podRacingDeploy = PodRacingContract.deploy(wallet, account1.address);
+    await podRacingDeploy.simulate({ from: account1.address });
+    const podRacingContract = await podRacingDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
     });
-    const bananaCoin = await TokenContract.deploy(wallet, account1.address, "bananaCoin", "BNC", 18).send({
+
+    const bananaCoinDeploy = TokenContract.deploy(wallet, account1.address, "bananaCoin", "BNC", 18);
+    await bananaCoinDeploy.simulate({ from: account1.address });
+    const bananaCoin = await bananaCoinDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -93,6 +99,7 @@ async function main() {
 
     // Create a new game on the pod racing contract, interacting from the newWallet
     const gameId = Fr.random();
+    await podRacingContract.methods.create_game(gameId).simulate({ from: account2.address });
     await podRacingContract.methods.create_game(gameId).send({
         from: account2.address,
         wait: { timeout: timeouts.txTimeout }
@@ -105,7 +112,9 @@ async function main() {
     // Need to deploy an FPC to use Private Fee payment methods
 
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
-    const fpc = await FPCContract.deploy(wallet, bananaCoin.address, account1.address).send({
+    const fpcDeploy = FPCContract.deploy(wallet, bananaCoin.address, account1.address);
+    await fpcDeploy.simulate({ from: account1.address });
+    const fpc = await fpcDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -113,12 +122,14 @@ async function main() {
     const fpcClaim = await feeJuicePortalManager.bridgeTokensPublic(fpc.address, FEE_FUNDING_FOR_TESTER_ACCOUNT, true);
     // 2 public txs to make the bridged fee juice available
     // Mint some bananaCoin and send to the newWallet to pay fees privately
+    await bananaCoin.methods.mint_to_private(account2.address, FEE_FUNDING_FOR_TESTER_ACCOUNT).simulate({ from: account1.address });
     await bananaCoin.methods.mint_to_private(account2.address, FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
     // mint some public bananaCoin to the newWallet to pay fees publicly
+    await bananaCoin.methods.mint_to_public(account2.address, FEE_FUNDING_FOR_TESTER_ACCOUNT).simulate({ from: account1.address });
     await bananaCoin.methods.mint_to_public(account2.address, FEE_FUNDING_FOR_TESTER_ACCOUNT).send({
         from: account1.address,
         fee: { paymentMethod },
@@ -144,6 +155,7 @@ async function main() {
     const gasSettings = GasSettings.default({ maxFeesPerGas });
 
     const privateFee = new PrivateFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings);
+    await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).simulate({ from: account2.address });
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
         from: account2.address,
         fee: { paymentMethod: privateFee },
@@ -155,6 +167,7 @@ async function main() {
     // Public Fee Payments via FPC
 
     const publicFee = new PublicFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings);
+    await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).simulate({ from: account2.address });
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
         from: account2.address,
         fee: { paymentMethod: publicFee },
@@ -166,6 +179,7 @@ async function main() {
 
     // This method will only work in environments where there is a sponsored fee contract deployed
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
+    await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).simulate({ from: account2.address });
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
         from: account2.address,
         fee: { paymentMethod: sponsoredPaymentMethod },

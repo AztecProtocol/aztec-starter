@@ -88,6 +88,12 @@ async function main() {
     const gameId = Fr.random();
     logger.info(`Creating new game with ID: ${gameId}`);
 
+    // Simulate first to surface revert reasons before sending
+    await podRacingContract.methods.create_game(gameId).simulate({
+        from: address,
+    });
+    logger.info("Simulation successful, sending transaction...");
+
     await podRacingContract.methods.create_game(gameId)
         .send({
             from: address,

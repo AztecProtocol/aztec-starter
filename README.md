@@ -185,6 +185,30 @@ The `./src/utils/` folder contains utility functions:
 - `./src/utils/sponsored_fpc.ts` provides functions to deploy and manage the SponsoredFPC (Fee Payment Contract) for handling sponsored transaction fees.
 - `./config/config.ts` provides environment-aware configuration loading, automatically selecting the correct JSON config file based on the `ENV` variable.
 
+## Simulate Before Send
+
+Always call `.simulate()` before `.send()` for every state-changing transaction. Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction will hang until the send timeout with an opaque error.
+
+```typescript
+// Simulate first — surfaces revert reasons instantly
+await contract.methods.create_game(gameId).simulate({ from: address });
+
+// Then send — only after simulation succeeds
+await contract.methods.create_game(gameId).send({
+    from: address,
+    fee: { paymentMethod },
+    wait: { timeout }
+});
+```
+
+For deployments, store the deploy request to avoid constructing it twice:
+
+```typescript
+const deployRequest = MyContract.deploy(wallet, ...args);
+await deployRequest.simulate({ from: address });
+const contract = await deployRequest.send({ ... });
+```
+
 ## ❗ **Error Resolution**
 
 :warning: Tests and scripts set up and run the Private Execution Environment (PXE) and store PXE data in the `./store` directory. If you restart the local network, you will need to delete the `./store` directory to avoid errors.
