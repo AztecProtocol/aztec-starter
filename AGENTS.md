@@ -24,6 +24,29 @@ There are two independent test systems:
 - **TypeScript E2E tests** (`yarn test:js`): Require a running local network.
 - `yarn test` runs both. Ensure tests pass before committing.
 
+## Simulate Before Send
+
+**Always call `.simulate()` before `.send()` for every state-changing transaction.** Simulation runs the transaction locally and surfaces revert reasons immediately instead of waiting for the send timeout with an opaque error.
+
+```typescript
+// Simulate first
+await contract.methods.create_game(gameId).simulate({ from: address });
+// Then send
+await contract.methods.create_game(gameId).send({
+    from: address,
+    fee: { paymentMethod },
+    wait: { timeout }
+});
+```
+
+For deployments, store the deploy request to reuse it:
+
+```typescript
+const deployRequest = MyContract.deploy(wallet, ...args);
+await deployRequest.simulate({ from: address });
+const contract = await deployRequest.send({ ... });
+```
+
 ## Pull Requests
 - Use clear commit messages and provide a concise description in the PR body about the change.
 - Mention which tests were executed.

@@ -40,6 +40,12 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     logger.info('✅ Sponsored fee payment method configured for account deployment');
 
+    // Simulate before sending to surface revert reasons
+    await deployMethod.simulate({
+        from: AztecAddress.ZERO,
+    });
+    logger.info('✅ Simulation successful, sending deployment transaction...');
+
     // Deploy account
     await deployMethod.send({
         from: AztecAddress.ZERO,

@@ -48,6 +48,12 @@ async function playRound(
     sponsoredPaymentMethod: SponsoredFeePaymentMethod,
     timeout: number
 ) {
+    // Simulate first to surface revert reasons before sending
+    await contract.methods.play_round(
+        gameId, round,
+        strategy.track1, strategy.track2, strategy.track3, strategy.track4, strategy.track5
+    ).simulate({ from: playerAccount });
+
     return await contract.methods.play_round(
         gameId,
         round,
@@ -72,12 +78,15 @@ async function setupGame(
     sponsoredPaymentMethod: SponsoredFeePaymentMethod,
     timeout: number
 ) {
+    // Simulate first to surface revert reasons before sending
+    await contract.methods.create_game(gameId).simulate({ from: player1Address });
     await contract.methods.create_game(gameId).send({
         from: player1Address,
         fee: { paymentMethod: sponsoredPaymentMethod },
         wait: { timeout }
     });
 
+    await contract.methods.join_game(gameId).simulate({ from: player2Address });
     await contract.methods.join_game(gameId).send({
         from: player2Address,
         fee: { paymentMethod: sponsoredPaymentMethod },
@@ -304,12 +313,14 @@ describe("Pod Racing Game", () => {
         logger.info('Player 2 completed all rounds');
 
         // Both players reveal their scores
+        await contract.methods.finish_game(gameId).simulate({ from: player1Account.address });
         await contract.methods.finish_game(gameId).send({
             from: player1Account.address,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().txTimeout }
         });
 
+        await contract.methods.finish_game(gameId).simulate({ from: player2Account.address });
         await contract.methods.finish_game(gameId).send({
             from: player2Account.address,
             fee: { paymentMethod: sponsoredPaymentMethod },

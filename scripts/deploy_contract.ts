@@ -40,8 +40,13 @@ async function main() {
     logger.info('🏎️  Starting pod racing contract deployment...');
     logger.info(`📋 Admin address for pod racing contract: ${address}`);
 
-    logger.info('⏳ Waiting for deployment transaction to be mined...');
-    const { contract: podRacingContract, instance } = await PodRacingContract.deploy(wallet, address).send({
+    logger.info('⏳ Simulating deployment transaction...');
+    const deployRequest = PodRacingContract.deploy(wallet, address);
+    await deployRequest.simulate({
+        from: address,
+    });
+    logger.info('✅ Simulation successful, sending transaction...');
+    const { contract: podRacingContract, instance } = await deployRequest.send({
         from: address,
         fee: { paymentMethod: sponsoredPaymentMethod },
         wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
