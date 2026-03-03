@@ -78,7 +78,7 @@ The Pod Racing contract ([`src/main.nr`](./src/main.nr)) is a two-player competi
 
 ### 1.3 — Contract Walkthrough: Storage
 
-Open `src/main.nr` and look at the `Storage` struct (lines 39-56):
+Open `src/main.nr` and look at the `Storage` struct (lines 40-57):
 
 ```rust
 #[storage]
@@ -136,19 +136,20 @@ contract PodRacing {
 
 These functions should feel familiar if you've written Solidity.
 
-#### `constructor()` (line 58-62)
+#### `constructor()` (line 59-64)
 
 ```rust
 #[external("public")]
 #[initializer]
 fn constructor(admin: AztecAddress) {
+    debug_log_format("Initializing PodRacing contract with admin {0}", [admin.to_field()]);
     self.storage.admin.write(admin);
 }
 ```
 
 Sets the admin address. The `#[initializer]` macro means this runs once at deployment, like a Solidity constructor.
 
-#### `create_game()` (line 67-79)
+#### `create_game()` (line 69-87)
 
 ```rust
 #[external("public")]
@@ -157,6 +158,10 @@ fn create_game(game_id: Field) {
     assert(self.storage.races.at(game_id).read().player1.eq(AztecAddress::zero()));
 
     let player1 = self.context.maybe_msg_sender().unwrap();
+    debug_log_format(
+        "Creating game {0} by player {1}",
+        [game_id, player1.to_field()],
+    );
 
     // Initialize a new Race with the caller as player1
     let game = Race::new(
@@ -170,7 +175,7 @@ fn create_game(game_id: Field) {
 
 Creates a new game. Checks the game ID isn't taken (player1 must be zero address), then writes a new `Race` struct with the caller as player1 and an expiration time.
 
-#### `join_game()` (line 83-90)
+#### `join_game()` (line 91-101)
 
 ```rust
 #[external("public")]
@@ -178,6 +183,7 @@ fn join_game(game_id: Field) {
     let maybe_existing_game = self.storage.races.at(game_id).read();
 
     let player2 = self.context.maybe_msg_sender().unwrap();
+    debug_log_format("Player {0} joining game {1}", [player2.to_field(), game_id]);
 
     // Add the caller as player2 (validates that player1 exists and player2 is empty)
     let joined_game = maybe_existing_game.join(player2);
@@ -187,18 +193,24 @@ fn join_game(game_id: Field) {
 
 A second player joins. The `Race::join()` method validates that player1 exists, the player2 slot is empty, and the joiner isn't player1.
 
-#### `finalize_game()` (line 222-232)
+#### `finalize_game()` (line 262-278)
 
 ```rust
 #[external("public")]
 fn finalize_game(game_id: Field) {
+    debug_log_format("Finalizing game {0}", [game_id]);
     let game_in_progress = self.storage.races.at(game_id).read();
 
     // Calculate winner by comparing track scores (validates game has ended)
     let winner = game_in_progress.calculate_winner(self.context.block_number());
+    debug_log_format("Winner determined: {0}", [winner.to_field()]);
 
     // Update the winner's total win count in the public leaderboard
     let previous_wins = self.storage.win_history.at(winner).read();
+    debug_log_format(
+        "Updating win count from {0} to {1}",
+        [previous_wins as Field, (previous_wins + 1) as Field],
+    );
     self.storage.win_history.at(winner).write(previous_wins + 1);
 }
 ```
@@ -207,7 +219,7 @@ After both players have revealed, this compares track scores, determines the win
 
 #### The `Race` struct ([`src/race.nr`](./src/race.nr))
 
-The `Race` struct (lines 8-38) stores all public game state. It has 17 fields:
+The `Race` struct (lines 10-39) stores all public game state. It has 17 fields:
 
 ```rust
 pub struct Race {
@@ -240,7 +252,7 @@ Key methods:
 
 This is the "aha moment" — the part with no Ethereum equivalent.
 
-#### `play_round()` (line 99-131)
+#### `play_round()` (line 110-150)
 
 ```rust
 #[external("private")]
@@ -276,7 +288,7 @@ Three things happen here that have no direct Ethereum equivalent:
 2. **Creating a private note** — `.insert(GameRoundNote::new(...))` stores the round choices as an encrypted note. Only the player can read it later. The `.deliver(MessageDelivery.CONSTRAINED_ONCHAIN)` commits the note's hash on-chain without revealing the content.
 3. **Enqueuing a public call** — `self.enqueue(...)` schedules a public function to run after the private proof is verified. This updates the round counter publicly (so both players can see progress) without revealing the point allocation.
 
-#### `finish_game()` (line 149-184)
+#### `finish_game()` (line 172-216)
 
 ```rust
 #[external("private")]
@@ -332,8 +344,8 @@ The `#[note]` macro makes this a private state primitive. Each note stores one r
 
 Two functions are marked `#[only_self]`, meaning they can only be called by the contract itself (via `self.enqueue(...)`):
 
-- **`validate_and_play_round`** (line 136-142) — Validates the round is sequential and increments the player's round counter
-- **`validate_finish_game_and_reveal`** (line 189-211) — Stores the player's revealed track totals, checking they haven't already been revealed
+- **`validate_and_play_round`** (line 155-165) — Validates the round is sequential and increments the player's round counter
+- **`validate_finish_game_and_reveal`** (line 221-251) — Stores the player's revealed track totals, checking they haven't already been revealed
 
 **Key insight:** On Ethereum, commit-reveal requires at least 2 transactions (one to commit, one to reveal after a delay). On Aztec, the "commit" happens automatically when a private function creates a note — the data is committed on-chain (as a hash) without ever being visible. The "reveal" is a separate transaction, but the privacy was enforced by the protocol the whole time.
 
@@ -673,13 +685,16 @@ AZTEC_ENV=local-network
 4. Deploy the contract:
 
 ```typescript
-const podRacingContract = await PodRacingContract.deploy(wallet, address)
-  .send({
+const deployRequest = PodRacingContract.deploy(wallet, address);
+await deployRequest.simulate({ from: address });
+const { contract: podRacingContract, instance } = await deployRequest.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
-  })
-  .deployed({ timeout: timeouts.deployTimeout });
+    wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+});
 ```
+
+> **Important:** Always call `.simulate()` before `.send()`. Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction hangs until timeout with an opaque error.
 
 **Run it:**
 
@@ -700,13 +715,17 @@ The output includes the contract address, admin address, and instantiation data 
 
 ```typescript
 const podRacingContract = await PodRacingContract.at(contractAddress, wallet);
-await podRacingContract.methods
-  .create_game(gameId)
+
+// Simulate first — surfaces revert reasons instantly
+await podRacingContract.methods.create_game(gameId).simulate({ from: address });
+
+// Then send — only after simulation succeeds
+await podRacingContract.methods.create_game(gameId)
   .send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
-  })
-  .wait({ timeout: timeouts.txTimeout });
+    wait: { timeout: timeouts.txTimeout }
+  });
 ```
 
 Set the env vars from your deploy output, then run:
@@ -839,6 +858,11 @@ it("Allows a player to forfeit", async () => {
     getTimeouts().txTimeout,
   );
 
+  // Simulate first to surface revert reasons before sending
+  await contract.methods.forfeit_game(gameId).simulate({
+    from: player1Account.address,
+  });
+
   const tx = await contract.methods.forfeit_game(gameId).send({
     from: player1Account.address,
     fee: { paymentMethod: sponsoredPaymentMethod },
@@ -949,8 +973,7 @@ yarn profile
 ```typescript
 const node = createAztecNodeClient(nodeUrl);
 let block = await node.getBlock(BlockNumber(1));
-console.log(block);
-console.log(await block?.hash());
+console.log(block?.header);
 ```
 
 ```bash
@@ -973,6 +996,7 @@ yarn get-block
 | `src/test/helpers.nr`                      | Test helpers — strategies, game setup                  |
 | `src/test/utils.nr`                        | Test setup — deploy contract, create admin             |
 | `src/test/e2e/index.test.ts`               | TypeScript E2E tests (Jest)                            |
+| `src/test/e2e/public_logging.test.ts`      | Logging E2E tests                                      |
 | `src/artifacts/PodRacing.ts`               | Generated TypeScript contract bindings                 |
 | `src/utils/deploy_account.ts`              | Deploy a Schnorr account                               |
 | `src/utils/sponsored_fpc.ts`               | SponsoredFPC instance helper                           |
@@ -984,6 +1008,7 @@ yarn get-block
 | `scripts/multiple_wallet.ts`               | Multi-PXE / multi-wallet demo                          |
 | `scripts/fees.ts`                          | Fee payment strategies demo                            |
 | `scripts/profile_deploy.ts`                | Transaction profiling                                  |
+| `scripts/read_debug_logs.ts`               | Debug logging utility demo                             |
 | `scripts/get_block.ts`                     | Block querying                                         |
 | `config/config.ts`                         | Config manager (loads JSON by env)                     |
 | `config/local-network.json`                | Local network configuration                            |
@@ -1008,6 +1033,7 @@ yarn get-block
 | `yarn multiple-wallet`               | Multi-PXE demo                                     |
 | `yarn fees`                          | Fee payment methods demo                           |
 | `yarn profile`                       | Profile a transaction                              |
+| `yarn read-logs`                     | Demo debug logging utility                         |
 | `yarn get-block`                     | Query block data                                   |
 | `yarn clean`                         | Delete `./src/artifacts` and `./target`            |
 | `yarn clear-store`                   | Delete `./store` (PXE data)                        |
