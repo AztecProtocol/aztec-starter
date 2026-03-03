@@ -55,6 +55,8 @@ yarn deploy::devnet       # Deploy contract to devnet
 yarn deploy-account       # Deploy a Schnorr account
 yarn multiple-wallet      # Deploy from one wallet, interact from another
 yarn profile              # Profile a transaction deployment
+yarn read-logs            # Demo utility function for client-side debug logging
+yarn read-logs::devnet    # Same on devnet
 ```
 
 ## Environment Configuration

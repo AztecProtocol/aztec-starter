@@ -174,6 +174,7 @@ You can find a handful of scripts in the `./scripts` folder.
 - `./scripts/profile_deploy.ts` shows how to profile a transaction and print the results.
 - `./scripts/interaction_existing_contract.ts` demonstrates how to interact with an already deployed pod racing contract, including creating games.
 - `./scripts/get_block.ts` is an example of how to retrieve and display block information from the Aztec node.
+- `./scripts/read_debug_logs.ts` demonstrates the `#[external("utility")]` pattern for client-side state inspection — runs a full game lifecycle, then calls the `debug_game_state` utility function to read public state and log it via `debug_log_format` without an on-chain transaction. Run with `yarn read-logs` (`LOG_LEVEL` is pre-configured by the yarn script).
 
 ### Utility Functions
 
