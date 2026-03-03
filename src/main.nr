@@ -37,6 +37,7 @@ pub contract PodRacing {
     global TOTAL_ROUNDS: u8 = 3; // Each game consists of 3 rounds
     global GAME_LENGTH: u32 = 300; // Games expire after 300 blocks
 
+    // docs:start:storage
     #[storage]
     struct Storage<Context> {
         // Contract administrator address
@@ -55,14 +56,18 @@ pub contract PodRacing {
         // Public leaderboard tracking career victories
         win_history: Map<AztecAddress, PublicMutable<u64, Context>, Context>,
     }
+    // docs:end:storage
 
+    // docs:start:constructor
     #[external("public")]
     #[initializer]
     fn constructor(admin: AztecAddress) {
         debug_log_format("Initializing PodRacing contract with admin {0}", [admin.to_field()]);
         self.storage.admin.write(admin);
     }
+    // docs:end:constructor
 
+    // docs:start:create-game
     // Creates a new game instance
     // The caller becomes player1 and waits for an opponent to join
     // Sets the game expiration to current block + GAME_LENGTH
@@ -85,7 +90,9 @@ pub contract PodRacing {
         );
         self.storage.races.at(game_id).write(game);
     }
+    // docs:end:create-game
 
+    // docs:start:join-game
     // Allows a second player to join an existing game
     // After joining, both players can start playing rounds
     #[external("public")]
@@ -99,7 +106,9 @@ pub contract PodRacing {
         let joined_game = maybe_existing_game.join(player2);
         self.storage.races.at(game_id).write(joined_game);
     }
+    // docs:end:join-game
 
+    // docs:start:play-round
     // Plays a single round by allocating points across 5 tracks
     // This is a PRIVATE function - the point allocation remains hidden from the opponent
     // Players must play rounds sequentially (round 1, then 2, then 3)
@@ -148,7 +157,9 @@ pub contract PodRacing {
             round,
         ));
     }
+    // docs:end:play-round
 
+    // docs:start:validate-and-play-round
     // Internal public function to validate and record that a player completed a round
     // Updates the public game state to track which round each player is on
     // Does NOT reveal the point allocation (that remains private)
@@ -163,7 +174,9 @@ pub contract PodRacing {
         // Increment the player's round counter (validates sequential play)
         self.storage.races.at(game_id).write(game_in_progress.increment_player_round(player, round));
     }
+    // docs:end:validate-and-play-round
 
+    // docs:start:finish-game
     // Called after all rounds are complete to reveal a player's total scores
     // This is PRIVATE - only the caller can read their own GameRoundNotes
     // The function sums up all round allocations per track and publishes totals
@@ -214,7 +227,9 @@ pub contract PodRacing {
             total_track5,
         ));
     }
+    // docs:end:finish-game
 
+    // docs:start:validate-finish-game
     // Internal public function to store a player's revealed track totals
     // Validates that the player hasn't already revealed their scores (all must be 0)
     // After both players call finish_game, all scores are public and can be compared
@@ -249,7 +264,9 @@ pub contract PodRacing {
             total_track5,
         ));
     }
+    // docs:end:validate-finish-game
 
+    // docs:start:finalize-game
     // Determines the winner after both players have revealed their scores
     // Can only be called after the game's end_block (time limit expired)
     // Compares track totals and declares the player who won more tracks as winner
@@ -276,6 +293,7 @@ pub contract PodRacing {
         );
         self.storage.win_history.at(winner).write(previous_wins + 1);
     }
+    // docs:end:finalize-game
 
     // Utility function: runs client-side in the PXE, not on-chain.
     // Reads the public game state and logs it via debug_log_format.

@@ -4,6 +4,7 @@ use ::aztec::protocol::{
     traits::{Deserialize, Serialize, Packable, ToField},
 };
 
+// docs:start:race-struct
 // Race struct stores the public state of a game
 // This data is visible to everyone and tracks game progress
 #[derive(Deserialize, Serialize, Eq, Packable)]
@@ -37,6 +38,7 @@ pub struct Race {
     // Block number when the game expires (for timeout enforcement)
     pub end_block: u32,
 }
+// docs:end:race-struct
 
 impl Race {
     // Creates a new game with player1 set, waiting for player2 to join
@@ -250,6 +252,7 @@ impl Race {
         debug_log_format("End block: {0}", [self.end_block as Field]);
     }
 
+    // docs:start:calculate-winner
     // Determines the game winner by comparing track scores
     // Winner is whoever won more tracks (best of 5)
     //
@@ -305,4 +308,5 @@ impl Race {
             self.player2
         }
     }
+    // docs:end:calculate-winner
 }

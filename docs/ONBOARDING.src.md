@@ -6,18 +6,18 @@ This guide takes you from "reading code in a browser" to "deploying on devnet" �
 
 **How the guide is structured:**
 
-* **Phases 1-2** need only a browser (read code, compile in a Codespace)
-* **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
+- **Phases 1-2** need only a browser (read code, compile in a Codespace)
+- **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
 **Aztec version pinned in this repo:** `4.0.0-devnet.2-patch.1` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
-* [Aztec Docs](https://docs.aztec.network)
-* [Noir Language](https://noir-lang.org)
-* [Discord](https://discord.gg/aztec)
+- [Aztec Docs](https://docs.aztec.network)
+- [Noir Language](https://noir-lang.org)
+- [Discord](https://discord.gg/aztec)
 
-***
+---
 
 ## Phase 1: Read and Understand (No Install Required)
 
@@ -47,10 +47,10 @@ Aztec is an L2 on Ethereum with **native privacy**. Three core ideas separate it
 
 **Key concepts in more detail:**
 
-* **Notes** — Private state primitives. Think of them as encrypted UTXOs that only the owner can decrypt and read. When you "write" private state, you create a note. When you "read" it, your PXE decrypts it locally. ([Aztec docs: Notes](https://docs.aztec.network/developers/docs/foundational-topics/state_management#notes))
-* **Public vs Private functions** — Public functions execute on the network (like Solidity). Private functions execute locally in your PXE and produce a proof that gets verified on-chain. ([Aztec docs: Functions](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/functions))
-* **PXE** — Your local execution environment. It stores your private notes, builds proofs, and submits transactions. Each user runs their own PXE. ([Aztec docs: PXE](https://docs.aztec.network/aztec/concepts/pxe))
-* **Account abstraction** — Every Aztec account is a smart contract. There are no EOAs. This repo uses Schnorr signature accounts. ([Aztec docs: Accounts](https://docs.aztec.network/aztec/concepts/accounts))
+- **Notes** — Private state primitives. Think of them as encrypted UTXOs that only the owner can decrypt and read. When you "write" private state, you create a note. When you "read" it, your PXE decrypts it locally. ([Aztec docs: Notes](https://docs.aztec.network/developers/docs/foundational-topics/state_management#notes))
+- **Public vs Private functions** — Public functions execute on the network (like Solidity). Private functions execute locally in your PXE and produce a proof that gets verified on-chain. ([Aztec docs: Functions](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/functions))
+- **PXE** — Your local execution environment. It stores your private notes, builds proofs, and submits transactions. Each user runs their own PXE. ([Aztec docs: PXE](https://docs.aztec.network/aztec/concepts/pxe))
+- **Account abstraction** — Every Aztec account is a smart contract. There are no EOAs. This repo uses Schnorr signature accounts. ([Aztec docs: Accounts](https://docs.aztec.network/aztec/concepts/accounts))
 
 ### 1.2 — The Pod Racing Game: What It Does
 
@@ -68,11 +68,11 @@ The Pod Racing contract ([`src/main.nr`](./src/main.nr)) is a two-player competi
 
 **Rules:**
 
-* 2 players per game
-* 5 tracks, 3 rounds
-* Each round: distribute up to 9 points across the 5 tracks
-* After all rounds, each track's total is compared between players
-* The player who wins 3+ tracks wins the game
+- 2 players per game
+- 5 tracks, 3 rounds
+- Each round: distribute up to 9 points across the 5 tracks
+- After all rounds, each track's total is compared between players
+- The player who wins 3+ tracks wins the game
 
 > Reference: top comment block in `src/main.nr`
 
@@ -80,28 +80,7 @@ The Pod Racing contract ([`src/main.nr`](./src/main.nr)) is a two-player competi
 
 Open `src/main.nr` and look at the `Storage` struct:
 
-```rust title="storage" showLineNumbers
-#[storage]
-struct Storage<Context> {
-    // Contract administrator address
-    admin: PublicMutable<AztecAddress, Context>,
-
-    // Maps game_id -> Race struct containing public game state
-    // Stores player addresses, round progress, and final track scores
-    races: Map<Field, PublicMutable<Race, Context>, Context>,
-
-    // Maps game_id -> player_address -> private notes containing that player's round choices
-    // Each GameRoundNote stores the point allocation for one round
-    // This data remains private until the player calls finish_game
-    progress: Map<Field, Owned<PrivateSet<GameRoundNote, Context>, Context>, Context>,
-
-    // Maps player address -> total number of wins
-    // Public leaderboard tracking career victories
-    win_history: Map<AztecAddress, PublicMutable<u64, Context>, Context>,
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L40-L59" target="_blank" rel="noopener noreferrer">Source code: /main.nr#Lstorage</a></sub></sup>
+#include_code storage /main.nr rust
 
 **What is `Context`?** You'll notice `Context` appears as a generic parameter throughout the storage definition. In Aztec, the context is the execution environment passed to every function — it's how your contract accesses blockchain state like `context.msg_sender()` (the caller's address) and `context.block_number()`. Think of it as an expanded version of Solidity's global variables (`msg.sender`, `block.number`, etc.), but packaged as an object. The `<Context>` generic on storage types lets the same storage struct work in both public and private execution contexts. You don't need to construct it yourself — the framework provides `self.context` automatically in every contract function.
 
@@ -129,10 +108,10 @@ contract PodRacing {
 
 **State variable types — one sentence each:**
 
-* [`PublicMutable`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#publicmutable) — A single public value that can be read and written by public functions. Like a Solidity state variable.
-* [`Map`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#map) — A key-value mapping, like Solidity's `mapping`.
-* [`PrivateSet`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#privateset) — A set of private notes. Notes can be inserted, read (by owner), and nullified.
-* [`Owned`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#owned) — A wrapper that scopes private state to a specific owner, so `progress.at(game_id).at(player)` returns only that player's notes.
+- [`PublicMutable`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#publicmutable) — A single public value that can be read and written by public functions. Like a Solidity state variable.
+- [`Map`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#map) — A key-value mapping, like Solidity's `mapping`.
+- [`PrivateSet`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#privateset) — A set of private notes. Notes can be inserted, read (by owner), and nullified.
+- [`Owned`](https://docs.aztec.network/developers/docs/aztec-nr/framework-description/state_variables#owned) — A wrapper that scopes private state to a specific owner, so `progress.at(game_id).at(player)` returns only that player's notes.
 
 ### 1.4 — Contract Walkthrough: Public Functions
 
@@ -140,103 +119,25 @@ These functions should feel familiar if you've written Solidity.
 
 #### `constructor()`
 
-```rust title="constructor" showLineNumbers
-#[external("public")]
-#[initializer]
-fn constructor(admin: AztecAddress) {
-    debug_log_format("Initializing PodRacing contract with admin {0}", [admin.to_field()]);
-    self.storage.admin.write(admin);
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L61-L68" target="_blank" rel="noopener noreferrer">Source code: /main.nr#Lconstructor</a></sub></sup>
+#include_code constructor /main.nr rust
 
 Sets the admin address. The `#[initializer]` macro means this runs once at deployment, like a Solidity constructor.
 
 #### `create_game()`
 
-```rust title="create-game" showLineNumbers
-// Creates a new game instance
-// The caller becomes player1 and waits for an opponent to join
-// Sets the game expiration to current block + GAME_LENGTH
-#[external("public")]
-fn create_game(game_id: Field) {
-    // Ensure this game_id hasn't been used yet (player1 must be zero address)
-    assert(self.storage.races.at(game_id).read().player1.eq(AztecAddress::zero()));
-
-    let player1 = self.context.maybe_msg_sender().unwrap();
-    debug_log_format(
-        "Creating game {0} by player {1}",
-        [game_id, player1.to_field()],
-    );
-
-    // Initialize a new Race with the caller as player1
-    let game = Race::new(
-        player1,
-        TOTAL_ROUNDS,
-        self.context.block_number() + GAME_LENGTH,
-    );
-    self.storage.races.at(game_id).write(game);
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L70-L93" target="_blank" rel="noopener noreferrer">Source code: /main.nr#Lcreate-game</a></sub></sup>
+#include_code create-game /main.nr rust
 
 Creates a new game. Checks the game ID isn't taken (player1 must be zero address), then writes a new `Race` struct with the caller as player1 and an expiration time.
 
 #### `join_game()`
 
-```rust title="join-game" showLineNumbers
-// Allows a second player to join an existing game
-// After joining, both players can start playing rounds
-#[external("public")]
-fn join_game(game_id: Field) {
-    let maybe_existing_game = self.storage.races.at(game_id).read();
-
-    let player2 = self.context.maybe_msg_sender().unwrap();
-    debug_log_format("Player {0} joining game {1}", [player2.to_field(), game_id]);
-
-    // Add the caller as player2 (validates that player1 exists and player2 is empty)
-    let joined_game = maybe_existing_game.join(player2);
-    self.storage.races.at(game_id).write(joined_game);
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L95-L109" target="_blank" rel="noopener noreferrer">Source code: /main.nr#Ljoin-game</a></sub></sup>
+#include_code join-game /main.nr rust
 
 A second player joins. The `Race::join()` method validates that player1 exists, the player2 slot is empty, and the joiner isn't player1.
 
 #### `finalize_game()`
 
-```rust title="finalize-game" showLineNumbers
-// Determines the winner after both players have revealed their scores
-// Can only be called after the game's end_block (time limit expired)
-// Compares track totals and declares the player who won more tracks as winner
-// Winner determination:
-// - Compare each of the 5 tracks
-// - Player with higher total on a track wins that track
-// - Player who wins 3+ tracks wins the game (best of 5)
-// - Updates the winner's career win count
-#[external("public")]
-fn finalize_game(game_id: Field) {
-    debug_log_format("Finalizing game {0}", [game_id]);
-    let game_in_progress = self.storage.races.at(game_id).read();
-
-    // Calculate winner by comparing track scores (validates game has ended)
-    let winner = game_in_progress.calculate_winner(self.context.block_number());
-    debug_log_format("Winner determined: {0}", [winner.to_field()]);
-
-    // Update the winner's total win count in the public leaderboard
-    let previous_wins = self.storage.win_history.at(winner).read();
-    debug_log_format(
-        "Updating win count from {0} to {1}",
-        [previous_wins as Field, (previous_wins + 1) as Field],
-    );
-    self.storage.win_history.at(winner).write(previous_wins + 1);
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L269-L296" target="_blank" rel="noopener noreferrer">Source code: /main.nr#Lfinalize-game</a></sub></sup>
+#include_code finalize-game /main.nr rust
 
 After both players have revealed, this compares track scores, determines the winner, and updates the leaderboard.
 
@@ -244,49 +145,13 @@ After both players have revealed, this compares track scores, determines the win
 
 The `Race` struct stores all public game state. It has 17 fields:
 
-```rust title="race-struct" showLineNumbers
-// Race struct stores the public state of a game
-// This data is visible to everyone and tracks game progress
-#[derive(Deserialize, Serialize, Eq, Packable)]
-pub struct Race {
-    // Player addresses
-    pub player1: AztecAddress,
-    pub player2: AztecAddress,
-
-    // Game configuration
-    pub total_rounds: u8,  // Always 3 for this game
-
-    // Round progress tracking (which round each player is on)
-    pub player1_round: u8,
-    pub player2_round: u8,
-
-    // Player 1's final revealed track totals (sum of all rounds)
-    // Nested structs not working on this version
-    pub player1_track1_final: u64,
-    pub player1_track2_final: u64,
-    pub player1_track3_final: u64,
-    pub player1_track4_final: u64,
-    pub player1_track5_final: u64,
-
-    // Player 2's final revealed track totals (sum of all rounds)
-    pub player2_track1_final: u64,
-    pub player2_track2_final: u64,
-    pub player2_track3_final: u64,
-    pub player2_track4_final: u64,
-    pub player2_track5_final: u64,
-
-    // Block number when the game expires (for timeout enforcement)
-    pub end_block: u32,
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/race.nr#L7-L41" target="_blank" rel="noopener noreferrer">Source code: /race.nr#Lrace-struct</a></sub></sup>
+#include_code race-struct /race.nr rust
 
 Key methods:
 
-* **`Race::new()`** — Creates a game with player1, zero'd scores, and an expiration block
-* **`Race::join()`** — Adds player2 after validating the game is joinable and the player isn't playing themselves
-* **`Race::calculate_winner()`** — Compares each track's totals, counts wins per player, returns the address of whoever won 3+ tracks (ties go to player2)
+- **`Race::new()`** — Creates a game with player1, zero'd scores, and an expiration block
+- **`Race::join()`** — Adds player2 after validating the game is joinable and the player isn't playing themselves
+- **`Race::calculate_winner()`** — Compares each track's totals, counts wins per player, returns the address of whoever won 3+ tracks (ties go to player2)
 
 ### 1.5 — Contract Walkthrough: Private Functions (The Key Difference)
 
@@ -294,57 +159,7 @@ This is the "aha moment" — the part with no Ethereum equivalent.
 
 #### `play_round()`
 
-```rust title="play-round" showLineNumbers
-// Plays a single round by allocating points across 5 tracks
-// This is a PRIVATE function - the point allocation remains hidden from the opponent
-// Players must play rounds sequentially (round 1, then 2, then 3)
-// Parameters:
-// - track1-5: Points allocated to each track (must sum to less than 10)
-// - round: Which round this is (1, 2, or 3)
-#[external("private")]
-fn play_round(
-    game_id: Field,
-    round: u8,
-    track1: u8,
-    track2: u8,
-    track3: u8,
-    track4: u8,
-    track5: u8,
-) {
-    // Validate that total points don't exceed 9 (you can't max out all tracks)
-    assert(track1 + track2 + track3 + track4 + track5 < 10);
-
-    let player = self.context.maybe_msg_sender().unwrap();
-    debug_log_format(
-        "Player {0} playing round {1} in game {2}",
-        [player.to_field(), round as Field, game_id],
-    );
-    debug_log_format(
-        "Track allocations: {0}, {1}, {2}, {3}, {4}",
-        [track1 as Field, track2 as Field, track3 as Field, track4 as Field, track5 as Field],
-    );
-
-    // Store the round choices privately as a note in the player's own storage
-    // This creates a private commitment that can only be read by the player
-    self
-        .storage
-        .progress
-        .at(game_id)
-        .at(player)
-        .insert(GameRoundNote::new(track1, track2, track3, track4, track5, round, player))
-        .deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
-
-    // Enqueue a public function call to update the round counter
-    // This reveals that a round was played, but not the point allocation
-    self.enqueue(PodRacing::at(self.context.this_address()).validate_and_play_round(
-        player,
-        game_id,
-        round,
-    ));
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L111-L160" target="_blank" rel="noopener noreferrer">Source code: /main.nr#Lplay-round</a></sub></sup>
+#include_code play-round /main.nr rust
 
 Three things happen here that have no direct Ethereum equivalent:
 
@@ -354,95 +169,16 @@ Three things happen here that have no direct Ethereum equivalent:
 
 #### `finish_game()`
 
-```rust title="finish-game" showLineNumbers
-// Called after all rounds are complete to reveal a player's total scores
-// This is PRIVATE - only the caller can read their own GameRoundNotes
-// The function sums up all round allocations per track and publishes totals
-// This is the "reveal" phase where private choices become public
-#[external("private")]
-fn finish_game(game_id: Field) {
-    let player = self.context.maybe_msg_sender().unwrap();
-    debug_log_format(
-        "Player {0} finishing game {1}",
-        [player.to_field(), game_id],
-    );
-
-    // Retrieve all private notes for this player in this game
-    let totals =
-        self.storage.progress.at(game_id).at(player).get_notes(NoteGetterOptions::new());
-
-    // Sum up points allocated to each track across all rounds
-    let mut total_track1: u64 = 0;
-    let mut total_track2: u64 = 0;
-    let mut total_track3: u64 = 0;
-    let mut total_track4: u64 = 0;
-    let mut total_track5: u64 = 0;
-
-    // Iterate through exactly TOTAL_ROUNDS notes (only this player's notes)
-    for i in 0..TOTAL_ROUNDS {
-        total_track1 += totals.get(i as u32).note.track1 as u64;
-        total_track2 += totals.get(i as u32).note.track2 as u64;
-        total_track3 += totals.get(i as u32).note.track3 as u64;
-        total_track4 += totals.get(i as u32).note.track4 as u64;
-        total_track5 += totals.get(i as u32).note.track5 as u64;
-    }
-
-    debug_log_format(
-        "Computed totals - tracks: {0}, {1}, {2}, {3}, {4}",
-        [total_track1 as Field, total_track2 as Field, total_track3 as Field, total_track4 as Field, total_track5 as Field],
-    );
-
-    // Enqueue public function to store the revealed totals on-chain
-    // Now the revealing player's track totals will be publicly visible
-    self.enqueue(PodRacing::at(self.context.this_address()).validate_finish_game_and_reveal(
-        player,
-        game_id,
-        total_track1,
-        total_track2,
-        total_track3,
-        total_track4,
-        total_track5,
-    ));
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L179-L230" target="_blank" rel="noopener noreferrer">Source code: /main.nr#Lfinish-game</a></sub></sup>
+#include_code finish-game /main.nr rust
 
 This is the "reveal" phase:
 
-* **Reading own private notes** — `get_notes(NoteGetterOptions::new())` retrieves the player's encrypted round notes. Only the owner's PXE can decrypt these.
-* **Summing and publishing** — The totals are calculated privately, then the enqueued public call writes them on-chain for everyone to see.
+- **Reading own private notes** — `get_notes(NoteGetterOptions::new())` retrieves the player's encrypted round notes. Only the owner's PXE can decrypt these.
+- **Summing and publishing** — The totals are calculated privately, then the enqueued public call writes them on-chain for everyone to see.
 
 #### `GameRoundNote` (`src/game_round_note.nr`)
 
-```rust title="game-round-note" showLineNumbers
-// GameRoundNote is a private note that stores a player's point allocation for one round
-// These notes remain private until the player calls finish_game to reveal their totals
-// Privacy model:
-// - Each player creates 3 of these notes (one per round) when playing
-// - Only the owner can read their own notes
-// - During finish_game, the player sums all their notes and reveals the totals publicly
-// - This implements a commit-reveal scheme for fair play
-#[derive(Eq, Packable)]
-#[note]
-pub struct GameRoundNote {
-    // Points allocated to each of the 5 tracks in this round
-    // Must sum to less than 10 points per round
-    pub track1: u8,
-    pub track2: u8,
-    pub track3: u8,
-    pub track4: u8,
-    pub track5: u8,
-
-    // Which round this note represents (1, 2, or 3)
-    pub round: u8,
-
-    // The player who created this note (only they can read it)
-    pub owner: AztecAddress,
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/game_round_note.nr#L3-L29" target="_blank" rel="noopener noreferrer">Source code: /game_round_note.nr#Lgame-round-note</a></sub></sup>
+#include_code game-round-note /game_round_note.nr rust
 
 The `#[note]` macro makes this a private state primitive. Each note stores one round's point allocation and the owner's address. Only the owner can read it.
 
@@ -450,8 +186,8 @@ The `#[note]` macro makes this a private state primitive. Each note stores one r
 
 Two functions are marked `#[only_self]`, meaning they can only be called by the contract itself (via `self.enqueue(...)`):
 
-* **`validate_and_play_round`** — Validates the round is sequential and increments the player's round counter
-* **`validate_finish_game_and_reveal`** — Stores the player's revealed track totals, checking they haven't already been revealed
+- **`validate_and_play_round`** — Validates the round is sequential and increments the player's round counter
+- **`validate_finish_game_and_reveal`** — Stores the player's revealed track totals, checking they haven't already been revealed
 
 **Key insight:** On Ethereum, commit-reveal requires at least 2 transactions (one to commit, one to reveal after a delay). On Aztec, the "commit" happens automatically when a private function creates a note — the data is committed on-chain (as a hash) without ever being visible. The "reveal" is a separate transaction, but the privacy was enforced by the protocol the whole time.
 
@@ -496,7 +232,7 @@ graph TD
 
 Here's exactly what an outside observer can and cannot see at each step.
 
-Some functions are labeled **"private, then public"** in the Type column. On Aztec, there are only two function types: `#[private]` and `#[public]`. But a private function can *enqueue* a public function to run after it — within the same transaction. The private part runs first (on the user's machine, hidden from everyone), then the public part runs on-chain (visible to all). This is how the contract hides sensitive data while still updating shared public state.
+Some functions are labeled **"private, then public"** in the Type column. On Aztec, there are only two function types: `#[private]` and `#[public]`. But a private function can _enqueue_ a public function to run after it — within the same transaction. The private part runs first (on the user's machine, hidden from everyone), then the public part runs on-chain (visible to all). This is how the contract hides sensitive data while still updating shared public state.
 
 | Step | Function        | Type                | Observer **CAN** see                                      | Observer **CANNOT** see                        |
 | ---- | --------------- | ------------------- | --------------------------------------------------------- | ---------------------------------------------- |
@@ -508,7 +244,7 @@ Some functions are labeled **"private, then public"** in the Type column. On Azt
 
 The critical privacy window is between steps 3 and 4: both players have committed their strategies (as private notes), but neither can see the other's choices. This prevents the second player from gaining an advantage by observing the first player's moves.
 
-***
+---
 
 ## Phase 2: Compile and Test in the Cloud (Zero Install)
 
@@ -524,11 +260,11 @@ The critical privacy window is between steps 3 and 4: both players have committe
 
 The `.devcontainer/` configures:
 
-* **Base image:** Ubuntu 24.04 with Node.js v22.15.0
-* **Docker-in-Docker** for running the Aztec local network
-* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.0.0-devnet.2-patch.1" | VERSION="4.0.0-devnet.2-patch.1" bash -s`
-* **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
-* **Dependencies:** `yarn install` runs automatically
+- **Base image:** Ubuntu 24.04 with Node.js v22.15.0
+- **Docker-in-Docker** for running the Aztec local network
+- **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.0.0-devnet.2-patch.1" | VERSION="4.0.0-devnet.2-patch.1" bash -s`
+- **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
+- **Dependencies:** `yarn install` runs automatically
 
 ### 2.2 — Compile the Contract
 
@@ -546,9 +282,9 @@ yarn codegen
 
 This runs `aztec codegen target --outdir src/artifacts` and generates `./src/artifacts/PodRacing.ts` — a TypeScript wrapper class (like TypeChain for Solidity). The generated `PodRacingContract` class gives you:
 
-* `PodRacingContract.deploy(wallet, admin)` — deploy a new instance
-* `PodRacingContract.at(address, wallet)` — connect to an existing instance
-* `contract.methods.create_game(gameId)` — call any contract function
+- `PodRacingContract.deploy(wallet, admin)` — deploy a new instance
+- `PodRacingContract.at(address, wallet)` — connect to an existing instance
+- `contract.methods.create_game(gameId)` — call any contract function
 
 > Reference: `Nargo.toml` is the project manifest (like `foundry.toml`). It specifies the package name, type (`contract`), and the `aztec-nr` dependency version.
 
@@ -564,54 +300,22 @@ This runs `aztec test`, which uses Aztec's **TXE** (Testing eXecution Environmen
 
 Tests live in `src/test/`:
 
-* `mod.nr` — declares the test modules
-* `utils.nr` — test setup (deploy contract, create admin)
-* `helpers.nr` — reusable helpers (strategies, game setup, round playing)
-* `pod_racing.nr` — the actual test cases
+- `mod.nr` — declares the test modules
+- `utils.nr` — test setup (deploy contract, create admin)
+- `helpers.nr` — reusable helpers (strategies, game setup, round playing)
+- `pod_racing.nr` — the actual test cases
 
 #### Key test patterns in [`src/test/pod_racing.nr`](./src/test/pod_racing.nr)
 
 **Basic initialization test:**
 
-```rust title="test-initializer" showLineNumbers
-// Test: Contract initialization sets admin correctly
-#[test]
-unconstrained fn test_initializer() {
-    let (mut env, contract_address, admin) = utils::setup();
-
-    env.public_context_at(contract_address, |context| {
-        let current_admin = context.storage_read(PodRacing::storage_layout().admin.slot);
-        assert_eq(current_admin, admin);
-    });
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/pod_racing.nr#L9-L20" target="_blank" rel="noopener noreferrer">Source code: /test/pod_racing.nr#Ltest-initializer</a></sub></sup>
+#include_code test-initializer /test/pod_racing.nr rust
 
 The `unconstrained` keyword means this test runs outside the ZK circuit (it's a test, not a provable function). `utils::setup()` deploys a fresh contract and returns the environment, contract address, and admin.
 
 **Expected failure test:**
 
-```rust title="test-fail-too-many-points" showLineNumbers
-// Test: Cannot allocate more than 9 points in a round
-#[test(should_fail)]
-unconstrained fn test_fail_play_round_too_many_points() {
-    let (mut env, contract_address, _) = utils::setup();
-    let player1 = env.create_light_account();
-    let player2 = env.create_light_account();
-    let game_id = helpers::TEST_GAME_ID_4;
-
-    helpers::setup_two_player_game(&mut env, contract_address, player1, player2, game_id);
-
-    // Try to allocate 10 points (2+2+2+2+2) - should fail
-    env.call_private(
-        player1,
-        PodRacing::at(contract_address).play_round(game_id, 1, 2, 2, 2, 2, 2)
-    );
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/pod_racing.nr#L140-L157" target="_blank" rel="noopener noreferrer">Source code: /test/pod_racing.nr#Ltest-fail-too-many-points</a></sub></sup>
+#include_code test-fail-too-many-points /test/pod_racing.nr rust
 
 The `#[test(should_fail)]` attribute is like Foundry's `vm.expectRevert()`.
 
@@ -623,108 +327,24 @@ This test creates a game, has both players play all 3 rounds with specific strat
 
 Reusable allocation strategies:
 
-```rust title="allocation-strategies" showLineNumbers
-// Common point allocations for testing
-// Balanced strategy: distribute points evenly
-pub unconstrained fn balanced_allocation() -> (u8, u8, u8, u8, u8) {
-    (2, 2, 2, 2, 1)
-}
-
-// Aggressive strategy: focus on first 3 tracks
-pub unconstrained fn aggressive_allocation() -> (u8, u8, u8, u8, u8) {
-    (3, 3, 3, 0, 0)
-}
-
-// Defensive strategy: focus on last 2 tracks
-pub unconstrained fn defensive_allocation() -> (u8, u8, u8, u8, u8) {
-    (0, 0, 1, 4, 4)
-}
-
-// Maximum allowed points
-pub unconstrained fn max_allocation() -> (u8, u8, u8, u8, u8) {
-    (5, 2, 1, 1, 0)
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/helpers.nr#L18-L39" target="_blank" rel="noopener noreferrer">Source code: /test/helpers.nr#Lallocation-strategies</a></sub></sup>
+#include_code allocation-strategies /test/helpers.nr rust
 
 And higher-level helpers:
 
-```rust title="setup-helpers" showLineNumbers
-// Helper to setup a game with two players
-pub unconstrained fn setup_two_player_game(
-    env: &mut TestEnvironment,
-    contract_address: AztecAddress,
-    player1: AztecAddress,
-    player2: AztecAddress,
-    game_id: Field
-) {
-    env.call_public(player1, PodRacing::at(contract_address).create_game(game_id));
-    env.call_public(player2, PodRacing::at(contract_address).join_game(game_id));
-}
-
-// Helper to play a round with specific allocations
-pub unconstrained fn play_round_with_allocation(
-    env: &mut TestEnvironment,
-    contract_address: AztecAddress,
-    player: AztecAddress,
-    game_id: Field,
-    round: u8,
-    allocation: (u8, u8, u8, u8, u8)
-) {
-    let (t1, t2, t3, t4, t5) = allocation;
-    env.call_private(
-        player,
-        PodRacing::at(contract_address).play_round(game_id, round, t1, t2, t3, t4, t5)
-    );
-}
-
-// Helper to play all 3 rounds with the same strategy
-pub unconstrained fn play_all_rounds_with_strategy(
-    env: &mut TestEnvironment,
-    contract_address: AztecAddress,
-    player: AztecAddress,
-    game_id: Field,
-    allocations: [(u8, u8, u8, u8, u8); 3]
-) {
-    for i in 0..3 {
-        let round = (i + 1) as u8;
-        play_round_with_allocation(env, contract_address, player, game_id, round, allocations[i]);
-    }
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/helpers.nr#L41-L83" target="_blank" rel="noopener noreferrer">Source code: /test/helpers.nr#Lsetup-helpers</a></sub></sup>
+#include_code setup-helpers /test/helpers.nr rust
 
 #### Test setup (`src/test/utils.nr`)
 
-```rust title="test-setup" showLineNumbers
-// Setup function for pod racing contract tests
-// Returns: (TestEnvironment, contract_address, admin_address)
-// Note: Create player accounts in individual tests to avoid oracle errors
-pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
-    let mut env = TestEnvironment::new();
-
-    let admin = env.create_light_account();
-
-    let initializer_call_interface = PodRacing::interface().constructor(admin);
-    let contract_address =
-        env.deploy("PodRacing").with_public_initializer(admin, initializer_call_interface);
-
-    (env, contract_address, admin)
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/utils.nr#L7-L22" target="_blank" rel="noopener noreferrer">Source code: /test/utils.nr#Ltest-setup</a></sub></sup>
+#include_code test-setup /test/utils.nr rust
 
 **Ethereum analogies:**
 
-* `env.call_public(player, ...)` is like `vm.prank(player)` + calling a function in Foundry
-* `env.call_private(player, ...)` is the same, but for private functions (no Foundry equivalent)
-* `context.storage_read(slot)` is like `vm.load(address, slot)` in Foundry
-* `env.create_light_account()` creates a test account
+- `env.call_public(player, ...)` is like `vm.prank(player)` + calling a function in Foundry
+- `env.call_private(player, ...)` is the same, but for private functions (no Foundry equivalent)
+- `context.storage_read(slot)` is like `vm.load(address, slot)` in Foundry
+- `env.create_light_account()` creates a test account
 
-***
+---
 
 ## Phase 3: Local Development Setup
 
@@ -757,10 +377,10 @@ aztec start --local-network
 
 This starts:
 
-* **Aztec node** — processes transactions, builds blocks
-* **PXE** — Private eXecution Environment on `localhost:8080`
-* **Anvil L1 chain** — local Ethereum L1 on `localhost:8545`
-* **Protocol contracts** — deployed automatically on the L1
+- **Aztec node** — processes transactions, builds blocks
+- **PXE** — Private eXecution Environment on `localhost:8080`
+- **Anvil L1 chain** — local Ethereum L1 on `localhost:8545`
+- **Protocol contracts** — deployed automatically on the L1
 
 This is the Aztec equivalent of running `anvil` or `npx hardhat node`.
 
@@ -811,11 +431,11 @@ this.configPath = path.resolve(process.cwd(), `config/${env}.json`);
 
 Key exports from `config/config.ts`:
 
-* `getAztecNodeUrl()` — returns the node URL for the current environment
-* `getTimeouts()` — returns environment-specific timeout values (local: 60s tx, devnet: 180s tx)
-* `getEnv()` — returns the environment name (`"local-network"` or `"devnet"`)
+- `getAztecNodeUrl()` — returns the node URL for the current environment
+- `getTimeouts()` — returns environment-specific timeout values (local: 60s tx, devnet: 180s tx)
+- `getEnv()` — returns the environment name (`"local-network"` or `"devnet"`)
 
-***
+---
 
 ## Phase 4: Deploy and Interact
 
@@ -835,15 +455,7 @@ Every Aztec account is a smart contract. There are no Externally Owned Accounts 
 
 The `SponsoredFPC` is a canonical Fee Payment Contract deployed at a deterministic address (salt = 0). It pays transaction fees on behalf of users, useful for onboarding when users don't have Fee Juice yet. On the local network it's pre-deployed.
 
-```typescript title="get-sponsored-fpc" showLineNumbers
-export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
-  return await getContractInstanceFromInstantiationParams(SponsoredFPCContractArtifact, {
-    salt: new Fr(SPONSORED_FPC_SALT),
-  });
-}
-```
-
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/utils/sponsored_fpc.ts#L11-L17" target="_blank" rel="noopener noreferrer">Source code: /utils/sponsored_fpc.ts#Lget-sponsored-fpc</a></sub></sup>
+#include_code get-sponsored-fpc /utils/sponsored_fpc.ts typescript
 
 **Run it:**
 
@@ -932,12 +544,12 @@ The `beforeAll` block:
 
 Key tests:
 
-* **Creates a game** — calls `create_game` and checks `TxStatus.SUCCESS`
-* **Allows a second player to join** — sets up a game with both players
-* **Plays a complete round** — private function call, verifies success
-* **Rejects rounds with too many points** — expects the transaction to throw
-* **Plays a full game from start to finish** — all rounds, both players, finish and reveal
-* **Maintains privacy of round choices** — verifies round can be played without revealing allocations
+- **Creates a game** — calls `create_game` and checks `TxStatus.SUCCESS`
+- **Allows a second player to join** — sets up a game with both players
+- **Plays a complete round** — private function call, verifies success
+- **Rejects rounds with too many points** — expects the transaction to throw
+- **Plays a full game from start to finish** — all rounds, both players, finish and reveal
+- **Maintains privacy of round choices** — verifies round can be played without revealing allocations
 
 **Run them:**
 
@@ -952,7 +564,7 @@ yarn test:js
 yarn test:nr
 ```
 
-***
+---
 
 ## Phase 5: Write Your Own Code
 
@@ -1071,11 +683,11 @@ yarn test:js
 
 ### 5.4 — Ideas for Further Modifications
 
-* **Easy:** Change `TOTAL_ROUNDS` from 3 to 5, and the point budget from 9 to 15. Update constants and re-run tests.
-* **Medium:** Add a `get_game_state` unconstrained view function that returns the public `Race` data for a given game ID.
-* **Hard:** Add token wagers — import `TokenContract`, have players deposit tokens when joining, and transfer the pot to the winner on finalization.
+- **Easy:** Change `TOTAL_ROUNDS` from 3 to 5, and the point budget from 9 to 15. Update constants and re-run tests.
+- **Medium:** Add a `get_game_state` unconstrained view function that returns the public `Race` data for a given game ID.
+- **Hard:** Add token wagers — import `TokenContract`, have players deposit tokens when joining, and transfer the pot to the winner on finalization.
 
-***
+---
 
 ## Phase 6: Advanced Topics
 
@@ -1165,7 +777,7 @@ console.log(block?.header);
 yarn get-block
 ```
 
-***
+---
 
 ## Appendix
 
@@ -1238,8 +850,8 @@ yarn get-block
 
 ### D. Links
 
-* [Aztec Documentation](https://docs.aztec.network)
-* [Aztec-nr (Noir framework for Aztec)](https://github.com/AztecProtocol/aztec-nr)
-* [Noir Language](https://noir-lang.org)
-* [Aztec Discord](https://discord.gg/aztec)
-* [This repository](https://github.com/AztecProtocol/aztec-starter)
+- [Aztec Documentation](https://docs.aztec.network)
+- [Aztec-nr (Noir framework for Aztec)](https://github.com/AztecProtocol/aztec-nr)
+- [Noir Language](https://noir-lang.org)
+- [Aztec Discord](https://discord.gg/aztec)
+- [This repository](https://github.com/AztecProtocol/aztec-starter)

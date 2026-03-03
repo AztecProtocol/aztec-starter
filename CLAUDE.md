@@ -148,10 +148,27 @@ When updating the Aztec version, update all of these locations:
 
 ## ONBOARDING.md Maintenance
 
-This repo includes an `ONBOARDING.md` that serves as a progressive tutorial for Ethereum developers learning Aztec. **When making code changes, check if `ONBOARDING.md` references the changed code** (line numbers, function signatures, code snippets, struct definitions) and update it accordingly. Key sections that embed code:
+`ONBOARDING.md` is **generated** — do not edit it directly. Edit `docs/ONBOARDING.src.md` instead, then rebuild:
 
-- Phase 1 (1.3-1.6): Contract storage, public/private functions, game flow table
-- Phase 2 (2.3): Noir test patterns and helpers
-- Phase 5 (5.1-5.3): Guided exercises with code examples
-- Appendix A: File map table
-- Appendix B: Commands table
+```bash
+yarn docs:build    # remark docs/ONBOARDING.src.md -o ONBOARDING.md
+```
+
+The source file uses `#include_code` directives (via the `include_code` remark plugin) to extract code snippets from source files at build time. Source files have `// docs:start:<name>` / `// docs:end:<name>` marker pairs that define snippet boundaries.
+
+**When making code changes:**
+
+1. Source code snippets update automatically on rebuild — no manual copy needed
+2. If you add/remove/rename a marker, update the corresponding `#include_code` directive in `docs/ONBOARDING.src.md`
+3. Run `yarn docs:build` to regenerate `ONBOARDING.md`
+4. Phase 5 exercises and non-source prose still need manual updates in `docs/ONBOARDING.src.md`
+
+**Files with `docs:start`/`docs:end` markers:**
+
+- `src/main.nr` — `storage`, `constructor`, `create-game`, `join-game`, `play-round`, `validate-and-play-round`, `finish-game`, `validate-finish-game`, `finalize-game`
+- `src/race.nr` — `race-struct`, `calculate-winner`
+- `src/game_round_note.nr` — `game-round-note`, `game-round-note-new`
+- `src/test/utils.nr` — `test-setup`
+- `src/test/helpers.nr` — `allocation-strategies`, `setup-helpers`
+- `src/test/pod_racing.nr` — `test-initializer`, `test-fail-too-many-points`
+- `src/utils/sponsored_fpc.ts` — `get-sponsored-fpc`

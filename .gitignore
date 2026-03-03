@@ -8,3 +8,4 @@ codegenCache.json
 store/
 .tsbuildinfo
 .env
+.include-code-cache/

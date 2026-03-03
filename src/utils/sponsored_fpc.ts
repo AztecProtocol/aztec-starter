@@ -8,11 +8,13 @@ import type { LogFn } from '@aztec/foundation/log';
 import { SponsoredFPCContract, SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
 import { SPONSORED_FPC_SALT } from '@aztec/constants';
 
+// docs:start:get-sponsored-fpc
 export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
   return await getContractInstanceFromInstantiationParams(SponsoredFPCContractArtifact, {
     salt: new Fr(SPONSORED_FPC_SALT),
   });
 }
+// docs:end:get-sponsored-fpc
 
 export async function getSponsoredFPCAddress() {
   return (await getSponsoredFPCInstance()).address;

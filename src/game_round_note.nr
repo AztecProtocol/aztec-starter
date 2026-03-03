@@ -1,5 +1,6 @@
 use aztec::{macros::notes::note, protocol::{traits::Packable, address::AztecAddress}};
 
+// docs:start:game-round-note
 // GameRoundNote is a private note that stores a player's point allocation for one round
 // These notes remain private until the player calls finish_game to reveal their totals
 //
@@ -25,8 +26,10 @@ pub struct GameRoundNote {
     // The player who created this note (only they can read it)
     pub owner: AztecAddress,
 }
+// docs:end:game-round-note
 
 impl GameRoundNote {
+    // docs:start:game-round-note-new
     // Creates a new note with the player's round choices
     // This note gets stored privately and can only be read by the owner
     pub fn new(track1: u8, track2: u8, track3: u8, track4: u8, track5: u8, round: u8, owner: AztecAddress) -> Self {
@@ -40,6 +43,7 @@ impl GameRoundNote {
             owner,
         }
     }
+    // docs:end:game-round-note-new
 
     // Helper method to access the note data
     pub fn get(self) -> Self {
