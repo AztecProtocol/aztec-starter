@@ -2,129 +2,149 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What This Is
+## Project Overview
 
-Aztec Starter — a template repo for learning Aztec smart contract development. Contains a **Pod Racing** game contract (Noir) with TypeScript scripts and tests. The contract is a two-player competitive game using private state for commit-reveal mechanics.
+Aztec Starter — a Pod Racing game contract built with Noir on the Aztec network. Two players allocate points across 5 tracks over 3 rounds with private state; scores are revealed at the end (commit-reveal pattern). The player who wins more tracks (best of 5) wins.
 
-**Aztec version pinned:** `4.0.0-devnet.2-patch.1` (check `Nargo.toml` and `package.json` for source of truth).
+**Aztec version: `4.0.0-devnet.2-patch.1`** — pinned across `Nargo.toml`, `package.json`, `config/*.json`, and README. All must stay in sync when updating.
 
-## Commands
+## Build & Development Commands
 
-### Build
-
-```bash
-yarn compile          # Compile Noir contract (runs `aztec compile`) -> ./target/
-yarn codegen          # Generate TypeScript bindings -> ./src/artifacts/PodRacing.ts
-yarn compile && yarn codegen  # Full rebuild (always run both after contract changes)
-```
-
-### Test
+Always use `yarn compile` or `aztec compile` to compile contracts, never `nargo compile`.
 
 ```bash
-yarn test             # Run ALL tests (Noir unit + TypeScript E2E)
-yarn test:nr          # Noir unit tests only (no network needed, uses TXE)
-yarn test:js          # TypeScript E2E tests only (requires local network running)
+yarn compile              # Compile Noir contract (aztec compile)
+yarn codegen              # Generate TS artifacts from compiled contract
+yarn compile && yarn codegen  # Full rebuild (always run both together)
+yarn clean                # Remove compiled artifacts (src/artifacts, target)
+yarn clear-store          # Remove PXE data store (rm -rf ./store)
 ```
 
-The `test:js` command clears `store/pxe` before running, uses Jest with ESM (`--experimental-vm-modules`), and has a 600-second test timeout. Tests run sequentially (`--runInBand`).
+## Testing
 
-### Local Network (required for `test:js`, scripts, and deploy)
+Two independent test systems:
 
 ```bash
-aztec start --local-network   # Start Aztec node + PXE + Anvil L1
-rm -rf ./store                # MUST delete after restarting local network
+yarn test:nr              # Noir TXE tests — no network needed, runs in simulator
+yarn test:js              # TypeScript E2E tests — requires running local network
+yarn test                 # Runs both (test:js then test:nr)
 ```
 
-### Scripts (all use `node --loader ts-node/esm`)
+**E2E tests require a running local network:**
 
 ```bash
-yarn deploy                          # Deploy account + Pod Racing contract
-yarn deploy-account                  # Deploy a Schnorr account only
-yarn interaction-existing-contract   # Interact with deployed contract (needs .env vars)
-yarn multiple-wallet                 # Multi-PXE demo
-yarn fees                            # Fee payment methods demo
-yarn profile                         # Transaction profiling
-yarn get-block                       # Query block data
+aztec start --local-network   # Start local network first
+rm -rf ./store                # Always clear store after network restart
 ```
 
-### Devnet
+Jest config: `jest.integration.config.json` — 600s test timeout, ESM mode via `ts-jest`, matches `./src/**/*.test.ts`.
 
-Append `::devnet` to any script to target devnet (sets `AZTEC_ENV=devnet`):
+Run a single E2E test:
 
 ```bash
-yarn deploy::devnet
-yarn test::devnet
+NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json -t "test name pattern"
 ```
 
-### Clean
+## Deployment & Scripts
+
+All scripts support `::devnet` suffix for devnet targeting (sets `AZTEC_ENV=devnet`):
 
 ```bash
-yarn clean            # Delete ./src/artifacts and ./target
-yarn clear-store      # Delete ./store (PXE data)
+yarn deploy               # Deploy contract to local network
+yarn deploy::devnet       # Deploy contract to devnet
+yarn deploy-account       # Deploy a Schnorr account
+yarn multiple-wallet      # Deploy from one wallet, interact from another
+yarn profile              # Profile a transaction deployment
+yarn read-logs            # Demo utility function for client-side debug logging
+yarn read-logs::devnet    # Same on devnet
 ```
 
-## Architecture
+## Environment Configuration
 
-### Two Languages, One Contract
+- `AZTEC_ENV` variable selects config: `local-network` (default) or `devnet`
+- Config files: `config/local-network.json`, `config/devnet.json`
+- `config/config.ts` — singleton `ConfigManager` loads the appropriate JSON based on `AZTEC_ENV`
+- `.env` stores secrets (SECRET, SIGNING_KEY, SALT, contract keys) — never commit
 
-- **Noir** (`.nr` files in `src/`) — the smart contract, compiled to ZK circuits
-- **TypeScript** (`.ts` files in `scripts/`, `src/test/e2e/`, `src/utils/`) — deployment scripts, E2E tests, and utilities
+## Project Structure
 
-### Contract Structure (`src/`)
+**Contract (Noir):**
 
-- `main.nr` — Pod Racing contract entry point. Contains all public/private functions. Imports `mod test`, `mod game_round_note`, `mod race`.
-- `race.nr` — `Race` struct with public game state (players, rounds, track scores, expiration). Key methods: `new()`, `join()`, `increment_player_round()`, `set_player_scores()`, `calculate_winner()`.
-- `game_round_note.nr` — `GameRoundNote` private note storing one round's point allocation. The `#[note]` macro makes it a private state primitive.
+- `src/main.nr` — PodRacing contract: public functions (`create_game`, `join_game`, `finalize_game`), private functions (`play_round`, `finish_game`), and internal `#[only_self]` validators
+- `src/race.nr` — `Race` struct: public game state (players, round counters, track scores, end_block)
+- `src/game_round_note.nr` — `GameRoundNote`: private note storing one round's point allocation per player
 
-### Key Aztec Pattern: Private-to-Public Flow
+**Tests (Noir TXE):**
 
-The contract demonstrates the core Aztec pattern where private functions enqueue public calls:
+- `src/test/mod.nr` — test module root
+- `src/test/pod_racing.nr` — unit tests using TXE simulator (`env.call_public`, `env.call_private`, `env.public_context_at`)
+- `src/test/utils.nr` — test setup helper
+- `src/test/helpers.nr` — test helpers (game setup, allocation strategies)
 
-1. `play_round` (private) — creates encrypted `GameRoundNote`, then enqueues `validate_and_play_round` (public) to update round counter
-2. `finish_game` (private) — reads player's private notes, sums totals, then enqueues `validate_finish_game_and_reveal` (public) to publish scores
+**Tests (TypeScript E2E):**
 
-Functions marked `#[only_self]` can only be called by the contract itself via `self.enqueue(...)`.
+- `src/test/e2e/index.test.ts` — full game lifecycle tests against real network
+- `src/test/e2e/accounts.test.ts` — account tests
+- `src/test/e2e/public_logging.test.ts` — logging tests
 
-### TypeScript Side
+**TypeScript utilities:**
 
-- `config/config.ts` — Singleton `ConfigManager` that loads `config/local-network.json` or `config/devnet.json` based on `AZTEC_ENV`. Exports: `getAztecNodeUrl()`, `getTimeouts()`, `getEnv()`.
-- `src/utils/setup_wallet.ts` — Creates `TestWallet` connected to the Aztec node. Enables prover on non-local environments.
-- `src/utils/sponsored_fpc.ts` — Gets the canonical `SponsoredFPC` instance (salt=0) for sponsored fee payment.
-- `src/utils/deploy_account.ts` — Deploys a Schnorr account with random keys using sponsored fees.
-- `src/utils/create_account_from_env.ts` — Recreates an account from `SECRET`, `SIGNING_KEY`, `SALT` env vars.
-- `src/artifacts/PodRacing.ts` — **Generated file, do not edit.** TypeScript bindings for the contract.
+- `src/utils/setup_wallet.ts` — creates `EmbeddedWallet` with environment-aware config (prover enabled on devnet)
+- `src/utils/create_account_from_env.ts` — Schnorr account from env vars
+- `src/utils/deploy_account.ts` — account deployment with sponsored fees
+- `src/utils/sponsored_fpc.ts` — SponsoredFPC (Fee Payment Contract) setup
 
-### Test Structure
+**Generated (do not edit):**
 
-**Noir tests** (`src/test/`): Use TXE (Testing eXecution Environment), no network needed.
+- `src/artifacts/PodRacing.ts` — generated by `yarn codegen`
+- `target/` — compiled contract output
 
-- `utils.nr` — `setup()` deploys contract, returns `(TestEnvironment, contract_address, admin)`
-- `helpers.nr` — Reusable allocation strategies and game setup helpers
-- `pod_racing.nr` — Test cases. Uses `#[test]` and `#[test(should_fail)]` attributes.
+## Key Architectural Patterns
 
-**TypeScript E2E tests** (`src/test/e2e/`): Use Jest, require local network.
+- **ESM project**: `"type": "module"` in package.json. All TS scripts run via `node --loader ts-node/esm`.
+- **Private-public interaction**: `play_round` is private (creates `GameRoundNote` notes), then enqueues a public call (`validate_and_play_round`) to update round counters. `finish_game` reads private notes, sums them, and enqueues a public call to reveal totals.
+- **Fee payment**: All transactions use `SponsoredFeePaymentMethod` via the SponsoredFPC contract.
+- **Wallet setup**: `EmbeddedWallet.create()` with `ephemeral: true` for tests; prover is enabled only on devnet.
+- **PXE store**: Data persists in `./store`. Must delete after local network restart to avoid stale state errors.
 
-- `index.test.ts` — Pod Racing game lifecycle tests
-- `accounts.test.ts` — Account deployment and fee payment tests
+## Simulate Before Send (IMPORTANT)
 
-### Environment Variables (`.env`)
+**Always call `.simulate()` before `.send()` for every state-changing transaction.** Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction will hang until the send timeout (up to 600s) with an opaque error.
 
-See `.env.example` for format. Key vars:
+```typescript
+// Simulate first — surfaces revert reasons instantly
+await contract.methods.create_game(gameId).simulate({ from: address });
 
-- `SECRET`, `SIGNING_KEY`, `SALT` — Account credentials
-- `AZTEC_ENV` — `local-network` (default) or `devnet`
-- `POD_RACING_CONTRACT_ADDRESS`, `CONTRACT_SALT`, `CONTRACT_DEPLOYER`, `CONTRACT_CONSTRUCTOR_ARGS` — For interacting with existing contracts
+// Then send — only after simulation succeeds
+await contract.methods.create_game(gameId).send({
+    from: address,
+    fee: { paymentMethod },
+    wait: { timeout: timeouts.txTimeout }
+});
+```
 
-## Important Conventions
+For deployments, store the deploy request to avoid constructing it twice:
 
-- **Node.js v22.15.0** required
-- **Yarn 1.x** as package manager
-- **ESM modules** — package.json has `"type": "module"`, tsconfig uses `NodeNext` module resolution
-- **4-space indentation** in TypeScript
-- **Do not commit** `src/artifacts/`, `target/`, `store/`, or `.env`
-- After restarting the local network, always delete `./store` to avoid stale PXE data
-- All transactions use `SponsoredFeePaymentMethod` for simplicity — register the FPC with `wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact)` before use
-- When modifying the contract, always run `yarn compile && yarn codegen` before testing TypeScript
+```typescript
+const deployRequest = MyContract.deploy(wallet, ...args);
+await deployRequest.simulate({ from: address });
+const contract = await deployRequest.send({ ... });
+```
+
+**Checklist:**
+
+- Every `.send()` call must be preceded by a `.simulate()` call
+- `.simulate()` does not need fee parameters — only `from` is required
+- View/read-only calls (e.g. `balance_of_private`) already use `.simulate()` to return values — no `.send()` needed for those
+
+## Version Update Procedure
+
+When updating the Aztec version, update all of these locations:
+
+1. `Nargo.toml` — `aztec` dependency tag
+2. `package.json` — all `@aztec/*` dependency versions
+3. `config/local-network.json` and `config/devnet.json` — `settings.version`
+4. `README.md` — install command version
 
 ## ONBOARDING.md Maintenance
 

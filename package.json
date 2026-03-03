@@ -26,6 +26,8 @@
     "get-block::devnet": "NODE_NO_WARNINGS=1 AZTEC_ENV=devnet node --loader ts-node/esm scripts/get_block.ts",
     "profile": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/profile_deploy.ts",
     "profile::devnet": "NODE_NO_WARNINGS=1 AZTEC_ENV=devnet node --loader ts-node/esm scripts/profile_deploy.ts",
+    "read-logs": "NODE_NO_WARNINGS=1 LOG_LEVEL='info; debug:contract_log' node --loader ts-node/esm scripts/read_debug_logs.ts",
+    "read-logs::devnet": "NODE_NO_WARNINGS=1 LOG_LEVEL='info; debug:contract_log' AZTEC_ENV=devnet node --loader ts-node/esm scripts/read_debug_logs.ts",
     "test": "yarn test:js && yarn test:nr",
     "test::devnet": "AZTEC_ENV=devnet yarn test:js",
     "test:js": "rm -rf store/pxe && NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",

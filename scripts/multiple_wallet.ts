@@ -7,11 +7,15 @@ import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { getAztecNodeUrl, getTimeouts } from "../config/config.js";
+import configManager, { getAztecNodeUrl, getTimeouts } from "../config/config.js";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 const nodeUrl = getAztecNodeUrl();
 const node = createAztecNodeClient(nodeUrl);
+const walletOpts = {
+    ephemeral: true,
+    pxeConfig: { proverEnabled: configManager.isDevnet() },
+};
 
 const L2_TOKEN_CONTRACT_SALT = Fr.random();
 
@@ -33,8 +37,8 @@ export async function getL2TokenContractInstance(deployerAddress: any, ownerAzte
 
 async function main() {
 
-    const wallet1 = await EmbeddedWallet.create(node, { ephemeral: true });
-    const wallet2 = await EmbeddedWallet.create(node, { ephemeral: true });
+    const wallet1 = await EmbeddedWallet.create(node, walletOpts);
+    const wallet2 = await EmbeddedWallet.create(node, walletOpts);
     const sponsoredFPC = await getSponsoredFPCInstance();
     await wallet1.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     await wallet2.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
@@ -50,7 +54,11 @@ async function main() {
     const deployMethod = await schnorrAccount.getDeployMethod();
     await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let ownerAddress = schnorrAccount.address;
-    const token = await TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6).send({
+
+    // Simulate before sending to surface revert reasons
+    const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6);
+    await tokenDeploy.simulate({ from: ownerAddress });
+    const token = await tokenDeploy.send({
         from: ownerAddress,
         contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
         fee: { paymentMethod },
@@ -74,12 +82,16 @@ async function main() {
 
     // mint to account on 2nd pxe
 
+    // Simulate before sending to surface revert reasons
+    await token.methods.mint_to_private(schnorrAccount2.address, 100).simulate({ from: ownerAddress });
     const private_mint_tx = await token.methods.mint_to_private(schnorrAccount2.address, 100).send({
         from: ownerAddress,
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
     console.log(await node.getTxEffect(private_mint_tx.txHash))
+
+    await token.methods.mint_to_public(schnorrAccount2.address, 100).simulate({ from: ownerAddress });
     await token.methods.mint_to_public(schnorrAccount2.address, 100).send({
         from: ownerAddress,
         fee: { paymentMethod },

@@ -1,6 +1,7 @@
+use ::aztec::oracle::logging::debug_log_format;
 use ::aztec::protocol::{
     address::AztecAddress,
-    traits::{Deserialize, Serialize, Packable},
+    traits::{Deserialize, Serialize, Packable, ToField},
 };
 
 // Race struct stores the public state of a game
@@ -208,6 +209,45 @@ impl Race {
         };
 
         ret.unwrap()
+    }
+
+    // Logs the full state of a race for debugging
+    pub fn log_race_state(self, label: Field) {
+        debug_log_format("=== Race State ({0}) ===", [label]);
+        debug_log_format(
+            "Players: p1={0}, p2={1}",
+            [self.player1.to_field(), self.player2.to_field()],
+        );
+        debug_log_format(
+            "Rounds: p1={0}/{1}, p2={2}/{3}",
+            [
+                self.player1_round as Field,
+                self.total_rounds as Field,
+                self.player2_round as Field,
+                self.total_rounds as Field,
+            ],
+        );
+        debug_log_format(
+            "P1 tracks: {0}, {1}, {2}, {3}, {4}",
+            [
+                self.player1_track1_final as Field,
+                self.player1_track2_final as Field,
+                self.player1_track3_final as Field,
+                self.player1_track4_final as Field,
+                self.player1_track5_final as Field,
+            ],
+        );
+        debug_log_format(
+            "P2 tracks: {0}, {1}, {2}, {3}, {4}",
+            [
+                self.player2_track1_final as Field,
+                self.player2_track2_final as Field,
+                self.player2_track3_final as Field,
+                self.player2_track4_final as Field,
+                self.player2_track5_final as Field,
+            ],
+        );
+        debug_log_format("End block: {0}", [self.end_block as Field]);
     }
 
     // Determines the game winner by comparing track scores

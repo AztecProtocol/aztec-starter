@@ -276,4 +276,14 @@ pub contract PodRacing {
         );
         self.storage.win_history.at(winner).write(previous_wins + 1);
     }
+
+    // Utility function: runs client-side in the PXE, not on-chain.
+    // Reads the public game state and logs it via debug_log_format.
+    #[external("utility")]
+    unconstrained fn debug_game_state(game_id: Field) {
+        let race = self.storage.races.at(game_id).read();
+        debug_log_format("=== debug_game_state utility for game {0} ===", [game_id]);
+        race.log_race_state(game_id);
+        debug_log_format("=== end debug_game_state ===", [game_id]);
+    }
 }
