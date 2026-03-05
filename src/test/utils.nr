@@ -4,6 +4,7 @@ use ::aztec::{
 
 use crate::PodRacing;
 
+// docs:start:test-setup
 // Setup function for pod racing contract tests
 // Returns: (TestEnvironment, contract_address, admin_address)
 // Note: Create player accounts in individual tests to avoid oracle errors
@@ -18,3 +19,4 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 
     (env, contract_address, admin)
 }
+// docs:end:test-setup

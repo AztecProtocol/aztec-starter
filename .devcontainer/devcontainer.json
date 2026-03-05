@@ -3,14 +3,19 @@
     "context": ".",
     "dockerfile": "Dockerfile"
   },
-  "postCreateCommand": "yarn ",  
+  "postCreateCommand": "yarn ",
   "customizations": {
     // Configure properties specific to VS Code.
-  "vscode": {
-    // Set *default* container specific settings.json values on container create.
-    "settings": {},
-    "extensions": ["noir-lang.vscode-noir"]
-  }
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+// Noir syntax highlighting may not work in Codespaces; use Rust as fallback
+        "files.associations": {
+          "*.nr": "rust"
+        }
+      },
+      "extensions": ["noir-lang.vscode-noir"]
+    }
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/root/workspace,type=bind",
   "workspaceFolder": "/root/workspace"

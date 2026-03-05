@@ -15,6 +15,7 @@ pub global TEST_GAME_ID_8: Field = 8;
 pub global TEST_GAME_ID_9: Field = 9;
 pub global TEST_GAME_ID_10: Field = 10;
 
+// docs:start:allocation-strategies
 // Common point allocations for testing
 // Balanced strategy: distribute points evenly
 pub unconstrained fn balanced_allocation() -> (u8, u8, u8, u8, u8) {
@@ -35,7 +36,9 @@ pub unconstrained fn defensive_allocation() -> (u8, u8, u8, u8, u8) {
 pub unconstrained fn max_allocation() -> (u8, u8, u8, u8, u8) {
     (5, 2, 1, 1, 0)
 }
+// docs:end:allocation-strategies
 
+// docs:start:setup-helpers
 // Helper to setup a game with two players
 pub unconstrained fn setup_two_player_game(
     env: &mut TestEnvironment,
@@ -77,3 +80,4 @@ pub unconstrained fn play_all_rounds_with_strategy(
         play_round_with_allocation(env, contract_address, player, game_id, round, allocations[i]);
     }
 }
+// docs:end:setup-helpers

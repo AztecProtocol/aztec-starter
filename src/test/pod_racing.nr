@@ -6,6 +6,7 @@ use crate::PodRacing;
 // INITIALIZATION TESTS
 // ============================================================================
 
+// docs:start:test-initializer
 // Test: Contract initialization sets admin correctly
 #[test]
 unconstrained fn test_initializer() {
@@ -16,6 +17,7 @@ unconstrained fn test_initializer() {
         assert_eq(current_admin, admin);
     });
 }
+// docs:end:test-initializer
 
 // ============================================================================
 // GAME CREATION TESTS
@@ -135,6 +137,7 @@ unconstrained fn test_play_round() {
     });
 }
 
+// docs:start:test-fail-too-many-points
 // Test: Cannot allocate more than 9 points in a round
 #[test(should_fail)]
 unconstrained fn test_fail_play_round_too_many_points() {
@@ -151,6 +154,7 @@ unconstrained fn test_fail_play_round_too_many_points() {
         PodRacing::at(contract_address).play_round(game_id, 1, 2, 2, 2, 2, 2)
     );
 }
+// docs:end:test-fail-too-many-points
 
 // Test: Allocating exactly 9 points is allowed
 #[test]

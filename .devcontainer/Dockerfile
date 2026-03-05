@@ -20,7 +20,8 @@ RUN apt update && apt install -y \
     jq \
     python3 \
     build-essential \
-    ca-certificates
+    ca-certificates \
+    netcat-openbsd
 
 # Install nvm, node and npm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
