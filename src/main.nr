@@ -76,7 +76,7 @@ pub contract PodRacing {
         // Ensure this game_id hasn't been used yet (player1 must be zero address)
         assert(self.storage.races.at(game_id).read().player1.eq(AztecAddress::zero()));
 
-        let player1 = self.context.maybe_msg_sender().unwrap();
+        let player1 = self.msg_sender();
         debug_log_format(
             "Creating game {0} by player {1}",
             [game_id, player1.to_field()],
@@ -99,7 +99,7 @@ pub contract PodRacing {
     fn join_game(game_id: Field) {
         let maybe_existing_game = self.storage.races.at(game_id).read();
 
-        let player2 = self.context.maybe_msg_sender().unwrap();
+        let player2 = self.msg_sender();
         debug_log_format("Player {0} joining game {1}", [player2.to_field(), game_id]);
 
         // Add the caller as player2 (validates that player1 exists and player2 is empty)
@@ -129,7 +129,7 @@ pub contract PodRacing {
         // Validate that total points don't exceed 9 (you can't max out all tracks)
         assert(track1 + track2 + track3 + track4 + track5 < 10);
 
-        let player = self.context.maybe_msg_sender().unwrap();
+        let player = self.msg_sender();
         debug_log_format(
             "Player {0} playing round {1} in game {2}",
             [player.to_field(), round as Field, game_id],
@@ -151,11 +151,11 @@ pub contract PodRacing {
 
         // Enqueue a public function call to update the round counter
         // This reveals that a round was played, but not the point allocation
-        self.enqueue(PodRacing::at(self.context.this_address()).validate_and_play_round(
+        self.enqueue_self.validate_and_play_round(
             player,
             game_id,
             round,
-        ));
+        );
     }
     // docs:end:play-round
 
@@ -184,7 +184,7 @@ pub contract PodRacing {
     // This is the "reveal" phase where private choices become public
     #[external("private")]
     fn finish_game(game_id: Field) {
-        let player = self.context.maybe_msg_sender().unwrap();
+        let player = self.msg_sender();
         debug_log_format(
             "Player {0} finishing game {1}",
             [player.to_field(), game_id],
@@ -217,7 +217,7 @@ pub contract PodRacing {
 
         // Enqueue public function to store the revealed totals on-chain
         // Now the revealing player's track totals will be publicly visible
-        self.enqueue(PodRacing::at(self.context.this_address()).validate_finish_game_and_reveal(
+        self.enqueue_self.validate_finish_game_and_reveal(
             player,
             game_id,
             total_track1,
@@ -225,7 +225,7 @@ pub contract PodRacing {
             total_track3,
             total_track4,
             total_track5,
-        ));
+        );
     }
     // docs:end:finish-game
 

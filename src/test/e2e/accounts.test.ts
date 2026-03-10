@@ -13,7 +13,7 @@ import { type AztecNode, createAztecNodeClient } from "@aztec/aztec.js/node";
 import { L1FeeJuicePortalManager, type L2AmountClaim } from "@aztec/aztec.js/ethereum";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { type Logger, createLogger } from "@aztec/foundation/log";
-import { type ContractInstanceWithAddress, getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { type ContractInstanceWithAddress, getContractInstanceFromInstantiationParams } from "@aztec/stdlib/contract";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { ContractDeployer } from "@aztec/aztec.js/deployment";

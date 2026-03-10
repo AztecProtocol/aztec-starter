@@ -1,6 +1,6 @@
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
-import { getContractInstanceFromInstantiationParams, type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
+import { getContractInstanceFromInstantiationParams, type ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { createAztecNodeClient } from "@aztec/aztec.js/node";
@@ -14,7 +14,7 @@ const nodeUrl = getAztecNodeUrl();
 const node = createAztecNodeClient(nodeUrl);
 const walletOpts = {
     ephemeral: true,
-    pxeConfig: { proverEnabled: configManager.isDevnet() },
+    pxeConfig: { proverEnabled: configManager.isRemoteNetwork() },
 };
 
 const L2_TOKEN_CONTRACT_SALT = Fr.random();
