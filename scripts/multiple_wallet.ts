@@ -58,7 +58,7 @@ async function main() {
     // Simulate before sending to surface revert reasons
     const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6);
     await tokenDeploy.simulate({ from: ownerAddress });
-    const token = await tokenDeploy.send({
+    const { contract: token } = await tokenDeploy.send({
         from: ownerAddress,
         contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
         fee: { paymentMethod },
