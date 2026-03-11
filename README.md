@@ -16,9 +16,16 @@ You can find the **Pod Racing Game contract** in `./src/main.nr`. A simple integ
 
 The Pod Racing contract is a two-player competitive game where players allocate points across 5 tracks over multiple rounds. The game demonstrates Aztec's private state capabilities - round choices remain private until players reveal their final scores.
 
-## Devnet
+## Devnet & Testnet
 
-This repo connects to a locally running Aztec local network by default, but can be configured to connect to the devnet by specifying `AZTEC_ENV=devnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=devnet yarn deploy`.
+This repo connects to a locally running Aztec local network by default, but can be configured to connect to remote networks:
+
+- **Devnet**: `AZTEC_ENV=devnet` — development network on the `next` branch
+- **Testnet**: `AZTEC_ENV=testnet` — test network on the `testnet` branch
+
+Set the variable in a `.env` file or prefix a command, e.g. `AZTEC_ENV=devnet yarn deploy`.
+
+> **Branch model:** Devnet code lives on the `next` branch. Testnet code lives on the `testnet` branch. Each branch may run a different Aztec version.
 
 <div align="center">
 
@@ -55,6 +62,7 @@ This project uses JSON configuration files to manage environment-specific settin
 
 - `config/local-network.json` - Configuration for local network development
 - `config/devnet.json` - Configuration for devnet deployment
+- `config/testnet.json` - Configuration for testnet deployment
 
 The system automatically loads the appropriate configuration file based on the `AZTEC_ENV` environment variable. If `AZTEC_ENV` is not set, it defaults to `local-network`.
 
@@ -88,6 +96,21 @@ yarn interaction-existing-contract::devnet  # Interact with devnet contracts
 ```
 
 The `::devnet` suffix automatically sets `AZTEC_ENV=devnet`, loading configuration from `config/devnet.json`.
+
+### Running on Testnet
+
+Similarly, all scripts support a `::testnet` suffix:
+
+```bash
+yarn deploy::testnet              # Deploy to testnet
+yarn test::testnet                # Run tests on testnet
+yarn deploy-account::testnet      # Deploy account to testnet
+yarn interaction-existing-contract::testnet  # Interact with testnet contracts
+```
+
+The `::testnet` suffix sets `AZTEC_ENV=testnet`, loading configuration from `config/testnet.json`.
+
+> **Note:** Testnet code should be developed and merged into the `testnet` branch, not `next`. The `testnet` branch may use a different Aztec version than the `next` (devnet) branch.
 
 ---
 
