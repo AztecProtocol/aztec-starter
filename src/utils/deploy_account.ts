@@ -1,6 +1,8 @@
 import { SponsoredFeePaymentMethod, FeeJuicePaymentMethodWithClaim } from "@aztec/aztec.js/fee";
+import type { FeePaymentMethod } from "@aztec/aztec.js/fee";
 import { getSponsoredFPCInstance } from "./sponsored_fpc.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { ProtocolContractAddress } from "@aztec/aztec.js/protocol";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { type Logger, createLogger } from "@aztec/foundation/log";
@@ -9,6 +11,7 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { createAztecNodeClient } from "@aztec/aztec.js/node";
+import { deriveStorageSlotInMap } from "@aztec/stdlib/hash";
 import configManager, { getAztecNodeUrl, getTimeouts } from "../../config/config.js";
 import { bridgeL1FeeJuice } from "./bridge_fee_juice.js";
 
@@ -36,15 +39,23 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
     const deployMethod = await account.getDeployMethod();
     const timeouts = getTimeouts();
 
-    let paymentMethod;
+    let paymentMethod: FeePaymentMethod | undefined;
 
     if (configManager.isTestnet()) {
-        // Testnet: bridge fee juice from L1 and use it to pay for deployment
-        logger.info('💰 Bridging fee juice from Sepolia L1 for account deployment...');
         const node = createAztecNodeClient(getAztecNodeUrl());
-        const claim = await bridgeL1FeeJuice(node, account.address, FEE_JUICE_AMOUNT, logger);
-        paymentMethod = new FeeJuicePaymentMethodWithClaim(account.address, claim);
-        logger.info('✅ Fee juice claim ready for account deployment');
+
+        // Check if the account already has fee juice on L2
+        const balanceSlot = await deriveStorageSlotInMap(new Fr(1), account.address);
+        const balance = (await node.getPublicStorageAt('latest', ProtocolContractAddress.FeeJuice, balanceSlot)).toBigInt();
+
+        if (balance > 0n) {
+            logger.info(`💰 Account already has ${balance} fee juice on L2, skipping bridge`);
+        } else {
+            logger.info('💰 No fee juice found, bridging from Sepolia L1...');
+            const claim = await bridgeL1FeeJuice(node, account.address, FEE_JUICE_AMOUNT, logger);
+            paymentMethod = new FeeJuicePaymentMethodWithClaim(account.address, claim);
+            logger.info('✅ Fee juice claim ready for account deployment');
+        }
     } else {
         // Devnet/local: use sponsored FPC
         logger.info('💰 Setting up sponsored fee payment for account deployment...');
@@ -64,11 +75,14 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
     logger.info('✅ Simulation successful, sending deployment transaction...');
 
     // Deploy account
-    await deployMethod.send({
+    const sendOpts: any = {
         from: AztecAddress.ZERO,
-        fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout },
-    });
+    };
+    if (paymentMethod) {
+        sendOpts.fee = { paymentMethod };
+    }
+    await deployMethod.send(sendOpts);
 
     logger.info(`✅ Account deployment transaction successful!`);
 
