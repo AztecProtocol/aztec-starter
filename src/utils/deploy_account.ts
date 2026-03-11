@@ -12,7 +12,7 @@ import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import configManager, { getAztecNodeUrl, getTimeouts } from "../../config/config.js";
 import { bridgeL1FeeJuice } from "./bridge_fee_juice.js";
 
-const FEE_JUICE_AMOUNT = 1_000_000_000_000n; // 1e12
+const FEE_JUICE_AMOUNT = 1_000_000_000_000_000_000_000n; // 1000e18 — fixed mint amount enforced by the portal
 
 export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
     let logger: Logger;
