@@ -1,0 +1,41 @@
+name: Testnet Tests
+
+on:
+  push:
+    branches:
+      - testnet
+  pull_request:
+    branches:
+      - testnet
+  workflow_dispatch:
+
+concurrency:
+  group: testnet-deploy
+  cancel-in-progress: true
+
+jobs:
+  testnet-deploy-account:
+    name: Deploy Account to Testnet
+    runs-on: ubuntu-latest
+    env:
+      AZTEC_ENV: testnet
+      L1_PRIVATE_KEY: ${{ secrets.L1_PRIVATE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Read Aztec version from config
+        run: echo "AZTEC_VERSION=$(jq -r '.settings.version' config/testnet.json)" >> $GITHUB_ENV
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+
+      - name: Install project dependencies
+        run: yarn
+
+      - name: Deploy account to testnet
+        run: yarn deploy-account::testnet

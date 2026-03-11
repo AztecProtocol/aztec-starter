@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying on devnet" â
 * **Phases 1-2** need only a browser (read code, compile in a Codespace)
 * **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `4.0.0-devnet.2-patch.1` (check `Nargo.toml` and `package.json` for source of truth)
+**Aztec version pinned in this repo:** `4.1.0-rc.2` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -164,7 +164,7 @@ fn create_game(game_id: Field) {
     // Ensure this game_id hasn't been used yet (player1 must be zero address)
     assert(self.storage.races.at(game_id).read().player1.eq(AztecAddress::zero()));
 
-    let player1 = self.context.maybe_msg_sender().unwrap();
+    let player1 = self.msg_sender();
     debug_log_format(
         "Creating game {0} by player {1}",
         [game_id, player1.to_field()],
@@ -193,7 +193,7 @@ Creates a new game. Checks the game ID isn't taken (player1 must be zero address
 fn join_game(game_id: Field) {
     let maybe_existing_game = self.storage.races.at(game_id).read();
 
-    let player2 = self.context.maybe_msg_sender().unwrap();
+    let player2 = self.msg_sender();
     debug_log_format("Player {0} joining game {1}", [player2.to_field(), game_id]);
 
     // Add the caller as player2 (validates that player1 exists and player2 is empty)
@@ -314,7 +314,7 @@ fn play_round(
     // Validate that total points don't exceed 9 (you can't max out all tracks)
     assert(track1 + track2 + track3 + track4 + track5 < 10);
 
-    let player = self.context.maybe_msg_sender().unwrap();
+    let player = self.msg_sender();
     debug_log_format(
         "Player {0} playing round {1} in game {2}",
         [player.to_field(), round as Field, game_id],
@@ -336,11 +336,11 @@ fn play_round(
 
     // Enqueue a public function call to update the round counter
     // This reveals that a round was played, but not the point allocation
-    self.enqueue(PodRacing::at(self.context.this_address()).validate_and_play_round(
+    self.enqueue_self.validate_and_play_round(
         player,
         game_id,
         round,
-    ));
+    );
 }
 ```
 
@@ -361,7 +361,7 @@ Three things happen here that have no direct Ethereum equivalent:
 // This is the "reveal" phase where private choices become public
 #[external("private")]
 fn finish_game(game_id: Field) {
-    let player = self.context.maybe_msg_sender().unwrap();
+    let player = self.msg_sender();
     debug_log_format(
         "Player {0} finishing game {1}",
         [player.to_field(), game_id],
@@ -394,7 +394,7 @@ fn finish_game(game_id: Field) {
 
     // Enqueue public function to store the revealed totals on-chain
     // Now the revealing player's track totals will be publicly visible
-    self.enqueue(PodRacing::at(self.context.this_address()).validate_finish_game_and_reveal(
+    self.enqueue_self.validate_finish_game_and_reveal(
         player,
         game_id,
         total_track1,
@@ -402,7 +402,7 @@ fn finish_game(game_id: Field) {
         total_track3,
         total_track4,
         total_track5,
-    ));
+    );
 }
 ```
 
@@ -526,7 +526,7 @@ The `.devcontainer/` configures:
 
 * **Base image:** Ubuntu 24.04 with Node.js v22.15.0
 * **Docker-in-Docker** for running the Aztec local network
-* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.0.0-devnet.2-patch.1" | VERSION="4.0.0-devnet.2-patch.1" bash -s`
+* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.1.0-rc.2" | VERSION="4.1.0-rc.2" bash -s`
 * **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
 * **Dependencies:** `yarn install` runs automatically
 
@@ -737,7 +737,7 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 **Aztec toolkit:**
 
 ```bash
-export VERSION=4.0.0-devnet.2-patch.1
+export VERSION=4.1.0-rc.2
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 

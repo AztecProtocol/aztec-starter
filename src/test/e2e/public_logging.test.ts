@@ -17,7 +17,7 @@ import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/Sponsored
 import { getTimeouts } from "../../../config/config.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { type Logger, createLogger } from "@aztec/foundation/log";
-import { type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
+import { type ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { EmbeddedWallet } from '@aztec/wallets/embedded';
@@ -70,11 +70,12 @@ describe("Public Function Logging", () => {
         // Deploy the contract
         logger.info('Deploying Pod Racing contract...');
         const adminAddress = player1Account.address;
-        contract = await PodRacingContract.deploy(wallet, adminAddress).send({
+        const deployResult = await PodRacingContract.deploy(wallet, adminAddress).send({
             from: adminAddress,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
         });
+        contract = deployResult.contract;
 
         logger.info(`Contract deployed at: ${contract.address.toString()}`);
     }, 600000)
