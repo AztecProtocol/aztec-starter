@@ -47,24 +47,33 @@ NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --
 
 ## Deployment & Scripts
 
-All scripts support `::devnet` suffix for devnet targeting (sets `AZTEC_ENV=devnet`):
+All scripts support `::devnet` and `::testnet` suffixes for remote network targeting:
 
 ```bash
 yarn deploy               # Deploy contract to local network
 yarn deploy::devnet       # Deploy contract to devnet
+yarn deploy::testnet      # Deploy contract to testnet
 yarn deploy-account       # Deploy a Schnorr account
 yarn multiple-wallet      # Deploy from one wallet, interact from another
 yarn profile              # Profile a transaction deployment
 yarn read-logs            # Demo utility function for client-side debug logging
 yarn read-logs::devnet    # Same on devnet
+yarn read-logs::testnet   # Same on testnet
 ```
 
 ## Environment Configuration
 
-- `AZTEC_ENV` variable selects config: `local-network` (default) or `devnet`
-- Config files: `config/local-network.json`, `config/devnet.json`
+- `AZTEC_ENV` variable selects config: `local-network` (default), `devnet`, or `testnet`
+- Config files: `config/local-network.json`, `config/devnet.json`, `config/testnet.json`
 - `config/config.ts` — singleton `ConfigManager` loads the appropriate JSON based on `AZTEC_ENV`
 - `.env` stores secrets (SECRET, SIGNING_KEY, SALT, contract keys) — never commit
+
+## Branch Model
+
+- **`next` branch** — default branch; used for local network and devnet development
+- **`testnet` branch** — used for testnet development; may run a different Aztec version
+
+Devnet PRs target `next`. Testnet PRs target `testnet`. Each branch pins its own Aztec version independently.
 
 ## Project Structure
 
@@ -143,8 +152,10 @@ When updating the Aztec version, update all of these locations:
 
 1. `Nargo.toml` — `aztec` dependency tag
 2. `package.json` — all `@aztec/*` dependency versions
-3. `config/local-network.json` and `config/devnet.json` — `settings.version`
+3. `config/local-network.json`, `config/devnet.json`, and/or `config/testnet.json` — `settings.version` (update the configs relevant to the branch you're on)
 4. `README.md` — install command version
+
+> **Note:** The `next` and `testnet` branches may pin different Aztec versions. Only update the config files relevant to the branch.
 
 ## ONBOARDING.md Maintenance
 
