@@ -74,7 +74,7 @@ async function main() {
     // Simulate before sending to surface revert reasons
     const podRacingDeploy = PodRacingContract.deploy(wallet, account1.address);
     await podRacingDeploy.simulate({ from: account1.address });
-    const podRacingContract = await podRacingDeploy.send({
+    const { contract: podRacingContract } = await podRacingDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -82,7 +82,7 @@ async function main() {
 
     const bananaCoinDeploy = TokenContract.deploy(wallet, account1.address, "bananaCoin", "BNC", 18);
     await bananaCoinDeploy.simulate({ from: account1.address });
-    const bananaCoin = await bananaCoinDeploy.send({
+    const { contract: bananaCoin } = await bananaCoinDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -114,7 +114,7 @@ async function main() {
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
     const fpcDeploy = FPCContract.deploy(wallet, bananaCoin.address, account1.address);
     await fpcDeploy.simulate({ from: account1.address });
-    const fpc = await fpcDeploy.send({
+    const { contract: fpc } = await fpcDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -135,11 +135,11 @@ async function main() {
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
-    const bananaBalance = await bananaCoin.methods.balance_of_private(account2.address).simulate({
+    const bananaBalanceResult = await bananaCoin.methods.balance_of_private(account2.address).simulate({
         from: account2.address
     });
 
-    logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
+    logger.info(`BananaCoin balance of newWallet is ${bananaBalanceResult.result ?? bananaBalanceResult}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
     await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact);
@@ -147,9 +147,10 @@ async function main() {
 
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address, wait: { timeout: timeouts.txTimeout } });
 
-    logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate({
+    const fpcBalance = await feeJuice.methods.balance_of_public(fpc.address).simulate({
         from: account2.address
-    })}`);
+    });
+    logger.info(`Fpc fee juice balance ${fpcBalance.result ?? fpcBalance}`);
 
     const maxFeesPerGas = (await node.getCurrentMinFees()).mul(1.5);
     const gasSettings = GasSettings.default({ maxFeesPerGas });

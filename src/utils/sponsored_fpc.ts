@@ -32,5 +32,5 @@ export async function setupSponsoredFPC(deployer: Wallet, log: LogFn) {
       universalDeploy: true,
     });
 
-  log(`SponsoredFPC: ${deployed.address}`);
+  log(`SponsoredFPC: ${deployed.contract.address}`);
 }

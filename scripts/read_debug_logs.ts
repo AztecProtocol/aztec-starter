@@ -57,7 +57,7 @@ async function main() {
     logger.info('\n--- Deploying PodRacing contract (constructor logs) ---');
     const deployRequest = PodRacingContract.deploy(wallet, p1Account.address);
     await deployRequest.simulate({ from: p1Account.address });
-    const contract = await deployRequest.send({
+    const { contract } = await deployRequest.send({
         from: p1Account.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout },

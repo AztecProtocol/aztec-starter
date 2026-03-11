@@ -112,15 +112,15 @@ async function main() {
     )
 
     // Check balances
-    const balance = await l2TokenContract.methods.balance_of_private(wallet2Address).simulate({
+    const balanceResult = await l2TokenContract.methods.balance_of_private(wallet2Address).simulate({
         from: wallet2Address
     })
-    console.log("private balance should be 100", balance)
+    console.log("private balance should be 100", balanceResult.result ?? balanceResult)
 
-    const publicBalance = await l2TokenContract.methods.balance_of_public(wallet2Address).simulate({
+    const publicBalanceResult = await l2TokenContract.methods.balance_of_public(wallet2Address).simulate({
         from: wallet2Address
     })
-    console.log("public balance should be 100", publicBalance)
+    console.log("public balance should be 100", publicBalanceResult.result ?? publicBalanceResult)
 
 }
 
