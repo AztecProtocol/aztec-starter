@@ -16,6 +16,7 @@ jobs:
     env:
       AZTEC_ENV: testnet
       AZTEC_VERSION: 4.1.0-rc.2
+      L1_PRIVATE_KEY: ${{ secrets.L1_PRIVATE_KEY }}
 
     steps:
       - name: Checkout repository
