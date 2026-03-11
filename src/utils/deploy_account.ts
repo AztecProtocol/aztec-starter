@@ -18,15 +18,14 @@ import { bridgeL1FeeJuice } from "./bridge_fee_juice.js";
 const FEE_JUICE_AMOUNT = 1_000_000_000_000_000_000_000n; // 1000e18 — fixed mint amount enforced by the portal
 
 export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
-    let logger: Logger;
-    logger = createLogger('aztec:aztec-starter');
+    const logger: Logger = createLogger('aztec:aztec-starter');
     logger.info('👤 Starting Schnorr account deployment...');
 
     // Generate account keys
     logger.info('🔐 Generating account keys...');
-    let secretKey = Fr.random();
-    let signingKey = GrumpkinScalar.random();
-    let salt = Fr.random();
+    const secretKey = Fr.random();
+    const signingKey = GrumpkinScalar.random();
+    const salt = Fr.random();
     logger.info(`Save the following SECRET and SALT in .env for future use.`);
     logger.info(`🔑 Secret key generated: ${secretKey.toString()}`);
     logger.info(`🖊️ Signing key generated: ${signingKey.toString()}`);
@@ -75,14 +74,11 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
     logger.info('✅ Simulation successful, sending deployment transaction...');
 
     // Deploy account
-    const sendOpts: any = {
+    await deployMethod.send({
         from: AztecAddress.ZERO,
         wait: { timeout: timeouts.deployTimeout },
-    };
-    if (paymentMethod) {
-        sendOpts.fee = { paymentMethod };
-    }
-    await deployMethod.send(sendOpts);
+        ...(paymentMethod ? { fee: { paymentMethod } } : {}),
+    });
 
     logger.info(`✅ Account deployment transaction successful!`);
 

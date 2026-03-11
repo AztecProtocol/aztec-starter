@@ -19,12 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: testnet
-      AZTEC_VERSION: 4.1.0-rc.2
       L1_PRIVATE_KEY: ${{ secrets.L1_PRIVATE_KEY }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Read Aztec version from config
+        run: echo "AZTEC_VERSION=$(jq -r '.settings.version' config/testnet.json)" >> $GITHUB_ENV
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

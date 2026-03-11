@@ -11,14 +11,15 @@ import type { Logger } from '@aztec/foundation/log';
 import { getContract } from 'viem';
 import configManager from '../../config/config.js';
 
+const MAX_POLL_ATTEMPTS = 40; // 40 * 30s = 20 minutes max
+
 export async function bridgeL1FeeJuice(
     node: AztecNode,
     recipient: AztecAddress,
     amount: bigint,
     logger: Logger,
 ) {
-    const l1RpcUrl = configManager.getConfig().network.l1RpcUrl;
-    const l1ChainId = configManager.getConfig().network.l1ChainId;
+    const { l1RpcUrl, l1ChainId } = configManager.getNetworkConfig();
     const l1PrivateKey = process.env.L1_PRIVATE_KEY;
 
     if (!l1PrivateKey) {
@@ -27,10 +28,10 @@ export async function bridgeL1FeeJuice(
 
     const key = l1PrivateKey.startsWith('0x') ? l1PrivateKey : `0x${l1PrivateKey}`;
     const chain = createEthereumChain([l1RpcUrl], l1ChainId);
-    const l1Client = createExtendedL1Client(chain.rpcUrls, key, chain.chainInfo);
 
     logger.info(`🌉 Bridging ${amount} fee juice from L1 to ${recipient}...`);
 
+    const l1Client = createExtendedL1Client(chain.rpcUrls, key, chain.chainInfo);
     const portal = await L1FeeJuicePortalManager.new(node, l1Client, logger);
     const tokenManager = portal.getTokenManager();
 
@@ -38,9 +39,8 @@ export async function bridgeL1FeeJuice(
     const balance = await tokenManager.getL1TokenBalance(l1Client.account.address);
     if (balance < amount) {
         // Mint tokens and wait for confirmation.
-        // We do this manually because the upstream L1TokenManager.mint()
-        // doesn't wait for the tx receipt, causing nonce conflicts with
-        // the subsequent approve transaction.
+        // Upstream L1TokenManager.mint() doesn't wait for the tx receipt,
+        // causing nonce conflicts with the subsequent approve transaction.
         logger.info(`🪙 Minting fee juice tokens on L1...`);
         const handler = getContract({
             address: tokenManager.handlerAddress!.toString() as `0x${string}`,
@@ -55,33 +55,33 @@ export async function bridgeL1FeeJuice(
         logger.info(`💰 L1 account already has ${balance} tokens, skipping mint`);
     }
 
-    // Create a fresh L1 client and portal to ensure viem picks up the
-    // latest on-chain nonce (previous runs may have incremented it).
-    const freshL1Client = createExtendedL1Client(chain.rpcUrls, key, chain.chainInfo);
-    const freshPortal = await L1FeeJuicePortalManager.new(node, freshL1Client, logger);
-
-    // Bridge without minting — tokens are already available on L1
+    // Create a fresh L1 client so viem picks up the current on-chain nonce.
+    // The mint (or prior runs) may have incremented it beyond what the
+    // original client has cached.
+    const freshClient = createExtendedL1Client(chain.rpcUrls, key, chain.chainInfo);
+    const freshPortal = await L1FeeJuicePortalManager.new(node, freshClient, logger);
     const claim = await freshPortal.bridgeTokensPublic(recipient, amount, false);
 
     logger.info(`✅ Fee juice bridged! Claim amount: ${claim.claimAmount}, message hash: ${claim.messageHash}`);
     logger.info(`⏳ Waiting for L1-to-L2 message to be available on L2...`);
 
     const pollInterval = 30_000;
-    let witness;
-    while (!witness) {
-        witness = await getNonNullifiedL1ToL2MessageWitness(
+    for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
+        const witness = await getNonNullifiedL1ToL2MessageWitness(
             node,
             ProtocolContractAddress.FeeJuice,
             Fr.fromHexString(claim.messageHash),
             claim.claimSecret,
         ).catch(() => undefined);
 
-        if (!witness) {
-            logger.info(`⏳ Message not yet available, checking again in ${pollInterval / 1000}s...`);
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
+        if (witness) {
+            logger.info(`✅ L1-to-L2 message is available on L2!`);
+            return claim;
         }
+
+        logger.info(`⏳ Message not yet available, checking again in ${pollInterval / 1000}s... (${attempt + 1}/${MAX_POLL_ATTEMPTS})`);
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
 
-    logger.info(`✅ L1-to-L2 message is available on L2!`);
-    return claim;
+    throw new Error(`L1-to-L2 message not available after ${MAX_POLL_ATTEMPTS} attempts (${MAX_POLL_ATTEMPTS * 30}s)`);
 }
