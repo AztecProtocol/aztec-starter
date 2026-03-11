@@ -55,8 +55,13 @@ export async function bridgeL1FeeJuice(
         logger.info(`💰 L1 account already has ${balance} tokens, skipping mint`);
     }
 
+    // Create a fresh L1 client and portal to ensure viem picks up the
+    // latest on-chain nonce (previous runs may have incremented it).
+    const freshL1Client = createExtendedL1Client(chain.rpcUrls, key, chain.chainInfo);
+    const freshPortal = await L1FeeJuicePortalManager.new(node, freshL1Client, logger);
+
     // Bridge without minting — tokens are already available on L1
-    const claim = await portal.bridgeTokensPublic(recipient, amount, false);
+    const claim = await freshPortal.bridgeTokensPublic(recipient, amount, false);
 
     logger.info(`✅ Fee juice bridged! Claim amount: ${claim.claimAmount}, message hash: ${claim.messageHash}`);
     logger.info(`⏳ Waiting for L1-to-L2 message to be available on L2...`);
