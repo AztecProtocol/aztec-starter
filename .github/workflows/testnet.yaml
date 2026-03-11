@@ -9,6 +9,10 @@ on:
       - testnet
   workflow_dispatch:
 
+concurrency:
+  group: testnet-deploy
+  cancel-in-progress: true
+
 jobs:
   testnet-deploy-account:
     name: Deploy Account to Testnet
