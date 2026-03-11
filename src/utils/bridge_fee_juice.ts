@@ -20,11 +20,12 @@ export async function bridgeL1FeeJuice(
     const l1PrivateKey = process.env.L1_PRIVATE_KEY;
 
     if (!l1PrivateKey) {
-        throw new Error('L1_PRIVATE_KEY env var is required for testnet fee juice bridging. Must be a Sepolia-funded private key.');
+        throw new Error('L1_PRIVATE_KEY env var is required for testnet fee juice bridging. Must be a Sepolia-funded private key prefixed with 0x.');
     }
 
+    const key = l1PrivateKey.startsWith('0x') ? l1PrivateKey : `0x${l1PrivateKey}`;
     const chain = createEthereumChain([l1RpcUrl], l1ChainId);
-    const l1Client = createExtendedL1Client(chain.rpcUrls, l1PrivateKey, chain.chainInfo);
+    const l1Client = createExtendedL1Client(chain.rpcUrls, key, chain.chainInfo);
 
     logger.info(`🌉 Bridging ${amount} fee juice from L1 to ${recipient}...`);
 
