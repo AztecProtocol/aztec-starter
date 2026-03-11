@@ -5,8 +5,10 @@ import { createExtendedL1Client } from '@aztec/ethereum/client';
 import { Fr } from '@aztec/aztec.js/fields';
 import { ProtocolContractAddress } from '@aztec/aztec.js/protocol';
 import { getNonNullifiedL1ToL2MessageWitness } from '@aztec/stdlib/messaging';
+import { FeeAssetHandlerAbi } from '@aztec/l1-artifacts/FeeAssetHandlerAbi';
 import type { AztecAddress } from '@aztec/aztec.js/addresses';
 import type { Logger } from '@aztec/foundation/log';
+import { getContract } from 'viem';
 import configManager from '../../config/config.js';
 
 export async function bridgeL1FeeJuice(
@@ -30,12 +32,35 @@ export async function bridgeL1FeeJuice(
     logger.info(`🌉 Bridging ${amount} fee juice from L1 to ${recipient}...`);
 
     const portal = await L1FeeJuicePortalManager.new(node, l1Client, logger);
-    const claim = await portal.bridgeTokensPublic(recipient, amount, true /* mint */);
+    const tokenManager = portal.getTokenManager();
+
+    // Check if we already have enough tokens on L1
+    const balance = await tokenManager.getL1TokenBalance(l1Client.account.address);
+    if (balance < amount) {
+        // Mint tokens and wait for confirmation.
+        // We do this manually because the upstream L1TokenManager.mint()
+        // doesn't wait for the tx receipt, causing nonce conflicts with
+        // the subsequent approve transaction.
+        logger.info(`🪙 Minting fee juice tokens on L1...`);
+        const handler = getContract({
+            address: tokenManager.handlerAddress!.toString() as `0x${string}`,
+            abi: FeeAssetHandlerAbi,
+            client: l1Client,
+        });
+        const mintHash = await handler.write.mint([l1Client.account.address]);
+        logger.info(`⏳ Waiting for mint tx to confirm: ${mintHash}`);
+        await l1Client.waitForTransactionReceipt({ hash: mintHash });
+        logger.info(`✅ Mint confirmed on L1`);
+    } else {
+        logger.info(`💰 L1 account already has ${balance} tokens, skipping mint`);
+    }
+
+    // Bridge without minting — tokens are already available on L1
+    const claim = await portal.bridgeTokensPublic(recipient, amount, false);
 
     logger.info(`✅ Fee juice bridged! Claim amount: ${claim.claimAmount}, message hash: ${claim.messageHash}`);
     logger.info(`⏳ Waiting for L1-to-L2 message to be available on L2...`);
 
-    // Poll until the message is available on L2
     const pollInterval = 30_000;
     let witness;
     while (!witness) {
