@@ -12,6 +12,10 @@ on:
       - testnet
   workflow_dispatch:
 
+concurrency:
+  group: local-network-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   local-network-tests:
     name: Local Network Tests
