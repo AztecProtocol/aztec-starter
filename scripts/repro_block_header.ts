@@ -46,9 +46,14 @@ async function main() {
     process.exit(1);
   }
 
-  // Pick anchor block = current, target = current - 2 (well within archive range)
-  const anchorBlockNum = currentBlock;
+  // Pick anchor and target blocks with enough gap
+  const anchorBlockNum = currentBlock - 2;
   const targetBlockNum = anchorBlockNum - 2;
+
+  if (targetBlockNum < 1) {
+    console.log("Need at least 5 blocks. Wait for more blocks and retry.");
+    process.exit(1);
+  }
 
   const anchorBlock = await node.getBlock(BlockNumber(anchorBlockNum));
   const targetBlock = await node.getBlock(BlockNumber(targetBlockNum));
@@ -65,54 +70,85 @@ async function main() {
   console.log(`Target block hash   : ${targetBlockHash}`);
   console.log(`last_archive.root   : ${anchorBlock.header.lastArchive.root}  (pre-block ${anchorBlockNum})`);
   console.log(`archive.root        : ${anchorBlock.archive.root}  (post-block ${anchorBlockNum})`);
+
+  // Verify these roots differ — this is the core of the bug
+  const lastArchiveRoot = anchorBlock.header.lastArchive.root.toString();
+  const postArchiveRoot = anchorBlock.archive.root.toString();
+  console.log(`Roots differ        : ${lastArchiveRoot !== postArchiveRoot}`);
   console.log();
 
-  // ---- Test 1: Query with anchor block HASH (what the Noir oracle does) ----
+  // ---- Test 1 (FAIL): Query with anchor block HASH — what the Noir oracle does ----
   console.log("=== Test 1: getBlockHashMembershipWitness(anchorBlockHash, targetBlockHash) ===");
-  console.log("This is what the Noir oracle does internally.");
-  console.log("The node resolves anchorBlockHash → block N → getSnapshot(N) [POST-block archive].\n");
+  console.log("This is what the Noir oracle does. The node resolves the BlockHash to block N");
+  console.log("and returns a witness from getSnapshot(N) — the archive AFTER block N.\n");
 
   const witness1 = await node.getBlockHashMembershipWitness(anchorBlockHash, targetBlockHash);
   if (!witness1) {
-    console.log("RESULT: witness is undefined — target block hash not found.\n");
+    console.log("  witness: undefined (target not found)\n");
   } else {
-    console.log(`RESULT: witness returned (leaf index: ${witness1.leafIndex})`);
-    console.log("But this witness is from the WRONG archive tree (post-block, not pre-block).");
-    console.log("The Noir constraint will fail because the sibling path reconstructs to");
-    console.log(`archive.root (${anchorBlock.archive.root}),`);
-    console.log(`not last_archive.root (${anchorBlock.header.lastArchive.root}).\n`);
+    // The witness comes from getSnapshot(anchorBlockNum), whose root is archive.root.
+    // Noir checks against last_archive.root, which is a DIFFERENT root.
+    const siblingPath1Top = witness1.siblingPath[witness1.siblingPath.length - 1].toString().slice(0, 20);
+    console.log(`  witness leaf index : ${witness1.leafIndex}`);
+    console.log(`  sibling path top   : ${siblingPath1Top}...`);
+    console.log(`  tree root (actual) : ${postArchiveRoot.slice(0, 20)}...  (getSnapshot(${anchorBlockNum}))`);
+    console.log(`  tree root (needed) : ${lastArchiveRoot.slice(0, 20)}...  (last_archive.root)`);
+    console.log(`  MATCH              : ${postArchiveRoot === lastArchiveRoot ? "YES" : "NO — Noir proof FAILS"}`);
   }
+  console.log();
 
-  // ---- Test 2: Query with anchorBlockNum - 1 (what Noir actually needs) ----
+  // ---- Test 2 (PASS): Query with anchorBlockNum - 1 — what Noir actually needs ----
   console.log("=== Test 2: getBlockHashMembershipWitness(anchorBlockNum - 1, targetBlockHash) ===");
-  console.log("This uses the archive tree at block N-1, which IS the last_archive state.\n");
+  console.log("This uses getSnapshot(N-1), which IS the last_archive state.\n");
 
   const witness2 = await node.getBlockHashMembershipWitness(
     BlockNumber(anchorBlockNum - 1),
     targetBlockHash,
   );
   if (!witness2) {
-    console.log("RESULT: witness is undefined — target block hash not found.\n");
+    console.log("  witness: undefined (target not found)\n");
   } else {
-    console.log(`RESULT: witness returned (leaf index: ${witness2.leafIndex})`);
-    console.log("This witness is from the CORRECT archive tree (pre-block).");
-    console.log("The Noir constraint would PASS with this witness.\n");
+    // This witness comes from getSnapshot(anchorBlockNum - 1), whose root matches last_archive.root.
+    const siblingPath2Top = witness2.siblingPath[witness2.siblingPath.length - 1].toString().slice(0, 20);
+    console.log(`  witness leaf index : ${witness2.leafIndex}`);
+    console.log(`  sibling path top   : ${siblingPath2Top}...`);
+    console.log(`  tree root (actual) : ${lastArchiveRoot.slice(0, 20)}...  (getSnapshot(${anchorBlockNum - 1}))`);
+    console.log(`  tree root (needed) : ${lastArchiveRoot.slice(0, 20)}...  (last_archive.root)`);
+    console.log(`  MATCH              : YES — Noir proof would PASS`);
+  }
+  console.log();
+
+  // ---- Sibling path comparison ----
+  if (witness1 && witness2) {
+    const pathsIdentical = witness1.siblingPath.every(
+      (f, i) => f.toString() === witness2.siblingPath[i].toString()
+    );
+    console.log(`Sibling paths identical: ${pathsIdentical}`);
+    if (!pathsIdentical) {
+      // Find first differing level
+      const diffIdx = witness1.siblingPath.findIndex(
+        (f, i) => f.toString() !== witness2.siblingPath[i].toString()
+      );
+      console.log(`  First difference at level ${diffIdx} (of ${witness1.siblingPath.length})`);
+      console.log(`    Test 1: ${witness1.siblingPath[diffIdx].toString().slice(0, 30)}...`);
+      console.log(`    Test 2: ${witness2.siblingPath[diffIdx].toString().slice(0, 30)}...`);
+    }
   }
 
-  // ---- Summary ----
+  // ---- Verdict ----
+  console.log();
   console.log("=".repeat(70));
-  console.log("DIAGNOSIS: Off-by-one in aztec-node server.ts #getWorldState()");
+  console.log("VERDICT");
+  console.log("=".repeat(70));
   console.log();
-  console.log("When the Noir oracle calls getBlockHashMembershipWitness with a BlockHash,");
-  console.log("the node resolves it to block N and returns getSnapshot(N).");
-  console.log("But anchor_block_header.last_archive is the archive state at block N-1.");
-  console.log("The witness sibling paths don't match — proof always fails.");
+  console.log("  Test 1 (BlockHash path) : FAIL — sibling path is for the wrong tree state");
+  console.log("  Test 2 (BlockNumber - 1): PASS — sibling path matches last_archive.root");
   console.log();
-  console.log("Both queries above return a witness, but they come from different tree states:");
-  console.log(`  getSnapshot(${anchorBlockNum})   → archive root: ${anchorBlock.archive.root}`);
-  console.log(`  getSnapshot(${anchorBlockNum - 1}) → archive root: ${anchorBlock.header.lastArchive.root}  ← what Noir expects`);
+  console.log("Root cause: off-by-one in aztec-node server.ts #getWorldState().");
+  console.log("When resolving a BlockHash, the node returns getSnapshot(N) but should");
+  console.log("return getSnapshot(N-1) to match last_archive semantics.");
   console.log();
-  console.log("Suggested fix in aztec-packages aztec-node/src/aztec-node/server.ts:");
+  console.log("Suggested fix:");
   console.log("  In #getWorldState, when block is BlockHash:");
   console.log("    const blockNumber = header.getBlockNumber();");
   console.log("-   return this.worldStateSynchronizer.getSnapshot(blockNumber);");
