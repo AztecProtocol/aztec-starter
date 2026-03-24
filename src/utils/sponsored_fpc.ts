@@ -2,7 +2,7 @@ import { Fr } from '@aztec/aztec.js/fields';
 import {
   getContractInstanceFromInstantiationParams,
   type ContractInstanceWithAddress,
-} from '@aztec/aztec.js/contracts';
+} from '@aztec/stdlib/contract';
 import type { Wallet } from '@aztec/aztec.js/wallet';
 import type { LogFn } from '@aztec/foundation/log';
 import { SponsoredFPCContract, SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
@@ -32,5 +32,5 @@ export async function setupSponsoredFPC(deployer: Wallet, log: LogFn) {
       universalDeploy: true,
     });
 
-  log(`SponsoredFPC: ${deployed.address}`);
+  log(`SponsoredFPC: ${deployed.contract.address}`);
 }

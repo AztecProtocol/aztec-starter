@@ -135,11 +135,11 @@ async function main() {
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
-    const bananaBalance = await bananaCoin.methods.balance_of_private(account2.address).simulate({
+    const bananaBalanceResult = await bananaCoin.methods.balance_of_private(account2.address).simulate({
         from: account2.address
     });
 
-    logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
+    logger.info(`BananaCoin balance of newWallet is ${bananaBalanceResult.result ?? bananaBalanceResult}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
     await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact);
@@ -147,9 +147,10 @@ async function main() {
 
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address, wait: { timeout: timeouts.txTimeout } });
 
-    logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate({
+    const fpcBalance = await feeJuice.methods.balance_of_public(fpc.address).simulate({
         from: account2.address
-    })}`);
+    });
+    logger.info(`Fpc fee juice balance ${fpcBalance.result ?? fpcBalance}`);
 
     const maxFeesPerGas = (await node.getCurrentMinFees()).mul(1.5);
     const gasSettings = GasSettings.default({ maxFeesPerGas });

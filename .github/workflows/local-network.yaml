@@ -9,7 +9,12 @@ on:
     branches:
       - next
       - dev
+      - testnet
   workflow_dispatch:
+
+concurrency:
+  group: local-network-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   local-network-tests:
@@ -17,11 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: local-network
-      AZTEC_VERSION: 4.0.0-devnet.2-patch.1
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Read Aztec version from config
+        run: echo "AZTEC_VERSION=$(jq -r '.settings.version' config/local-network.json)" >> $GITHUB_ENV
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

@@ -11,6 +11,10 @@ on:
       - dev
   workflow_dispatch:
 
+concurrency:
+  group: devnet-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   devnet-deploy-account:
     name: Deploy Account to Devnet
