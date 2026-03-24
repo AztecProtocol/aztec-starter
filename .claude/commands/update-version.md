@@ -36,6 +36,7 @@ Read these files to understand current state:
 - `package.json`
 - `config/local-network.json`
 - `config/devnet.json`
+- `config/testnet.json`
 - `README.md`
 - `CLAUDE.md`
 
@@ -53,6 +54,10 @@ aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v<VERSION>"
 **3. `config/local-network.json`** — Update `settings.version` to the new npm version.
 
 **4. `config/devnet.json`** — Update `settings.version` to the new npm version.
+
+**4b. `config/testnet.json`** — Update `settings.version` to the new npm version.
+
+> **Note:** Only update the config files relevant to the current branch. On `next`, update `local-network.json` and `devnet.json`. On `testnet`, update `local-network.json` and `testnet.json`. Leave other branch configs as-is.
 
 **5. `README.md`** — Update the install command version in the Getting Started section:
 ```bash
@@ -173,7 +178,15 @@ Based on the API research from Step 7 and any changes revealed by `yarn codegen`
 
 ### Step 11: Run Noir TXE tests
 
-Run `yarn test:nr` to execute the Noir unit tests in the TXE simulator (no network needed).
+Run the Noir unit tests in the TXE simulator (no network needed).
+
+**Known issue:** `yarn test:nr` (which runs `aztec test`) may hang due to a wrapper script issue. If it hangs for more than 30 seconds with no output, use this workaround:
+
+1. Kill any process on port 8081: `lsof -ti:8081 | xargs kill -9 2>/dev/null`
+2. Start the TXE server manually: `aztec start --txe --port 8081 &`
+3. Wait a few seconds for it to start
+4. Run nargo test directly: `nargo test --silence-warnings --oracle-resolver http://localhost:8081`
+5. Kill the TXE server when done
 
 If tests fail, diagnose and fix the contract test code. Iterate until tests pass.
 

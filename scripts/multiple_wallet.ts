@@ -58,7 +58,7 @@ async function main() {
     // Simulate before sending to surface revert reasons
     const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6);
     await tokenDeploy.simulate({ from: ownerAddress });
-    const token = await tokenDeploy.send({
+    const { contract: token } = await tokenDeploy.send({
         from: ownerAddress,
         contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
         fee: { paymentMethod },
@@ -89,7 +89,7 @@ async function main() {
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
-    console.log(await node.getTxEffect(private_mint_tx.txHash))
+    console.log(await node.getTxEffect(private_mint_tx.receipt.txHash))
 
     await token.methods.mint_to_public(schnorrAccount2.address, 100).simulate({ from: ownerAddress });
     await token.methods.mint_to_public(schnorrAccount2.address, 100).send({

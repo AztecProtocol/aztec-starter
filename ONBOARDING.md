@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying on devnet" â
 * **Phases 1-2** need only a browser (read code, compile in a Codespace)
 * **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `4.0.0-devnet.2-patch.1` (check `Nargo.toml` and `package.json` for source of truth)
+**Aztec version pinned in this repo:** `4.1.0` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -526,7 +526,7 @@ The `.devcontainer/` configures:
 
 * **Base image:** Ubuntu 24.04 with Node.js v22.15.0
 * **Docker-in-Docker** for running the Aztec local network
-* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.0.0-devnet.2-patch.1" | VERSION="4.0.0-devnet.2-patch.1" bash -s`
+* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.1.0" | VERSION="4.1.0" bash -s`
 * **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
 * **Dependencies:** `yarn install` runs automatically
 
@@ -737,7 +737,7 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 **Aztec toolkit:**
 
 ```bash
-export VERSION=4.0.0-devnet.2-patch.1
+export VERSION=4.1.0
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 

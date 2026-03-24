@@ -50,7 +50,7 @@ Use **Node.js version 22.15.0**.
 Install the **Aztec toolkit** (local network, CLI, and other tooling) at the correct version:
 
 ```bash
-export VERSION=4.0.0-devnet.2-patch.1
+export VERSION=4.1.0
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 

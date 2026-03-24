@@ -74,7 +74,7 @@ async function main() {
     // Simulate before sending to surface revert reasons
     const podRacingDeploy = PodRacingContract.deploy(wallet, account1.address);
     await podRacingDeploy.simulate({ from: account1.address });
-    const podRacingContract = await podRacingDeploy.send({
+    const { contract: podRacingContract } = await podRacingDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -82,7 +82,7 @@ async function main() {
 
     const bananaCoinDeploy = TokenContract.deploy(wallet, account1.address, "bananaCoin", "BNC", 18);
     await bananaCoinDeploy.simulate({ from: account1.address });
-    const bananaCoin = await bananaCoinDeploy.send({
+    const { contract: bananaCoin } = await bananaCoinDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -114,7 +114,7 @@ async function main() {
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
     const fpcDeploy = FPCContract.deploy(wallet, bananaCoin.address, account1.address);
     await fpcDeploy.simulate({ from: account1.address });
-    const fpc = await fpcDeploy.send({
+    const { contract: fpc } = await fpcDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
