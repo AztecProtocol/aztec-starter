@@ -80,7 +80,7 @@ The Pod Racing contract ([`src/main.nr`](./src/main.nr)) is a two-player competi
 
 Open `src/main.nr` and look at the `Storage` struct:
 
-#include_code storage /main.nr rust
+#include_code storage /src/main.nr rust
 
 **What is `Context`?** You'll notice `Context` appears as a generic parameter throughout the storage definition. In Aztec, the context is the execution environment passed to every function — it's how your contract accesses blockchain state like `context.msg_sender()` (the caller's address) and `context.block_number()`. Think of it as an expanded version of Solidity's global variables (`msg.sender`, `block.number`, etc.), but packaged as an object. The `<Context>` generic on storage types lets the same storage struct work in both public and private execution contexts. You don't need to construct it yourself — the framework provides `self.context` automatically in every contract function.
 
@@ -119,25 +119,25 @@ These functions should feel familiar if you've written Solidity.
 
 #### `constructor()`
 
-#include_code constructor /main.nr rust
+#include_code constructor /src/main.nr rust
 
 Sets the admin address. The `#[initializer]` macro means this runs once at deployment, like a Solidity constructor.
 
 #### `create_game()`
 
-#include_code create-game /main.nr rust
+#include_code create-game /src/main.nr rust
 
 Creates a new game. Checks the game ID isn't taken (player1 must be zero address), then writes a new `Race` struct with the caller as player1 and an expiration time.
 
 #### `join_game()`
 
-#include_code join-game /main.nr rust
+#include_code join-game /src/main.nr rust
 
 A second player joins. The `Race::join()` method validates that player1 exists, the player2 slot is empty, and the joiner isn't player1.
 
 #### `finalize_game()`
 
-#include_code finalize-game /main.nr rust
+#include_code finalize-game /src/main.nr rust
 
 After both players have revealed, this compares track scores, determines the winner, and updates the leaderboard.
 
@@ -145,7 +145,7 @@ After both players have revealed, this compares track scores, determines the win
 
 The `Race` struct stores all public game state. It has 17 fields:
 
-#include_code race-struct /race.nr rust
+#include_code race-struct /src/race.nr rust
 
 Key methods:
 
@@ -159,7 +159,7 @@ This is the "aha moment" — the part with no Ethereum equivalent.
 
 #### `play_round()`
 
-#include_code play-round /main.nr rust
+#include_code play-round /src/main.nr rust
 
 Three things happen here that have no direct Ethereum equivalent:
 
@@ -169,7 +169,7 @@ Three things happen here that have no direct Ethereum equivalent:
 
 #### `finish_game()`
 
-#include_code finish-game /main.nr rust
+#include_code finish-game /src/main.nr rust
 
 This is the "reveal" phase:
 
@@ -178,7 +178,7 @@ This is the "reveal" phase:
 
 #### `GameRoundNote` (`src/game_round_note.nr`)
 
-#include_code game-round-note /game_round_note.nr rust
+#include_code game-round-note /src/game_round_note.nr rust
 
 The `#[note]` macro makes this a private state primitive. Each note stores one round's point allocation and the owner's address. Only the owner can read it.
 
@@ -234,13 +234,13 @@ Here's exactly what an outside observer can and cannot see at each step.
 
 Some functions are labeled **"private, then public"** in the Type column. On Aztec, there are only two function types: `#[private]` and `#[public]`. But a private function can _enqueue_ a public function to run after it — within the same transaction. The private part runs first (on the user's machine, hidden from everyone), then the public part runs on-chain (visible to all). This is how the contract hides sensitive data while still updating shared public state.
 
-| Step | Function        | Type                | Observer **CAN** see                                      | Observer **CANNOT** see                        |
-| ---- | --------------- | ------------------- | --------------------------------------------------------- | ---------------------------------------------- |
-| 1    | `create_game`   | public              | Game created, player1 address, expiration block           | Nothing hidden                                 |
-| 2    | `join_game`     | public              | Player2 joined, both addresses                            | Nothing hidden                                 |
+| Step | Function        | Type                 | Observer **CAN** see                                      | Observer **CANNOT** see                        |
+| ---- | --------------- | -------------------- | --------------------------------------------------------- | ---------------------------------------------- |
+| 1    | `create_game`   | public               | Game created, player1 address, expiration block           | Nothing hidden                                 |
+| 2    | `join_game`     | public               | Player2 joined, both addresses                            | Nothing hidden                                 |
 | 3    | `play_round`    | private, then public | Round counter incremented (e.g. "player1 played round 1") | Point allocation across tracks                 |
-| 4    | `finish_game`   | private, then public | Final track totals revealed (e.g. "player1: 7,7,7,3,3")  | Individual round allocations                   |
-| 5    | `finalize_game` | public              | Winner declared, leaderboard updated                      | Nothing hidden (all data public at this point) |
+| 4    | `finish_game`   | private, then public | Final track totals revealed (e.g. "player1: 7,7,7,3,3")   | Individual round allocations                   |
+| 5    | `finalize_game` | public               | Winner declared, leaderboard updated                      | Nothing hidden (all data public at this point) |
 
 The critical privacy window is between steps 3 and 4: both players have committed their strategies (as private notes), but neither can see the other's choices. This prevents the second player from gaining an advantage by observing the first player's moves.
 
@@ -309,13 +309,13 @@ Tests live in `src/test/`:
 
 **Basic initialization test:**
 
-#include_code test-initializer /test/pod_racing.nr rust
+#include_code test-initializer /src/test/pod_racing.nr rust
 
 The `unconstrained` keyword means this test runs outside the ZK circuit (it's a test, not a provable function). `utils::setup()` deploys a fresh contract and returns the environment, contract address, and admin.
 
 **Expected failure test:**
 
-#include_code test-fail-too-many-points /test/pod_racing.nr rust
+#include_code test-fail-too-many-points /src/test/pod_racing.nr rust
 
 The `#[test(should_fail)]` attribute is like Foundry's `vm.expectRevert()`.
 
@@ -327,15 +327,15 @@ This test creates a game, has both players play all 3 rounds with specific strat
 
 Reusable allocation strategies:
 
-#include_code allocation-strategies /test/helpers.nr rust
+#include_code allocation-strategies /src/test/helpers.nr rust
 
 And higher-level helpers:
 
-#include_code setup-helpers /test/helpers.nr rust
+#include_code setup-helpers /src/test/helpers.nr rust
 
 #### Test setup (`src/test/utils.nr`)
 
-#include_code test-setup /test/utils.nr rust
+#include_code test-setup /src/test/utils.nr rust
 
 **Ethereum analogies:**
 
@@ -396,10 +396,7 @@ The project uses JSON config files selected by the `AZTEC_ENV` environment varia
 
 **`config/config.ts`** — A `ConfigManager` singleton that loads the appropriate JSON file:
 
-```typescript
-const env = process.env.AZTEC_ENV || "local-network";
-this.configPath = path.resolve(process.cwd(), `config/${env}.json`);
-```
+#include_code config-loading /config/config.ts typescript
 
 **`config/local-network.json`:**
 
@@ -455,7 +452,7 @@ Every Aztec account is a smart contract. There are no Externally Owned Accounts 
 
 The `SponsoredFPC` is a canonical Fee Payment Contract deployed at a deterministic address (salt = 0). It pays transaction fees on behalf of users, useful for onboarding when users don't have Fee Juice yet. On the local network it's pre-deployed.
 
-#include_code get-sponsored-fpc /utils/sponsored_fpc.ts typescript
+#include_code get-sponsored-fpc /src/utils/sponsored_fpc.ts typescript
 
 **Run it:**
 
@@ -481,15 +478,7 @@ AZTEC_ENV=local-network
 3. Deploy a Schnorr account (or use one from env)
 4. Deploy the contract:
 
-```typescript
-const deployRequest = PodRacingContract.deploy(wallet, address);
-await deployRequest.simulate({ from: address });
-const { contract: podRacingContract, instance } = await deployRequest.send({
-    from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
-    wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
-});
-```
+#include_code deploy-contract /scripts/deploy_contract.ts typescript
 
 > **Important:** Always call `.simulate()` before `.send()`. Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction hangs until timeout with an opaque error.
 
@@ -510,20 +499,7 @@ The output includes the contract address, admin address, and instantiation data 
 3. Register the contract with the wallet: `wallet.registerContract(instance, PodRacingContract.artifact)`
 4. Call methods:
 
-```typescript
-const podRacingContract = await PodRacingContract.at(contractAddress, wallet);
-
-// Simulate first — surfaces revert reasons instantly
-await podRacingContract.methods.create_game(gameId).simulate({ from: address });
-
-// Then send — only after simulation succeeds
-await podRacingContract.methods.create_game(gameId)
-  .send({
-    from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
-    wait: { timeout: timeouts.txTimeout }
-  });
-```
+#include_code interact-existing /scripts/interaction_existing_contract.ts typescript
 
 Set the env vars from your deploy output, then run:
 
@@ -572,29 +548,7 @@ yarn test:nr
 
 ### 5.1 — Guided Exercise: Add a Forfeit Function
 
-Add a `forfeit_game` function to `src/main.nr` that lets a player concede:
-
-```rust
-#[external("public")]
-fn forfeit_game(game_id: Field) {
-    let game = self.storage.races.at(game_id).read();
-    let caller = self.context.maybe_msg_sender().unwrap();
-
-    // Only a player in this game can forfeit
-    assert(caller.eq(game.player1) | caller.eq(game.player2));
-
-    // The other player wins
-    let winner = if caller.eq(game.player1) {
-        game.player2
-    } else {
-        game.player1
-    };
-
-    // Update win history
-    let previous_wins = self.storage.win_history.at(winner).read();
-    self.storage.win_history.at(winner).write(previous_wins + 1);
-}
-```
+Add a `forfeit_game` function to `src/main.nr` that lets a player concede.
 
 Compile and regenerate TypeScript bindings:
 
@@ -604,33 +558,7 @@ yarn compile && yarn codegen
 
 ### 5.2 — Write a Noir Test
 
-Add a test to `src/test/pod_racing.nr`:
-
-```rust
-#[test]
-unconstrained fn test_forfeit_game() {
-    let (mut env, contract_address, _) = utils::setup();
-    let player1 = env.create_light_account();
-    let player2 = env.create_light_account();
-    let game_id = helpers::TEST_GAME_ID_9;
-
-    // Setup game
-    helpers::setup_two_player_game(&mut env, contract_address, player1, player2, game_id);
-
-    // Player 1 forfeits
-    env.call_public(player1, PodRacing::at(contract_address).forfeit_game(game_id));
-
-    // Verify player2's win count increased
-    env.public_context_at(contract_address, |context| {
-        let win_slot = derive_storage_slot_in_map(
-            PodRacing::storage_layout().win_history.slot,
-            player2.to_field()
-        );
-        let wins = context.storage_read(win_slot);
-        assert_eq(wins, 1);
-    });
-}
-```
+Add a test to `src/test/pod_racing.nr`.
 
 Run:
 
@@ -640,40 +568,7 @@ yarn test:nr
 
 ### 5.3 — Write a TypeScript E2E Test
 
-Add a test case to `src/test/e2e/index.test.ts`:
-
-```typescript
-it("Allows a player to forfeit", async () => {
-  const gameId = new Fr(300);
-
-  await setupGame(
-    contract,
-    gameId,
-    player1Account.address,
-    player2Account.address,
-    sponsoredPaymentMethod,
-    getTimeouts().txTimeout,
-  );
-
-  // Simulate first to surface revert reasons before sending
-  await contract.methods.forfeit_game(gameId).simulate({
-    from: player1Account.address,
-  });
-
-  const tx = await contract.methods.forfeit_game(gameId).send({
-    from: player1Account.address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
-    wait: { timeout: getTimeouts().txTimeout },
-  });
-
-  expect([
-    TxStatus.PROPOSED,
-    TxStatus.CHECKPOINTED,
-    TxStatus.PROVEN,
-    TxStatus.FINALIZED,
-  ]).toContain(tx.status);
-}, 600000);
-```
+Add a test case to `src/test/e2e/index.test.ts`.
 
 Run:
 
@@ -699,14 +594,9 @@ yarn test:js
 
 **How it works (`scripts/multiple_wallet.ts`):**
 
-The script creates two independent PXE instances (wallet1, wallet2), each with their own key store:
+The script creates two independent `EmbeddedWallet` instances, each with their own PXE:
 
-```typescript
-const store1 = await createStore('pxe1', { dataDirectory: 'store', ... });
-const store2 = await createStore('pxe2', { dataDirectory: 'store', ... });
-const wallet1 = await TestWallet.create(node, fullConfig, { store: store1 });
-const wallet2 = await TestWallet.create(node, fullConfig, { store: store2 });
-```
+#include_code multiple-wallets /scripts/multiple_wallet.ts typescript
 
 It then deploys a Token contract from wallet1, creates an account on wallet2, mints tokens to wallet2's account, registers the token contract on wallet2, and reads balances.
 
@@ -749,13 +639,7 @@ Devnet uses real provers and connects to the Aztec devnet at `https://next.devne
 
 **`scripts/profile_deploy.ts`** shows how to profile a transaction:
 
-```typescript
-const profileTx = await PodRacingContract.deploy(wallet, address).profile({
-  profileMode: "full",
-  from: address,
-});
-console.dir(profileTx, { depth: 2 });
-```
+#include_code profile-tx /scripts/profile_deploy.ts typescript
 
 The `.profile()` method runs the transaction through the prover and returns detailed metrics about gate counts and proving time.
 
@@ -767,11 +651,7 @@ yarn profile
 
 **`scripts/get_block.ts`** shows how to query the Aztec node directly:
 
-```typescript
-const node = createAztecNodeClient(nodeUrl);
-let block = await node.getBlock(BlockNumber(1));
-console.log(block?.header);
-```
+#include_code get-block /scripts/get_block.ts typescript
 
 ```bash
 yarn get-block
