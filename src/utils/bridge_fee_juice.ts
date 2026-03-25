@@ -57,7 +57,9 @@ export async function bridgeL1FeeJuice(
 
     // Create a fresh L1 client so viem picks up the current on-chain nonce.
     // The mint (or prior runs) may have incremented it beyond what the
-    // original client has cached.
+    // original client has cached. Public RPC nodes may have eventual consistency,
+    // so wait briefly for the nonce to propagate.
+    await new Promise(resolve => setTimeout(resolve, 3_000));
     const freshClient = createExtendedL1Client(chain.rpcUrls, key, chain.chainInfo);
     const freshPortal = await L1FeeJuicePortalManager.new(node, freshClient, logger);
     const claim = await freshPortal.bridgeTokensPublic(recipient, amount, false);
