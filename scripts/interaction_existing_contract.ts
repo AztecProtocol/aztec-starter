@@ -78,28 +78,27 @@ async function main() {
     // Register the contract with the wallet
     await wallet.registerContract(instance, PodRacingContract.artifact);
 
-    // Get the contract instance from the PXE
+    // docs:start:interact-existing
     const podRacingContract = await PodRacingContract.at(
         podRacingContractAddress,
         wallet
     );
 
-    // Create a new game
     const gameId = Fr.random();
-    logger.info(`Creating new game with ID: ${gameId}`);
 
-    // Simulate first to surface revert reasons before sending
+    // Simulate first — surfaces revert reasons instantly
     await podRacingContract.methods.create_game(gameId).simulate({
         from: address,
     });
-    logger.info("Simulation successful, sending transaction...");
 
+    // Then send — only after simulation succeeds
     await podRacingContract.methods.create_game(gameId)
         .send({
             from: address,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: timeouts.txTimeout }
         });
+    // docs:end:interact-existing
     logger.info("Game created successfully!");
 
     logger.info(`Game ${gameId} is now waiting for a second player to join.`);

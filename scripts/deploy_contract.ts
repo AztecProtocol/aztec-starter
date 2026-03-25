@@ -41,16 +41,17 @@ async function main() {
     logger.info(`📋 Admin address for pod racing contract: ${address}`);
 
     logger.info('⏳ Simulating deployment transaction...');
+    // docs:start:deploy-contract
     const deployRequest = PodRacingContract.deploy(wallet, address);
     await deployRequest.simulate({
         from: address,
     });
-    logger.info('✅ Simulation successful, sending transaction...');
     const { contract: podRacingContract, instance } = await deployRequest.send({
         from: address,
         fee: { paymentMethod: sponsoredPaymentMethod },
         wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
     });
+    // docs:end:deploy-contract
 
     logger.info(`🎉 Pod Racing Contract deployed successfully!`);
     logger.info(`📍 Contract address: ${podRacingContract.address}`);

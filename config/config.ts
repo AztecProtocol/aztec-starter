@@ -33,12 +33,14 @@ export class ConfigManager {
   private config!: EnvironmentConfig;
   private configPath: string;
 
+  // docs:start:config-loading
   private constructor() {
     const env = process.env.AZTEC_ENV || 'local-network';
     this.configPath = path.resolve(process.cwd(), `config/${env}.json`);
     this.loadConfig();
     console.log(`Loaded configuration: ${this.config.name} environment`);
   }
+  // docs:end:config-loading
 
   public static getInstance(): ConfigManager {
     if (!ConfigManager.instance) {

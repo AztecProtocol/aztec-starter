@@ -36,9 +36,10 @@ export async function getL2TokenContractInstance(deployerAddress: any, ownerAzte
 }
 
 async function main() {
-
+    // docs:start:multiple-wallets
     const wallet1 = await EmbeddedWallet.create(node, walletOpts);
     const wallet2 = await EmbeddedWallet.create(node, walletOpts);
+    // docs:end:multiple-wallets
     const sponsoredFPC = await getSponsoredFPCInstance();
     await wallet1.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
     await wallet2.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
