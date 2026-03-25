@@ -19,8 +19,10 @@ async function main() {
     let accountManager = await deploySchnorrAccount(wallet);
     const address = accountManager.address;
 
+    // docs:start:profile-tx
     const profileTx = await PodRacingContract.deploy(wallet, address).profile({ profileMode: "full", from: address });
     console.dir(profileTx, { depth: 2 });
+    // docs:end:profile-tx
 }
 
 main()
