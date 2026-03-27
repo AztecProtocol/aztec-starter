@@ -5,8 +5,8 @@ import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { type Logger, createLogger } from "@aztec/foundation/log";
 import { setupWallet } from "./setup_wallet.js";
-import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { AccountManager } from "@aztec/aztec.js/wallet";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
@@ -42,13 +42,13 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
 
     // Simulate before sending to surface revert reasons
     await deployMethod.simulate({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
     });
     logger.info('✅ Simulation successful, sending deployment transaction...');
 
     // Deploy account
     await deployMethod.send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         fee: { paymentMethod: sponsoredPaymentMethod },
         wait: { timeout: 120 },
     });

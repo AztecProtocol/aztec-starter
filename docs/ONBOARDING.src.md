@@ -1,6 +1,6 @@
 # Onboarding: From Ethereum to Aztec
 
-This guide takes you from "reading code in a browser" to "deploying on devnet" — progressively, with no install required until Phase 3.
+This guide takes you from "reading code in a browser" to "deploying contracts" — progressively, with no install required until Phase 3.
 
 **What you'll learn:** How Aztec contracts work by studying a Pod Racing game — a two-player competitive game that uses private state to implement commit-reveal in a single transaction.
 
@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying on devnet" �
 - **Phases 1-2** need only a browser (read code, compile in a Codespace)
 - **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `4.0.0-devnet.2-patch.1` (check `Nargo.toml` and `package.json` for source of truth)
+**Aztec version pinned in this repo:** `4.2.0-aztecnr-rc.2` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -262,7 +262,7 @@ The `.devcontainer/` configures:
 
 - **Base image:** Ubuntu 24.04 with Node.js v22.15.0
 - **Docker-in-Docker** for running the Aztec local network
-- **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.0.0-devnet.2-patch.1" | VERSION="4.0.0-devnet.2-patch.1" bash -s`
+- **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.2.0-aztecnr-rc.2" | VERSION="4.2.0-aztecnr-rc.2" bash -s`
 - **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
 - **Dependencies:** `yarn install` runs automatically
 
@@ -357,7 +357,7 @@ And higher-level helpers:
 **Aztec toolkit:**
 
 ```bash
-export VERSION=4.0.0-devnet.2-patch.1
+export VERSION=4.2.0-aztecnr-rc.2
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 
@@ -412,25 +412,11 @@ The project uses JSON config files selected by the `AZTEC_ENV` environment varia
 }
 ```
 
-**`config/devnet.json`:**
-
-```json
-{
-  "name": "devnet",
-  "environment": "devnet",
-  "network": {
-    "nodeUrl": "https://next.devnet.aztec-labs.com",
-    "l1RpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
-    "l1ChainId": 11155111
-  }
-}
-```
-
 Key exports from `config/config.ts`:
 
 - `getAztecNodeUrl()` — returns the node URL for the current environment
-- `getTimeouts()` — returns environment-specific timeout values (local: 60s tx, devnet: 180s tx)
-- `getEnv()` — returns the environment name (`"local-network"` or `"devnet"`)
+- `getTimeouts()` — returns environment-specific timeout values
+- `getEnv()` — returns the environment name (e.g. `"local-network"`)
 
 ---
 
@@ -586,7 +572,7 @@ yarn test:js
 
 ## Phase 6: Advanced Topics
 
-**Goal:** Explore multi-wallet patterns, fee strategies, devnet, and profiling.
+**Goal:** Explore multi-wallet patterns, fee strategies, and profiling.
 
 ### 6.1 — Multiple Wallets / Multiple PXEs
 
@@ -622,20 +608,7 @@ yarn multiple-wallet
 yarn fees
 ```
 
-### 6.3 — Deploying to Devnet
-
-All scripts support a `::devnet` suffix:
-
-```bash
-yarn deploy::devnet
-yarn deploy-account::devnet
-yarn interaction-existing-contract::devnet
-yarn test::devnet
-```
-
-Devnet uses real provers and connects to the Aztec devnet at `https://next.devnet.aztec-labs.com` with Sepolia as the L1. Timeouts are longer (deploy: 20 min, tx: 3 min) to account for real proving time.
-
-### 6.4 — Transaction Profiling
+### 6.3 — Transaction Profiling
 
 **`scripts/profile_deploy.ts`** shows how to profile a transaction:
 
@@ -647,7 +620,7 @@ The `.profile()` method runs the transaction through the prover and returns deta
 yarn profile
 ```
 
-### 6.5 — Querying Blocks
+### 6.4 — Querying Blocks
 
 **`scripts/get_block.ts`** shows how to query the Aztec node directly:
 
@@ -689,7 +662,6 @@ yarn get-block
 | `scripts/get_block.ts`                     | Block querying                                         |
 | `config/config.ts`                         | Config manager (loads JSON by env)                     |
 | `config/local-network.json`                | Local network configuration                            |
-| `config/devnet.json`                       | Devnet configuration                                   |
 | `Nargo.toml`                               | Noir project manifest                                  |
 | `.devcontainer/devcontainer.json`          | GitHub Codespace configuration                         |
 | `.devcontainer/Dockerfile`                 | Codespace Docker image                                 |
@@ -714,8 +686,6 @@ yarn get-block
 | `yarn get-block`                     | Query block data                                   |
 | `yarn clean`                         | Delete `./src/artifacts` and `./target`            |
 | `yarn clear-store`                   | Delete `./store` (PXE data)                        |
-| `yarn deploy::devnet`                | Deploy to devnet                                   |
-| `yarn test::devnet`                  | Run E2E tests on devnet                            |
 
 ### C. Troubleshooting
 
@@ -723,7 +693,6 @@ yarn get-block
 | -------------------------------------------------------- | ------------------------------------------------------------------------ |
 | "Store" or PXE errors after restarting the local network | Delete `./store`: `rm -rf ./store`                                       |
 | Compilation errors after updating dependencies           | Run `yarn compile` again                                                 |
-| Timeout errors on devnet                                 | Check timeout values in `config/devnet.json` (deploy: 20 min, tx: 3 min) |
 | "Contract not registered" error                          | Call `wallet.registerContract(instance, artifact)` before interacting    |
 | Account not found                                        | Ensure `.env` has correct `SECRET`, `SIGNING_KEY`, and `SALT` values     |
 | Local network not starting                               | Ensure Docker is running and the correct Aztec version is installed      |

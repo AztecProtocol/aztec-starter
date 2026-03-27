@@ -12,6 +12,7 @@ import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { type AztecNode, createAztecNodeClient } from "@aztec/aztec.js/node";
 import { L1FeeJuicePortalManager, type L2AmountClaim } from "@aztec/aztec.js/ethereum";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { type Logger, createLogger } from "@aztec/foundation/log";
 import { type ContractInstanceWithAddress, getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
 import { Fr } from "@aztec/aztec.js/fields";
@@ -68,7 +69,7 @@ describe("Accounts", () => {
         let salt = Fr.random();
         ownerAccount = await wallet.createSchnorrAccount(secretKey, salt, signingKey);
         await (await ownerAccount.getDeployMethod()).send({
-            from: AztecAddress.ZERO,
+            from: NO_FROM,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
         });
@@ -90,7 +91,7 @@ describe("Accounts", () => {
     })
 
     it("Creates accounts with fee juice", async () => {
-        if (getEnv() === 'devnet') return;
+        if (getEnv() !== 'local-network') return;
 
         console.log('Starting "Creates accounts with fee juice" test');
         console.log(`Random addresses: ${randomAddresses.map(a => a.toString()).join(', ')}`);
@@ -98,7 +99,7 @@ describe("Accounts", () => {
         // balance of each random account is 0 before bridge
         console.log('Checking initial balances...');
         let balances = await Promise.all(randomAddresses.map(async a =>
-            await feeJuiceContract.methods.balance_of_public(a).simulate({ from: ownerAccount.address })
+            (await feeJuiceContract.methods.balance_of_public(a).simulate({ from: ownerAccount.address })).result
         ));
         console.log(`Initial balances: ${balances.join(', ')}`);
         balances.forEach(b => expect(b).toBe(0n));
@@ -137,7 +138,7 @@ describe("Accounts", () => {
         for (let i = 0; i < randomAccountManagers.length; i++) {
             const paymentMethod = new FeeJuicePaymentMethodWithClaim(randomAddresses[i], claims[i]);
             await (await randomAccountManagers[i].getDeployMethod()).send({
-                from: AztecAddress.ZERO,
+                from: NO_FROM,
                 fee: { paymentMethod },
                 wait: { timeout: getTimeouts().deployTimeout }
             });
@@ -145,9 +146,9 @@ describe("Accounts", () => {
     });
 
     it("Deploys first unfunded account from first funded account", async () => {
-        const receipt = await (await randomAccountManagers[0].getDeployMethod())
+        const { receipt } = await (await randomAccountManagers[0].getDeployMethod())
             .send({
-                from: AztecAddress.ZERO,
+                from: NO_FROM,
                 fee: { paymentMethod: sponsoredPaymentMethod },
                 wait: { timeout: getTimeouts().deployTimeout, returnReceipt: true }
             });
@@ -177,7 +178,7 @@ describe("Accounts", () => {
         await Promise.all(accounts.map(async (a, i) => {
             logger.info(`Deploying account ${i}: ${a.address.toString()}`);
             return (await a.getDeployMethod()).send({
-                from: AztecAddress.ZERO,
+                from: NO_FROM,
                 fee: { paymentMethod: sponsoredPaymentMethod },
                 wait: { timeout: getTimeouts().deployTimeout }
             });
@@ -197,7 +198,7 @@ describe("Accounts", () => {
                 deployer: deployerAccount.getAddress()
             });
         const deployer = new ContractDeployer(PodRacingArtifact, wallet);
-        const receipt = await deployer.deploy(adminAddress).send({
+        const { receipt } = await deployer.deploy(adminAddress).send({
             from: deployerAddress,
             contractAddressSalt: salt,
             fee: { paymentMethod: sponsoredPaymentMethod },

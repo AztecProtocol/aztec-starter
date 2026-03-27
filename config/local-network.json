@@ -8,7 +8,7 @@
   },
   "settings": {
     "skipLocalNetwork": false,
-    "version": "4.0.0-devnet.2-patch.1"
+    "version": "4.2.0-aztecnr-rc.2"
   },
   "timeouts": {
     "deployTimeout": 120000,

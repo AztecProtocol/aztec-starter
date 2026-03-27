@@ -46,11 +46,12 @@ async function main() {
     await deployRequest.simulate({
         from: address,
     });
-    const { contract: podRacingContract, instance } = await deployRequest.send({
+    const { contract: podRacingContract, receipt: deployReceipt } = await deployRequest.send({
         from: address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-        wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+        wait: { timeout: timeouts.deployTimeout }
     });
+    const instance = deployReceipt.instance;
     // docs:end:deploy-contract
 
     logger.info(`🎉 Pod Racing Contract deployed successfully!`);

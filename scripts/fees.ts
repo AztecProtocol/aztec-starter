@@ -22,6 +22,7 @@ import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/Sponsored
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { NO_FROM } from '@aztec/aztec.js/account';
 import { getAztecNodeUrl, getTimeouts } from '../config/config.js';
 import { GasSettings } from '@aztec/stdlib/gas';
 
@@ -74,7 +75,7 @@ async function main() {
     // Simulate before sending to surface revert reasons
     const podRacingDeploy = PodRacingContract.deploy(wallet, account1.address);
     await podRacingDeploy.simulate({ from: account1.address });
-    const podRacingContract = await podRacingDeploy.send({
+    const { contract: podRacingContract } = await podRacingDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -82,7 +83,7 @@ async function main() {
 
     const bananaCoinDeploy = TokenContract.deploy(wallet, account1.address, "bananaCoin", "BNC", 18);
     await bananaCoinDeploy.simulate({ from: account1.address });
-    const bananaCoin = await bananaCoinDeploy.send({
+    const { contract: bananaCoin } = await bananaCoinDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -92,7 +93,7 @@ async function main() {
 
     const claimAndPay = new FeeJuicePaymentMethodWithClaim(account2.address, claim);
     const deployMethod = await account2.getDeployMethod();
-    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: claimAndPay }, wait: { timeout: timeouts.deployTimeout } });
+    await deployMethod.send({ from: NO_FROM, fee: { paymentMethod: claimAndPay }, wait: { timeout: timeouts.deployTimeout } });
     logger.info(`New account at ${account2.address} deployed using claimed funds for fees.`)
 
     // Pay fees yourself
@@ -114,7 +115,7 @@ async function main() {
     // This uses bananaCoin as the fee paying asset that will be exchanged for fee juice
     const fpcDeploy = FPCContract.deploy(wallet, bananaCoin.address, account1.address);
     await fpcDeploy.simulate({ from: account1.address });
-    const fpc = await fpcDeploy.send({
+    const { contract: fpc } = await fpcDeploy.send({
         from: account1.address,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
@@ -135,7 +136,7 @@ async function main() {
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
-    const bananaBalance = await bananaCoin.methods.balance_of_private(account2.address).simulate({
+    const { result: bananaBalance } = await bananaCoin.methods.balance_of_private(account2.address).simulate({
         from: account2.address
     });
 
@@ -147,9 +148,9 @@ async function main() {
 
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address, wait: { timeout: timeouts.txTimeout } });
 
-    logger.info(`Fpc fee juice balance ${await feeJuice.methods.balance_of_public(fpc.address).simulate({
+    logger.info(`Fpc fee juice balance ${(await feeJuice.methods.balance_of_public(fpc.address).simulate({
         from: account2.address
-    })}`);
+    })).result}`);
 
     const maxFeesPerGas = (await node.getCurrentMinFees()).mul(1.5);
     const gasSettings = GasSettings.default({ maxFeesPerGas });

@@ -10,22 +10,21 @@
 
 This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec local network (local development environment). It includes an example contract, useful commands in `package.json` and helpful scripts in `./scripts`.
 
-**New to Aztec? Start with the [Onboarding Guide](./ONBOARDING.md)** — a progressive walkthrough that takes Ethereum developers from reading code to deploying on devnet.
+**New to Aztec? Start with the [Onboarding Guide](./ONBOARDING.md)** — a progressive walkthrough that takes Ethereum developers from reading code to deploying contracts.
 
 You can find the **Pod Racing Game contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
 
 The Pod Racing contract is a two-player competitive game where players allocate points across 5 tracks over multiple rounds. The game demonstrates Aztec's private state capabilities - round choices remain private until players reveal their final scores.
 
-## Devnet & Testnet
+## Testnet
 
-This repo connects to a locally running Aztec local network by default, but can be configured to connect to remote networks:
+This repo connects to a locally running Aztec local network by default, but can be configured to connect to testnet:
 
-- **Devnet**: `AZTEC_ENV=devnet` — development network on the `next` branch
 - **Testnet**: `AZTEC_ENV=testnet` — test network on the `testnet` branch
 
-Set the variable in a `.env` file or prefix a command, e.g. `AZTEC_ENV=devnet yarn deploy`.
+Set the variable in a `.env` file or prefix a command, e.g. `AZTEC_ENV=testnet yarn deploy`.
 
-> **Branch model:** Devnet code lives on the `next` branch. Testnet code lives on the `testnet` branch. Each branch may run a different Aztec version.
+> **Branch model:** Local development code lives on the `next` branch. Testnet code lives on the `testnet` branch. Each branch may run a different Aztec version.
 
 <div align="center">
 
@@ -50,7 +49,7 @@ Use **Node.js version 22.15.0**.
 Install the **Aztec toolkit** (local network, CLI, and other tooling) at the correct version:
 
 ```bash
-export VERSION=4.0.0-devnet.2-patch.1
+export VERSION=4.2.0-aztecnr-rc.2
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 
@@ -61,7 +60,6 @@ Then install project dependencies:
 This project uses JSON configuration files to manage environment-specific settings:
 
 - `config/local-network.json` - Configuration for local network development
-- `config/devnet.json` - Configuration for devnet deployment
 - `config/testnet.json` - Configuration for testnet deployment
 
 The system automatically loads the appropriate configuration file based on the `AZTEC_ENV` environment variable. If `AZTEC_ENV` is not set, it defaults to `local-network`.
@@ -84,22 +82,9 @@ yarn deploy       # Deploy to local network
 yarn test         # Run tests on local network
 ```
 
-### Running on Devnet
-
-All scripts support a `::devnet` suffix to automatically use devnet configuration:
-
-```bash
-yarn deploy::devnet              # Deploy to devnet
-yarn test::devnet                # Run tests on devnet
-yarn deploy-account::devnet      # Deploy account to devnet
-yarn interaction-existing-contract::devnet  # Interact with devnet contracts
-```
-
-The `::devnet` suffix automatically sets `AZTEC_ENV=devnet`, loading configuration from `config/devnet.json`.
-
 ### Running on Testnet
 
-Similarly, all scripts support a `::testnet` suffix:
+All scripts support a `::testnet` suffix:
 
 ```bash
 yarn deploy::testnet              # Deploy to testnet
@@ -110,7 +95,7 @@ yarn interaction-existing-contract::testnet  # Interact with testnet contracts
 
 The `::testnet` suffix sets `AZTEC_ENV=testnet`, loading configuration from `config/testnet.json`.
 
-> **Note:** Testnet code should be developed and merged into the `testnet` branch, not `next`. The `testnet` branch may use a different Aztec version than the `next` (devnet) branch.
+> **Note:** Testnet code should be developed and merged into the `testnet` branch, not `next`. The `testnet` branch may use a different Aztec version than the `next` branch.
 
 ---
 
