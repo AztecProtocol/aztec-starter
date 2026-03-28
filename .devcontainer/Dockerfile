@@ -2,8 +2,8 @@ FROM --platform=linux/amd64 ubuntu:24.04
 SHELL ["/bin/bash", "-c"]
 
 ENV NVM_DIR=/root/.nvm
-ENV NODE_VERSION=22.15.0
-ARG AZTEC_VERSION=4.0.0-devnet.2-patch.1
+ENV NODE_VERSION=24.12.0
+ARG AZTEC_VERSION=4.2.0-aztecnr-rc.2
 ENV AZTEC_VERSION=$AZTEC_VERSION
 ENV NON_INTERACTIVE=1
 ENV BIN_PATH=/usr/local/bin
