@@ -1,6 +1,6 @@
 # Onboarding: From Ethereum to Aztec
 
-This guide takes you from "reading code in a browser" to "deploying on devnet" — progressively, with no install required until Phase 3.
+This guide takes you from "reading code in a browser" to "deploying contracts" — progressively, with no install required until Phase 3.
 
 **What you'll learn:** How Aztec contracts work by studying a Pod Racing game — a two-player competitive game that uses private state to implement commit-reveal in a single transaction.
 
@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying on devnet" �
 * **Phases 1-2** need only a browser (read code, compile in a Codespace)
 * **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `4.0.0-devnet.2-patch.1` (check `Nargo.toml` and `package.json` for source of truth)
+**Aztec version pinned in this repo:** `4.2.0-aztecnr-rc.2` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -164,7 +164,7 @@ fn create_game(game_id: Field) {
     // Ensure this game_id hasn't been used yet (player1 must be zero address)
     assert(self.storage.races.at(game_id).read().player1.eq(AztecAddress::zero()));
 
-    let player1 = self.context.maybe_msg_sender().unwrap();
+    let player1 = self.msg_sender();
     debug_log_format(
         "Creating game {0} by player {1}",
         [game_id, player1.to_field()],
@@ -193,7 +193,7 @@ Creates a new game. Checks the game ID isn't taken (player1 must be zero address
 fn join_game(game_id: Field) {
     let maybe_existing_game = self.storage.races.at(game_id).read();
 
-    let player2 = self.context.maybe_msg_sender().unwrap();
+    let player2 = self.msg_sender();
     debug_log_format("Player {0} joining game {1}", [player2.to_field(), game_id]);
 
     // Add the caller as player2 (validates that player1 exists and player2 is empty)
@@ -236,7 +236,7 @@ fn finalize_game(game_id: Field) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L269-L296" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinalize-game</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L265-L292" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinalize-game</a></sub></sup>
 
 After both players have revealed, this compares track scores, determines the winner, and updates the leaderboard.
 
@@ -314,7 +314,7 @@ fn play_round(
     // Validate that total points don't exceed 9 (you can't max out all tracks)
     assert(track1 + track2 + track3 + track4 + track5 < 10);
 
-    let player = self.context.maybe_msg_sender().unwrap();
+    let player = self.msg_sender();
     debug_log_format(
         "Player {0} playing round {1} in game {2}",
         [player.to_field(), round as Field, game_id],
@@ -336,15 +336,11 @@ fn play_round(
 
     // Enqueue a public function call to update the round counter
     // This reveals that a round was played, but not the point allocation
-    self.enqueue(PodRacing::at(self.context.this_address()).validate_and_play_round(
-        player,
-        game_id,
-        round,
-    ));
+    self.enqueue_self.validate_and_play_round(player, game_id, round);
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L111-L160" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lplay-round</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L111-L156" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lplay-round</a></sub></sup>
 
 Three things happen here that have no direct Ethereum equivalent:
 
@@ -361,7 +357,7 @@ Three things happen here that have no direct Ethereum equivalent:
 // This is the "reveal" phase where private choices become public
 #[external("private")]
 fn finish_game(game_id: Field) {
-    let player = self.context.maybe_msg_sender().unwrap();
+    let player = self.msg_sender();
     debug_log_format(
         "Player {0} finishing game {1}",
         [player.to_field(), game_id],
@@ -394,7 +390,7 @@ fn finish_game(game_id: Field) {
 
     // Enqueue public function to store the revealed totals on-chain
     // Now the revealing player's track totals will be publicly visible
-    self.enqueue(PodRacing::at(self.context.this_address()).validate_finish_game_and_reveal(
+    self.enqueue_self.validate_finish_game_and_reveal(
         player,
         game_id,
         total_track1,
@@ -402,11 +398,11 @@ fn finish_game(game_id: Field) {
         total_track3,
         total_track4,
         total_track5,
-    ));
+    );
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L179-L230" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinish-game</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L175-L226" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinish-game</a></sub></sup>
 
 This is the "reveal" phase:
 
@@ -526,7 +522,7 @@ The `.devcontainer/` configures:
 
 * **Base image:** Ubuntu 24.04 with Node.js v22.15.0
 * **Docker-in-Docker** for running the Aztec local network
-* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.0.0-devnet.2-patch.1" | VERSION="4.0.0-devnet.2-patch.1" bash -s`
+* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.2.0-aztecnr-rc.2" | VERSION="4.2.0-aztecnr-rc.2" bash -s`
 * **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
 * **Dependencies:** `yarn install` runs automatically
 
@@ -737,7 +733,7 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 **Aztec toolkit:**
 
 ```bash
-export VERSION=4.0.0-devnet.2-patch.1
+export VERSION=4.2.0-aztecnr-rc.2
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 
@@ -801,25 +797,11 @@ private constructor() {
 }
 ```
 
-**`config/devnet.json`:**
-
-```json
-{
-  "name": "devnet",
-  "environment": "devnet",
-  "network": {
-    "nodeUrl": "https://next.devnet.aztec-labs.com",
-    "l1RpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
-    "l1ChainId": 11155111
-  }
-}
-```
-
 Key exports from `config/config.ts`:
 
 * `getAztecNodeUrl()` — returns the node URL for the current environment
-* `getTimeouts()` — returns environment-specific timeout values (local: 60s tx, devnet: 180s tx)
-* `getEnv()` — returns the environment name (`"local-network"` or `"devnet"`)
+* `getTimeouts()` — returns environment-specific timeout values
+* `getEnv()` — returns the environment name (e.g. `"local-network"`)
 
 ***
 
@@ -880,14 +862,15 @@ const deployRequest = PodRacingContract.deploy(wallet, address);
 await deployRequest.simulate({
     from: address,
 });
-const { contract: podRacingContract, instance } = await deployRequest.send({
+const { contract: podRacingContract, receipt: deployReceipt } = await deployRequest.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
-    wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+    wait: { timeout: timeouts.deployTimeout }
 });
+const instance = deployReceipt.instance;
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/deploy_contract.ts#L44-L54" target="_blank" rel="noopener noreferrer">Source code: /scripts/deploy_contract.ts#Ldeploy-contract</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/deploy_contract.ts#L44-L55" target="_blank" rel="noopener noreferrer">Source code: /scripts/deploy_contract.ts#Ldeploy-contract</a></sub></sup>
 
 > **Important:** Always call `.simulate()` before `.send()`. Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction hangs until timeout with an opaque error.
 
@@ -1017,7 +1000,7 @@ yarn test:js
 
 ## Phase 6: Advanced Topics
 
-**Goal:** Explore multi-wallet patterns, fee strategies, devnet, and profiling.
+**Goal:** Explore multi-wallet patterns, fee strategies, and profiling.
 
 ### 6.1 — Multiple Wallets / Multiple PXEs
 
@@ -1032,7 +1015,7 @@ const wallet1 = await EmbeddedWallet.create(node, walletOpts);
 const wallet2 = await EmbeddedWallet.create(node, walletOpts);
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/multiple_wallet.ts#L39-L42" target="_blank" rel="noopener noreferrer">Source code: /scripts/multiple_wallet.ts#Lmultiple-wallets</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/multiple_wallet.ts#L40-L43" target="_blank" rel="noopener noreferrer">Source code: /scripts/multiple_wallet.ts#Lmultiple-wallets</a></sub></sup>
 
 It then deploys a Token contract from wallet1, creates an account on wallet2, mints tokens to wallet2's account, registers the token contract on wallet2, and reads balances.
 
@@ -1058,20 +1041,7 @@ yarn multiple-wallet
 yarn fees
 ```
 
-### 6.3 — Deploying to Devnet
-
-All scripts support a `::devnet` suffix:
-
-```bash
-yarn deploy::devnet
-yarn deploy-account::devnet
-yarn interaction-existing-contract::devnet
-yarn test::devnet
-```
-
-Devnet uses real provers and connects to the Aztec devnet at `https://next.devnet.aztec-labs.com` with Sepolia as the L1. Timeouts are longer (deploy: 20 min, tx: 3 min) to account for real proving time.
-
-### 6.4 — Transaction Profiling
+### 6.3 — Transaction Profiling
 
 **`scripts/profile_deploy.ts`** shows how to profile a transaction:
 
@@ -1088,7 +1058,7 @@ The `.profile()` method runs the transaction through the prover and returns deta
 yarn profile
 ```
 
-### 6.5 — Querying Blocks
+### 6.4 — Querying Blocks
 
 **`scripts/get_block.ts`** shows how to query the Aztec node directly:
 
@@ -1137,7 +1107,6 @@ yarn get-block
 | `scripts/get_block.ts`                     | Block querying                                         |
 | `config/config.ts`                         | Config manager (loads JSON by env)                     |
 | `config/local-network.json`                | Local network configuration                            |
-| `config/devnet.json`                       | Devnet configuration                                   |
 | `Nargo.toml`                               | Noir project manifest                                  |
 | `.devcontainer/devcontainer.json`          | GitHub Codespace configuration                         |
 | `.devcontainer/Dockerfile`                 | Codespace Docker image                                 |
@@ -1162,8 +1131,6 @@ yarn get-block
 | `yarn get-block`                     | Query block data                                   |
 | `yarn clean`                         | Delete `./src/artifacts` and `./target`            |
 | `yarn clear-store`                   | Delete `./store` (PXE data)                        |
-| `yarn deploy::devnet`                | Deploy to devnet                                   |
-| `yarn test::devnet`                  | Run E2E tests on devnet                            |
 
 ### C. Troubleshooting
 
@@ -1171,7 +1138,6 @@ yarn get-block
 | -------------------------------------------------------- | ------------------------------------------------------------------------ |
 | "Store" or PXE errors after restarting the local network | Delete `./store`: `rm -rf ./store`                                       |
 | Compilation errors after updating dependencies           | Run `yarn compile` again                                                 |
-| Timeout errors on devnet                                 | Check timeout values in `config/devnet.json` (deploy: 20 min, tx: 3 min) |
 | "Contract not registered" error                          | Call `wallet.registerContract(instance, artifact)` before interacting    |
 | Account not found                                        | Ensure `.env` has correct `SECRET`, `SIGNING_KEY`, and `SALT` values     |
 | Local network not starting                               | Ensure Docker is running and the correct Aztec version is installed      |

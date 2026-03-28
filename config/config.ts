@@ -19,7 +19,7 @@ export interface TimeoutConfig {
 
 export interface EnvironmentConfig {
   name: string;
-  environment: 'local' | 'testnet' | 'devnet' | 'mainnet';
+  environment: 'local' | 'testnet' | 'mainnet';
   network: NetworkConfig;
   settings: {
     skipLocalNetwork: boolean;
@@ -67,10 +67,6 @@ export class ConfigManager {
     return this.config.network;
   }
 
-  public isDevnet(): boolean {
-    return this.config.environment === 'devnet';
-  }
-
   public isLocalNetwork(): boolean {
     return this.config.environment === 'local';
   }
@@ -92,15 +88,7 @@ export class ConfigManager {
       return this.config.timeouts;
     }
 
-    // Otherwise, use defaults based on environment
-    if (this.isDevnet()) {
-      return {
-        deployTimeout: 1200000, // 20 minutes
-        txTimeout: 180000,     // 3 minutes
-        waitTimeout: 60000     // 1 minute
-      };
-    }
-
+    // Otherwise, use defaults
     return {
       deployTimeout: 120000, // 2 minutes
       txTimeout: 60000,      // 1 minute

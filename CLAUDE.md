@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aztec Starter — a Pod Racing game contract built with Noir on the Aztec network. Two players allocate points across 5 tracks over 3 rounds with private state; scores are revealed at the end (commit-reveal pattern). The player who wins more tracks (best of 5) wins.
 
-**Aztec version: `4.0.0-devnet.2-patch.1`** — pinned across `Nargo.toml`, `package.json`, `config/*.json`, and README. All must stay in sync when updating.
+**Aztec version: `4.2.0-aztecnr-rc.2`** — pinned across `Nargo.toml`, `package.json`, `config/*.json`, and README. All must stay in sync when updating.
 
 ## Build & Development Commands
 
@@ -47,33 +47,31 @@ NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --
 
 ## Deployment & Scripts
 
-All scripts support `::devnet` and `::testnet` suffixes for remote network targeting:
+All scripts support `::testnet` suffixes for remote network targeting:
 
 ```bash
 yarn deploy               # Deploy contract to local network
-yarn deploy::devnet       # Deploy contract to devnet
 yarn deploy::testnet      # Deploy contract to testnet
 yarn deploy-account       # Deploy a Schnorr account
 yarn multiple-wallet      # Deploy from one wallet, interact from another
 yarn profile              # Profile a transaction deployment
 yarn read-logs            # Demo utility function for client-side debug logging
-yarn read-logs::devnet    # Same on devnet
 yarn read-logs::testnet   # Same on testnet
 ```
 
 ## Environment Configuration
 
-- `AZTEC_ENV` variable selects config: `local-network` (default), `devnet`, or `testnet`
-- Config files: `config/local-network.json`, `config/devnet.json`, `config/testnet.json`
+- `AZTEC_ENV` variable selects config: `local-network` (default) or `testnet`
+- Config files: `config/local-network.json`, `config/testnet.json`
 - `config/config.ts` — singleton `ConfigManager` loads the appropriate JSON based on `AZTEC_ENV`
 - `.env` stores secrets (SECRET, SIGNING_KEY, SALT, contract keys) — never commit
 
 ## Branch Model
 
-- **`next` branch** — default branch; used for local network and devnet development
+- **`next` branch** — default branch; used for local network development
 - **`testnet` branch** — used for testnet development; may run a different Aztec version
 
-Devnet PRs target `next`. Testnet PRs target `testnet`. Each branch pins its own Aztec version independently.
+PRs target `next`. Testnet PRs target `testnet`. Each branch pins its own Aztec version independently.
 
 ## Project Structure
 
@@ -98,7 +96,7 @@ Devnet PRs target `next`. Testnet PRs target `testnet`. Each branch pins its own
 
 **TypeScript utilities:**
 
-- `src/utils/setup_wallet.ts` — creates `EmbeddedWallet` with environment-aware config (prover enabled on devnet)
+- `src/utils/setup_wallet.ts` — creates `EmbeddedWallet` with environment-aware config
 - `src/utils/create_account_from_env.ts` — Schnorr account from env vars
 - `src/utils/deploy_account.ts` — account deployment with sponsored fees
 - `src/utils/sponsored_fpc.ts` — SponsoredFPC (Fee Payment Contract) setup
@@ -113,7 +111,7 @@ Devnet PRs target `next`. Testnet PRs target `testnet`. Each branch pins its own
 - **ESM project**: `"type": "module"` in package.json. All TS scripts run via `node --loader ts-node/esm`.
 - **Private-public interaction**: `play_round` is private (creates `GameRoundNote` notes), then enqueues a public call (`validate_and_play_round`) to update round counters. `finish_game` reads private notes, sums them, and enqueues a public call to reveal totals.
 - **Fee payment**: All transactions use `SponsoredFeePaymentMethod` via the SponsoredFPC contract.
-- **Wallet setup**: `EmbeddedWallet.create()` with `ephemeral: true` for tests; prover is enabled only on devnet.
+- **Wallet setup**: `EmbeddedWallet.create()` with `ephemeral: true` for tests.
 - **PXE store**: Data persists in `./store`. Must delete after local network restart to avoid stale state errors.
 
 ## Simulate Before Send (IMPORTANT)
@@ -152,7 +150,7 @@ When updating the Aztec version, update all of these locations:
 
 1. `Nargo.toml` — `aztec` dependency tag
 2. `package.json` — all `@aztec/*` dependency versions
-3. `config/local-network.json`, `config/devnet.json`, and/or `config/testnet.json` — `settings.version` (update the configs relevant to the branch you're on)
+3. `config/local-network.json` and/or `config/testnet.json` — `settings.version` (update the configs relevant to the branch you're on)
 4. `README.md` — install command version
 
 > **Note:** The `next` and `testnet` branches may pin different Aztec versions. Only update the config files relevant to the branch.

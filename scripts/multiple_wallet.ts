@@ -2,19 +2,20 @@ import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { getContractInstanceFromInstantiationParams, type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
-import configManager, { getAztecNodeUrl, getTimeouts } from "../config/config.js";
+import { getAztecNodeUrl, getTimeouts } from "../config/config.js";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 const nodeUrl = getAztecNodeUrl();
 const node = createAztecNodeClient(nodeUrl);
 const walletOpts = {
     ephemeral: true,
-    pxeConfig: { proverEnabled: configManager.isDevnet() },
+    pxeConfig: { proverEnabled: false },
 };
 
 const L2_TOKEN_CONTRACT_SALT = Fr.random();
@@ -53,13 +54,13 @@ async function main() {
     let salt = Fr.random();
     let schnorrAccount = await wallet1.createSchnorrAccount(secretKey, salt, signingKey);
     const deployMethod = await schnorrAccount.getDeployMethod();
-    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
+    await deployMethod.send({ from: NO_FROM, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let ownerAddress = schnorrAccount.address;
 
     // Simulate before sending to surface revert reasons
     const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6);
     await tokenDeploy.simulate({ from: ownerAddress });
-    const token = await tokenDeploy.send({
+    const { contract: token } = await tokenDeploy.send({
         from: ownerAddress,
         contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
         fee: { paymentMethod },
@@ -77,7 +78,7 @@ async function main() {
 
     // deploy account on 2nd pxe
     const deployMethod2 = await schnorrAccount2.getDeployMethod();
-    await deployMethod2.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
+    await deployMethod2.send({ from: NO_FROM, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let wallet2Address = schnorrAccount2.address;
     await wallet2.registerSender(ownerAddress, '')
 
@@ -85,7 +86,7 @@ async function main() {
 
     // Simulate before sending to surface revert reasons
     await token.methods.mint_to_private(schnorrAccount2.address, 100).simulate({ from: ownerAddress });
-    const private_mint_tx = await token.methods.mint_to_private(schnorrAccount2.address, 100).send({
+    const { receipt: private_mint_tx } = await token.methods.mint_to_private(schnorrAccount2.address, 100).send({
         from: ownerAddress,
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
@@ -113,12 +114,12 @@ async function main() {
     )
 
     // Check balances
-    const balance = await l2TokenContract.methods.balance_of_private(wallet2Address).simulate({
+    const { result: balance } = await l2TokenContract.methods.balance_of_private(wallet2Address).simulate({
         from: wallet2Address
     })
     console.log("private balance should be 100", balance)
 
-    const publicBalance = await l2TokenContract.methods.balance_of_public(wallet2Address).simulate({
+    const { result: publicBalance } = await l2TokenContract.methods.balance_of_public(wallet2Address).simulate({
         from: wallet2Address
     })
     console.log("public balance should be 100", publicBalance)

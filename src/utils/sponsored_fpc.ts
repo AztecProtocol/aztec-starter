@@ -25,7 +25,7 @@ export async function setupSponsoredFPC(deployer: Wallet, log: LogFn) {
   const deployRequest = SponsoredFPCContract.deploy(deployer);
   // Simulate before sending to surface revert reasons
   await deployRequest.simulate({ from });
-  const deployed = await deployRequest
+  const { contract: deployed } = await deployRequest
     .send({
       from,
       contractAddressSalt: new Fr(SPONSORED_FPC_SALT),

@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: local-network
-      AZTEC_VERSION: 4.0.0-devnet.2-patch.1
+      AZTEC_VERSION: 4.2.0-aztecnr-rc.2
 
     steps:
       - name: Checkout repository
