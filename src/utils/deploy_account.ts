@@ -56,7 +56,7 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
             logger.info('✅ Fee juice claim ready for account deployment');
         }
     } else {
-        // Devnet/local: use sponsored FPC
+        // Local: use sponsored FPC
         logger.info('💰 Setting up sponsored fee payment for account deployment...');
         const sponsoredFPC = await getSponsoredFPCInstance();
         logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
@@ -76,8 +76,8 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
     // Deploy account
     await deployMethod.send({
         from: NO_FROM,
-        fee: { paymentMethod: sponsoredPaymentMethod },
-        wait: { timeout: 120 },
+        wait: { timeout: timeouts.deployTimeout },
+        ...(paymentMethod ? { fee: { paymentMethod } } : {}),
     });
 
     logger.info(`✅ Account deployment transaction successful!`);

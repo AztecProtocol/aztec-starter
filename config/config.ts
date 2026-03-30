@@ -67,6 +67,10 @@ export class ConfigManager {
     return this.config.network;
   }
 
+  public isTestnet(): boolean {
+    return this.config.environment === 'testnet';
+  }
+
   public isLocalNetwork(): boolean {
     return this.config.environment === 'local';
   }
