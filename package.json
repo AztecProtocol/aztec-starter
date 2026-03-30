@@ -15,7 +15,6 @@
     "compile": "aztec compile",
     "deploy": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy-account": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/deploy_account.ts",
-    "deploy-account::testnet": "NODE_NO_WARNINGS=1 AZTEC_ENV=testnet node --loader ts-node/esm scripts/deploy_account.ts",
     "interaction-existing-contract": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/interaction_existing_contract.ts",
     "multiple-wallet": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/multiple_wallet.ts",
     "get-block": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/get_block.ts",
