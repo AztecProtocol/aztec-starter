@@ -8,7 +8,7 @@ import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
-import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { getContractInstanceFromInstantiationParams } from "@aztec/stdlib/contract";
 
 async function main() {
     let logger: Logger;

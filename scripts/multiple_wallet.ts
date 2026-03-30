@@ -1,6 +1,5 @@
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
-import { getContractInstanceFromInstantiationParams, type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { NO_FROM } from "@aztec/aztec.js/account";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
@@ -19,22 +18,6 @@ const walletOpts = {
 };
 
 const L2_TOKEN_CONTRACT_SALT = Fr.random();
-
-export async function getL2TokenContractInstance(deployerAddress: any, ownerAztecAddress: AztecAddress): Promise<ContractInstanceWithAddress> {
-    return await getContractInstanceFromInstantiationParams(
-        TokenContract.artifact,
-        {
-            salt: L2_TOKEN_CONTRACT_SALT,
-            deployer: deployerAddress,
-            constructorArgs: [
-                ownerAztecAddress,
-                'Clean USDC',
-                'USDC',
-                6
-            ]
-        }
-    )
-}
 
 async function main() {
     // docs:start:multiple-wallets
@@ -64,8 +47,9 @@ async function main() {
         from: ownerAddress,
         contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
         fee: { paymentMethod },
-        wait: { timeout: timeouts.deployTimeout }
+        wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
     });
+    const token = receipt.contract;
 
     // setup account on 2nd pxe
 
@@ -91,7 +75,6 @@ async function main() {
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
-    console.log(await node.getTxEffect(private_mint_tx.txHash))
 
     await token.methods.mint_to_public(schnorrAccount2.address, 100).simulate({ from: ownerAddress });
     await token.methods.mint_to_public(schnorrAccount2.address, 100).send({
@@ -117,12 +100,12 @@ async function main() {
     const { result: balance } = await l2TokenContract.methods.balance_of_private(wallet2Address).simulate({
         from: wallet2Address
     })
-    console.log("private balance should be 100", balance)
+    console.log("private balance should be 100", balanceResult.result ?? balanceResult)
 
     const { result: publicBalance } = await l2TokenContract.methods.balance_of_public(wallet2Address).simulate({
         from: wallet2Address
     })
-    console.log("public balance should be 100", publicBalance)
+    console.log("public balance should be 100", publicBalanceResult.result ?? publicBalanceResult)
 
 }
 

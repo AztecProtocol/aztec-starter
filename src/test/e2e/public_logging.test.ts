@@ -18,7 +18,7 @@ import { getTimeouts } from "../../../config/config.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { NO_FROM } from "@aztec/aztec.js/account";
 import { type Logger, createLogger } from "@aztec/foundation/log";
-import { type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
+import { type ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { EmbeddedWallet } from '@aztec/wallets/embedded';

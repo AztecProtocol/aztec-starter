@@ -14,7 +14,7 @@ import { L1FeeJuicePortalManager, type L2AmountClaim } from "@aztec/aztec.js/eth
 import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { NO_FROM } from "@aztec/aztec.js/account";
 import { type Logger, createLogger } from "@aztec/foundation/log";
-import { type ContractInstanceWithAddress, getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { type ContractInstanceWithAddress, getContractInstanceFromInstantiationParams } from "@aztec/stdlib/contract";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { ContractDeployer } from "@aztec/aztec.js/deployment";
@@ -101,6 +101,7 @@ describe("Accounts", () => {
         let balances = await Promise.all(randomAddresses.map(async a =>
             (await feeJuiceContract.methods.balance_of_public(a).simulate({ from: ownerAccount.address })).result
         ));
+        let balances = balanceResults.map(b => typeof b === 'object' && b !== null && 'result' in b ? b.result : b);
         console.log(`Initial balances: ${balances.join(', ')}`);
         balances.forEach(b => expect(b).toBe(0n));
 
@@ -154,7 +155,7 @@ describe("Accounts", () => {
             });
 
         // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
-        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(receipt.status);
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(receipt.receipt.status);
 
         const deployedAccount = await randomAccountManagers[0].getAccount();
         expect(deployedAccount.getAddress()).toEqual(randomAccountManagers[0].address);
@@ -209,8 +210,8 @@ describe("Accounts", () => {
         const metadata = await wallet.getContractMetadata(deploymentData.address);
         expect(metadata.instance).toBeTruthy();
         // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
-        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(receipt.status);
-        expect(receipt.contract.address).toEqual(deploymentData.address);
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(receipt.receipt.status);
+        expect(receipt.receipt.contract.address).toEqual(deploymentData.address);
     })
 
 });

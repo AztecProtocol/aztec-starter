@@ -140,7 +140,7 @@ async function main() {
         from: account2.address
     });
 
-    logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
+    logger.info(`BananaCoin balance of newWallet is ${bananaBalanceResult.result ?? bananaBalanceResult}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
     await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact);
