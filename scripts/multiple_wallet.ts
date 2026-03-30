@@ -15,7 +15,6 @@ const nodeUrl = getAztecNodeUrl();
 const node = createAztecNodeClient(nodeUrl);
 const walletOpts = {
     ephemeral: true,
-    pxeConfig: { proverEnabled: false },
 };
 
 const L2_TOKEN_CONTRACT_SALT = Fr.random();
