@@ -16,6 +16,7 @@ import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { NO_FROM } from "@aztec/aztec.js/account";
 import { Fr } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
