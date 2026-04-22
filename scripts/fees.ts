@@ -153,7 +153,7 @@ async function main() {
     })).result}`);
 
     const maxFeesPerGas = (await node.getCurrentMinFees()).mul(1.5);
-    const gasSettings = GasSettings.default({ maxFeesPerGas });
+    const gasSettings = GasSettings.fallback({ maxFeesPerGas });
 
     const privateFee = new PrivateFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings);
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).simulate({ from: account2.address });

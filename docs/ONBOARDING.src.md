@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying contracts" â
 - **Phases 1-2** need only a browser (read code, compile in a Codespace)
 - **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `4.2.0-aztecnr-rc.2` (check `Nargo.toml` and `package.json` for source of truth)
+**Aztec version pinned in this repo:** `4.2.0` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -262,7 +262,7 @@ The `.devcontainer/` configures:
 
 - **Base image:** Ubuntu 24.04 with Node.js v22.15.0
 - **Docker-in-Docker** for running the Aztec local network
-- **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.2.0-aztecnr-rc.2" | VERSION="4.2.0-aztecnr-rc.2" bash -s`
+- **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.2.0" | VERSION="4.2.0" bash -s`
 - **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
 - **Dependencies:** `yarn install` runs automatically
 
@@ -357,7 +357,7 @@ And higher-level helpers:
 **Aztec toolkit:**
 
 ```bash
-export VERSION=4.2.0-aztecnr-rc.2
+export VERSION=4.2.0
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 
