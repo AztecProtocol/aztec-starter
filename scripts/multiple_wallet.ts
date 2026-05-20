@@ -58,11 +58,12 @@ async function main() {
     let ownerAddress = schnorrAccount.address;
 
     // Simulate before sending to surface revert reasons
-    const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6);
+    const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6, {
+        salt: L2_TOKEN_CONTRACT_SALT,
+    });
     await tokenDeploy.simulate({ from: ownerAddress });
     const { contract: token } = await tokenDeploy.send({
         from: ownerAddress,
-        contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout }
     });
