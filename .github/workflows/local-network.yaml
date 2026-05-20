@@ -41,11 +41,9 @@ jobs:
       - name: Update path
         run: |
           echo "$HOME/.aztec/current/bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/current/internal-bin" >> $GITHUB_PATH
           echo "$HOME/.aztec/current/node_modules/.bin" >> $GITHUB_PATH
           echo "$HOME/.aztec/bin" >> $GITHUB_PATH
-
-      - name: Expose aztec-nargo as nargo
-        run: ln -sf "$HOME/.aztec/current/bin/aztec-nargo" "$HOME/.aztec/current/bin/nargo"
 
       - name: Start local Aztec network
         run: aztec start --local-network &
