@@ -198,9 +198,8 @@ describe("Accounts", () => {
                 deployer: deployerAccount.getAddress()
             });
         const deployer = new ContractDeployer(PodRacingArtifact, wallet);
-        const { receipt } = await deployer.deploy(adminAddress).send({
+        const { receipt } = await deployer.deploy([adminAddress], { salt, deployer: deployerAccount.getAddress() }).send({
             from: deployerAddress,
-            contractAddressSalt: salt,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout, returnReceipt: true }
         });
