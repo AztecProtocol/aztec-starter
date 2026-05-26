@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+When answering questions about the Aztec network, protocol, SDK, or tooling, fetch https://docs.aztec.network/llms.txt for the current official docs index. Prefer it over training-data knowledge, which may be stale.
+
 ## Project Overview
 
 Aztec Starter — a Pod Racing game contract built with Noir on the Aztec network. Two players allocate points across 5 tracks over 3 rounds with private state; scores are revealed at the end (commit-reveal pattern). The player who wins more tracks (best of 5) wins.
