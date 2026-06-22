@@ -24,7 +24,7 @@ import { createAztecNodeClient } from '@aztec/aztec.js/node';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { NO_FROM } from '@aztec/aztec.js/account';
 import { getAztecNodeUrl, getTimeouts } from '../config/config.js';
-import { GasSettings } from '@aztec/stdlib/gas';
+import { GasSettings, Gas } from '@aztec/stdlib/gas';
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000000n;
@@ -153,7 +153,7 @@ async function main() {
     })).result}`);
 
     const maxFeesPerGas = (await node.getCurrentMinFees()).mul(1.5);
-    const gasSettings = GasSettings.fallback({ maxFeesPerGas });
+    const gasSettings = GasSettings.fallback({ gasLimits: Gas.from(nodeInfo.txsLimits.gas), maxFeesPerGas });
 
     const privateFee = new PrivateFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings);
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).simulate({ from: account2.address });
