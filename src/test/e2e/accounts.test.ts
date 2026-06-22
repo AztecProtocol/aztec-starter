@@ -198,10 +198,10 @@ describe("Accounts", () => {
                 deployer: deployerAccount.getAddress()
             });
         const deployer = new ContractDeployer(PodRacingArtifact, wallet);
-        const { receipt } = await deployer.deploy([adminAddress], { salt, deployer: deployerAccount.getAddress() }).send({
+        const { contract: deployedContract, receipt } = await deployer.deploy([adminAddress], { salt, deployer: deployerAccount.getAddress() }).send({
             from: deployerAddress,
             fee: { paymentMethod: sponsoredPaymentMethod },
-            wait: { timeout: getTimeouts().deployTimeout, returnReceipt: true }
+            wait: { timeout: getTimeouts().deployTimeout }
         });
 
         expect(await wallet.getContractMetadata(deploymentData.address)).toBeDefined();
@@ -209,7 +209,7 @@ describe("Accounts", () => {
         expect(metadata.instance).toBeTruthy();
         // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
         expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(receipt.status);
-        expect(receipt.contract.address).toEqual(deploymentData.address);
+        expect(deployedContract.address).toEqual(deploymentData.address);
     })
 
 });
