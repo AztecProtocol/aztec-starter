@@ -8,7 +8,7 @@
   },
   "settings": {
     "skipLocalNetwork": true,
-    "version": "4.1.0"
+    "version": "5.0.0-rc.2"
   },
   "timeouts": {
     "deployTimeout": 1200000,

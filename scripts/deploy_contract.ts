@@ -46,14 +46,12 @@ async function main() {
     await deployRequest.simulate({
         from: address,
     });
-    const { receipt } = await deployRequest.send({
+    const { contract: podRacingContract, instance } = await deployRequest.send({
         from: address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-        wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+        wait: { timeout: timeouts.deployTimeout }
     });
-    const podRacingContract = receipt.contract;
     // docs:end:deploy-contract
-    const instance = receipt.instance;
 
     logger.info(`🎉 Pod Racing Contract deployed successfully!`);
     logger.info(`📍 Contract address: ${podRacingContract.address}`);
@@ -69,10 +67,10 @@ async function main() {
         logger.info(`Salt: ${instance.salt}`);
         logger.info(`Deployer: ${instance.deployer}`);
         if (instance.publicKeys) {
-            logger.info(`Public Keys - Master Nullifier: ${instance.publicKeys.masterNullifierPublicKey}`);
-            logger.info(`Public Keys - Master Incoming Viewing: ${instance.publicKeys.masterIncomingViewingPublicKey}`);
-            logger.info(`Public Keys - Master Outgoing Viewing: ${instance.publicKeys.masterOutgoingViewingPublicKey}`);
-            logger.info(`Public Keys - Master Tagging: ${instance.publicKeys.masterTaggingPublicKey}`);
+            logger.info(`Public Keys - Master Nullifier: ${instance.publicKeys.npkMHash}`);
+            logger.info(`Public Keys - Master Incoming Viewing: ${instance.publicKeys.ivpkM}`);
+            logger.info(`Public Keys - Master Outgoing Viewing: ${instance.publicKeys.ovpkMHash}`);
+            logger.info(`Public Keys - Master Tagging: ${instance.publicKeys.tpkMHash}`);
         }
         logger.info(`Constructor args: ${JSON.stringify([address.toString()])}`);
     }

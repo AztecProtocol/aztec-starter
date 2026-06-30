@@ -24,7 +24,7 @@ use ::aztec::macros::aztec;
 pub contract PodRacing {
     use ::aztec::{
         macros::{functions::{external, initializer, only_self}, storage::storage},
-        messages::message_delivery::MessageDelivery,
+        messages::delivery::MessageDelivery,
         note::note_getter_options::NoteGetterOptions,
         oracle::logging::debug_log_format,
     };
@@ -147,7 +147,7 @@ pub contract PodRacing {
             .at(game_id)
             .at(player)
             .insert(GameRoundNote::new(track1, track2, track3, track4, track5, round, player))
-            .deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+            .deliver(MessageDelivery::onchain_constrained());
 
         // Enqueue a public function call to update the round counter
         // This reveals that a round was played, but not the point allocation
