@@ -8,7 +8,7 @@ When answering questions about the Aztec network, protocol, SDK, or tooling, fet
 
 Aztec Starter — a Pod Racing game contract built with Noir on the Aztec network. Two players allocate points across 5 tracks over 3 rounds with private state; scores are revealed at the end (commit-reveal pattern). The player who wins more tracks (best of 5) wins.
 
-**Aztec version: `5.0.0-rc.1`** — pinned across `Nargo.toml`, `package.json`, `config/*.json`, and README. All must stay in sync when updating.
+**Aztec version: `5.0.0-rc.2`** — pinned across `Nargo.toml`, `package.json`, `config/*.json`, and README. All must stay in sync when updating.
 
 ## Build & Development Commands
 
