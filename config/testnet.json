@@ -2,13 +2,13 @@
   "name": "testnet",
   "environment": "testnet",
   "network": {
-    "nodeUrl": "https://rpc.testnet.aztec-labs.com",
+    "nodeUrl": "https://v5.testnet.rpc.aztec-labs.com",
     "l1RpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
     "l1ChainId": 11155111
   },
   "settings": {
     "skipLocalNetwork": true,
-    "version": "4.1.0"
+    "version": "5.0.0-rc.2"
   },
   "timeouts": {
     "deployTimeout": 1200000,

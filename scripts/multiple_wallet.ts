@@ -1,6 +1,6 @@
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
-import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
@@ -36,19 +36,19 @@ async function main() {
     let salt = Fr.random();
     let schnorrAccount = await wallet1.createSchnorrAccount(secretKey, salt, signingKey);
     const deployMethod = await schnorrAccount.getDeployMethod();
-    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
+    await deployMethod.send({ from: NO_FROM, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let ownerAddress = schnorrAccount.address;
 
     // Simulate before sending to surface revert reasons
-    const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6);
-    await tokenDeploy.simulate({ from: ownerAddress });
-    const { receipt } = await tokenDeploy.send({
-        from: ownerAddress,
-        contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
-        fee: { paymentMethod },
-        wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+    const tokenDeploy = TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6, {
+        salt: L2_TOKEN_CONTRACT_SALT,
     });
-    const token = receipt.contract;
+    await tokenDeploy.simulate({ from: ownerAddress });
+    const { contract: token } = await tokenDeploy.send({
+        from: ownerAddress,
+        fee: { paymentMethod },
+        wait: { timeout: timeouts.deployTimeout }
+    });
 
     // setup account on 2nd pxe
 
@@ -61,7 +61,7 @@ async function main() {
 
     // deploy account on 2nd pxe
     const deployMethod2 = await schnorrAccount2.getDeployMethod();
-    await deployMethod2.send({ from: AztecAddress.ZERO, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
+    await deployMethod2.send({ from: NO_FROM, fee: { paymentMethod }, wait: { timeout: timeouts.deployTimeout } });
     let wallet2Address = schnorrAccount2.address;
     await wallet2.registerSender(ownerAddress, '')
 

@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying on devnet" �
 * **Phases 1-2** need only a browser (read code, compile in a Codespace)
 * **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `4.1.0` (check `Nargo.toml` and `package.json` for source of truth)
+**Aztec version pinned in this repo:** `5.0.0-rc.2` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -101,7 +101,7 @@ struct Storage<Context> {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L40-L59" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lstorage</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L40-L59" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lstorage</a></sub></sup>
 
 **What is `Context`?** You'll notice `Context` appears as a generic parameter throughout the storage definition. In Aztec, the context is the execution environment passed to every function — it's how your contract accesses blockchain state like `context.msg_sender()` (the caller's address) and `context.block_number()`. Think of it as an expanded version of Solidity's global variables (`msg.sender`, `block.number`, etc.), but packaged as an object. The `<Context>` generic on storage types lets the same storage struct work in both public and private execution contexts. You don't need to construct it yourself — the framework provides `self.context` automatically in every contract function.
 
@@ -149,7 +149,7 @@ fn constructor(admin: AztecAddress) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L61-L68" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lconstructor</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L61-L68" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lconstructor</a></sub></sup>
 
 Sets the admin address. The `#[initializer]` macro means this runs once at deployment, like a Solidity constructor.
 
@@ -180,7 +180,7 @@ fn create_game(game_id: Field) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L70-L93" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lcreate-game</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L70-L93" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lcreate-game</a></sub></sup>
 
 Creates a new game. Checks the game ID isn't taken (player1 must be zero address), then writes a new `Race` struct with the caller as player1 and an expiration time.
 
@@ -202,7 +202,7 @@ fn join_game(game_id: Field) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L95-L109" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Ljoin-game</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L95-L109" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Ljoin-game</a></sub></sup>
 
 A second player joins. The `Race::join()` method validates that player1 exists, the player2 slot is empty, and the joiner isn't player1.
 
@@ -236,7 +236,7 @@ fn finalize_game(game_id: Field) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L269-L296" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinalize-game</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L269-L296" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinalize-game</a></sub></sup>
 
 After both players have revealed, this compares track scores, determines the winner, and updates the leaderboard.
 
@@ -280,7 +280,7 @@ pub struct Race {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/race.nr#L7-L41" target="_blank" rel="noopener noreferrer">Source code: /src/race.nr#Lrace-struct</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/race.nr#L7-L41" target="_blank" rel="noopener noreferrer">Source code: /src/race.nr#Lrace-struct</a></sub></sup>
 
 Key methods:
 
@@ -332,7 +332,7 @@ fn play_round(
         .at(game_id)
         .at(player)
         .insert(GameRoundNote::new(track1, track2, track3, track4, track5, round, player))
-        .deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        .deliver(MessageDelivery::onchain_constrained());
 
     // Enqueue a public function call to update the round counter
     // This reveals that a round was played, but not the point allocation
@@ -344,7 +344,7 @@ fn play_round(
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L111-L160" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lplay-round</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L111-L160" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lplay-round</a></sub></sup>
 
 Three things happen here that have no direct Ethereum equivalent:
 
@@ -406,7 +406,7 @@ fn finish_game(game_id: Field) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/main.nr#L179-L230" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinish-game</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/main.nr#L179-L230" target="_blank" rel="noopener noreferrer">Source code: /src/main.nr#Lfinish-game</a></sub></sup>
 
 This is the "reveal" phase:
 
@@ -442,7 +442,7 @@ pub struct GameRoundNote {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/game_round_note.nr#L3-L29" target="_blank" rel="noopener noreferrer">Source code: /src/game_round_note.nr#Lgame-round-note</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/game_round_note.nr#L3-L29" target="_blank" rel="noopener noreferrer">Source code: /src/game_round_note.nr#Lgame-round-note</a></sub></sup>
 
 The `#[note]` macro makes this a private state primitive. Each note stores one round's point allocation and the owner's address. Only the owner can read it.
 
@@ -526,7 +526,7 @@ The `.devcontainer/` configures:
 
 * **Base image:** Ubuntu 24.04 with Node.js v22.15.0
 * **Docker-in-Docker** for running the Aztec local network
-* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/4.1.0" | VERSION="4.1.0" bash -s`
+* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/5.0.0-rc.2" | VERSION="5.0.0-rc.2" bash -s`
 * **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
 * **Dependencies:** `yarn install` runs automatically
 
@@ -586,7 +586,7 @@ unconstrained fn test_initializer() {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/pod_racing.nr#L9-L20" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-initializer</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/pod_racing.nr#L9-L20" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-initializer</a></sub></sup>
 
 The `unconstrained` keyword means this test runs outside the ZK circuit (it's a test, not a provable function). `utils::setup()` deploys a fresh contract and returns the environment, contract address, and admin.
 
@@ -611,7 +611,7 @@ unconstrained fn test_fail_play_round_too_many_points() {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/pod_racing.nr#L140-L157" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-fail-too-many-points</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/pod_racing.nr#L140-L157" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-fail-too-many-points</a></sub></sup>
 
 The `#[test(should_fail)]` attribute is like Foundry's `vm.expectRevert()`.
 
@@ -646,7 +646,7 @@ pub unconstrained fn max_allocation() -> (u8, u8, u8, u8, u8) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/helpers.nr#L18-L39" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lallocation-strategies</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/helpers.nr#L18-L39" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lallocation-strategies</a></sub></sup>
 
 And higher-level helpers:
 
@@ -694,7 +694,7 @@ pub unconstrained fn play_all_rounds_with_strategy(
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/helpers.nr#L41-L83" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lsetup-helpers</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/helpers.nr#L41-L83" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lsetup-helpers</a></sub></sup>
 
 #### Test setup (`src/test/utils.nr`)
 
@@ -715,7 +715,7 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/utils.nr#L7-L22" target="_blank" rel="noopener noreferrer">Source code: /src/test/utils.nr#Ltest-setup</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/utils.nr#L7-L22" target="_blank" rel="noopener noreferrer">Source code: /src/test/utils.nr#Ltest-setup</a></sub></sup>
 
 **Ethereum analogies:**
 
@@ -737,7 +737,7 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 **Aztec toolkit:**
 
 ```bash
-export VERSION=4.1.0
+export VERSION=5.0.0-rc.2
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 
@@ -849,7 +849,7 @@ export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAdd
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/utils/sponsored_fpc.ts#L11-L17" target="_blank" rel="noopener noreferrer">Source code: /src/utils/sponsored_fpc.ts#Lget-sponsored-fpc</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/utils/sponsored_fpc.ts#L11-L17" target="_blank" rel="noopener noreferrer">Source code: /src/utils/sponsored_fpc.ts#Lget-sponsored-fpc</a></sub></sup>
 
 **Run it:**
 
@@ -880,15 +880,14 @@ const deployRequest = PodRacingContract.deploy(wallet, address);
 await deployRequest.simulate({
     from: address,
 });
-const { receipt } = await deployRequest.send({
+const { contract: podRacingContract, instance } = await deployRequest.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
-    wait: { timeout: timeouts.deployTimeout, returnReceipt: true }
+    wait: { timeout: timeouts.deployTimeout }
 });
-const podRacingContract = receipt.contract;
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/deploy_contract.ts#L44-L55" target="_blank" rel="noopener noreferrer">Source code: /scripts/deploy_contract.ts#Ldeploy-contract</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/deploy_contract.ts#L44-L54" target="_blank" rel="noopener noreferrer">Source code: /scripts/deploy_contract.ts#Ldeploy-contract</a></sub></sup>
 
 > **Important:** Always call `.simulate()` before `.send()`. Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction hangs until timeout with an opaque error.
 

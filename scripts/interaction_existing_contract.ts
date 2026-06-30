@@ -8,7 +8,7 @@ import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
-import { getContractInstanceFromInstantiationParams } from "@aztec/stdlib/contract";
+import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
 
 async function main() {
     let logger: Logger;
@@ -57,7 +57,7 @@ async function main() {
             .trim()                           // Remove leading/trailing whitespace
             .replace(/^['"]|['"]$/g, '');     // Remove surrounding quotes from .env parsing
 
-        constructorArgs = JSON.parse(cleanedJson).map((arg: string) => AztecAddress.fromString(arg));
+        constructorArgs = JSON.parse(cleanedJson).map((arg: string) => AztecAddress.fromStringUnsafe(arg));
     } catch (error) {
         logger.error(`Failed to parse constructor args: ${constructorArgsJson}`);
         logger.error(`Error: ${error}`);
@@ -65,12 +65,12 @@ async function main() {
     }
 
     // Reconstruct contract instance
-    const podRacingContractAddress = AztecAddress.fromString(contractAddress);
+    const podRacingContractAddress = AztecAddress.fromStringUnsafe(contractAddress);
 
     const instance = await getContractInstanceFromInstantiationParams(PodRacingContract.artifact, {
         constructorArgs,
         salt: Fr.fromString(contractSalt),
-        deployer: AztecAddress.fromString(contractDeployer)
+        deployer: AztecAddress.fromStringUnsafe(contractDeployer)
     });
 
     logger.info("✅ Contract instance reconstructed successfully");

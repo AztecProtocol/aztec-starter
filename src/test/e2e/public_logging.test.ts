@@ -16,8 +16,9 @@ import { setupWallet } from "../../utils/setup_wallet.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getTimeouts } from "../../../config/config.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { type Logger, createLogger } from "@aztec/foundation/log";
-import { type ContractInstanceWithAddress } from "@aztec/stdlib/contract";
+import { type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { EmbeddedWallet } from '@aztec/wallets/embedded';
@@ -48,7 +49,7 @@ describe("Public Function Logging", () => {
         let salt1 = Fr.random();
         player1Account = await wallet.createSchnorrAccount(secretKey1, salt1, signingKey1);
         await (await player1Account.getDeployMethod()).send({
-            from: AztecAddress.ZERO,
+            from: NO_FROM,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
         });
@@ -58,7 +59,7 @@ describe("Public Function Logging", () => {
         let salt2 = Fr.random();
         player2Account = await wallet.createSchnorrAccount(secretKey2, salt2, signingKey2);
         await (await player2Account.getDeployMethod()).send({
-            from: AztecAddress.ZERO,
+            from: NO_FROM,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
         });
@@ -70,12 +71,11 @@ describe("Public Function Logging", () => {
         // Deploy the contract
         logger.info('Deploying Pod Racing contract...');
         const adminAddress = player1Account.address;
-        const deployResult = await PodRacingContract.deploy(wallet, adminAddress).send({
+        ({ contract } = await PodRacingContract.deploy(wallet, adminAddress).send({
             from: adminAddress,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
-        });
-        contract = deployResult.contract;
+        }));
 
         logger.info(`Contract deployed at: ${contract.address.toString()}`);
     }, 600000)

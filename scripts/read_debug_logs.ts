@@ -14,8 +14,9 @@ import { PodRacingContract } from "../src/artifacts/PodRacing.js";
 import { createLogger } from "@aztec/foundation/log";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { Fr } from "@aztec/aztec.js/fields";
+import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { setupWallet } from "../src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
@@ -36,14 +37,14 @@ async function main() {
     // Create two player accounts
     const p1Account = await wallet.createSchnorrAccount(Fr.random(), Fr.random(), GrumpkinScalar.random());
     await (await p1Account.getDeployMethod()).send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout },
     });
 
     const p2Account = await wallet.createSchnorrAccount(Fr.random(), Fr.random(), GrumpkinScalar.random());
     await (await p2Account.getDeployMethod()).send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         fee: { paymentMethod },
         wait: { timeout: timeouts.deployTimeout },
     });

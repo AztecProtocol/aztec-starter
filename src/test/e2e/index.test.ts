@@ -8,8 +8,9 @@ import { setupWallet } from "../../utils/setup_wallet.js";
 import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getTimeouts } from "../../../config/config.js";
 import { AztecAddress } from "@aztec/aztec.js/addresses";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { type Logger, createLogger } from "@aztec/foundation/log";
-import { type ContractInstanceWithAddress } from "@aztec/stdlib/contract";
+import { type ContractInstanceWithAddress } from "@aztec/aztec.js/contracts";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { TxStatus } from "@aztec/stdlib/tx";
@@ -54,7 +55,7 @@ async function playRound(
         strategy.track1, strategy.track2, strategy.track3, strategy.track4, strategy.track5
     ).simulate({ from: playerAccount });
 
-    return await contract.methods.play_round(
+    const { receipt } = await contract.methods.play_round(
         gameId,
         round,
         strategy.track1,
@@ -67,6 +68,7 @@ async function playRound(
         fee: { paymentMethod: sponsoredPaymentMethod },
         wait: { timeout }
     });
+    return receipt;
 }
 
 // Helper to setup a game (create + join)
@@ -119,7 +121,7 @@ describe("Pod Racing Game", () => {
         let salt1 = Fr.random();
         player1Account = await wallet.createSchnorrAccount(secretKey1, salt1, signingKey1);
         await (await player1Account.getDeployMethod()).send({
-            from: AztecAddress.ZERO,
+            from: NO_FROM,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
         });
@@ -129,7 +131,7 @@ describe("Pod Racing Game", () => {
         let salt2 = Fr.random();
         player2Account = await wallet.createSchnorrAccount(secretKey2, salt2, signingKey2);
         await (await player2Account.getDeployMethod()).send({
-            from: AztecAddress.ZERO,
+            from: NO_FROM,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
         });
@@ -141,12 +143,11 @@ describe("Pod Racing Game", () => {
         // Deploy the contract once for all tests
         logger.info('Deploying Pod Racing contract...');
         const adminAddress = player1Account.address;
-        const deployResult = await PodRacingContract.deploy(wallet, adminAddress).send({
+        ({ contract } = await PodRacingContract.deploy(wallet, adminAddress).send({
             from: adminAddress,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().deployTimeout }
-        });
-        contract = deployResult.contract;
+        }));
 
         logger.info(`Contract deployed at: ${contract.address.toString()}`);
     }, 600000)
@@ -161,14 +162,14 @@ describe("Pod Racing Game", () => {
         logger.info('Starting create game test');
         const gameId = new Fr(TEST_GAME_IDS.CREATE);
 
-        const tx = await contract.methods.create_game(gameId).send({
+        const { receipt: tx } = await contract.methods.create_game(gameId).send({
             from: player1Account.address,
             fee: { paymentMethod: sponsoredPaymentMethod },
             wait: { timeout: getTimeouts().txTimeout }
         });
 
         // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
-        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.receipt.status);
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.status);
         logger.info('Game created successfully');
     }, 600000)
 
@@ -215,7 +216,7 @@ describe("Pod Racing Game", () => {
         );
 
         // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
-        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(playTx.receipt.status);
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(playTx.status);
         logger.info('Round played successfully');
     }, 600000)
 
@@ -385,7 +386,7 @@ describe("Pod Racing Game", () => {
         );
 
         // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
-        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.receipt.status);
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.status);
         logger.info('Max points allocation successful');
     }, 600000)
 
@@ -414,7 +415,7 @@ describe("Pod Racing Game", () => {
         );
 
         // Transaction succeeded if we got here - status could be PROPOSED, CHECKPOINTED, PROVEN, or FINALIZED
-        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.receipt.status);
+        expect([TxStatus.PROPOSED, TxStatus.CHECKPOINTED, TxStatus.PROVEN, TxStatus.FINALIZED]).toContain(tx.status);
         logger.info('Zero points allocation successful');
     }, 600000)
 });

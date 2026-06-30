@@ -22,8 +22,10 @@ import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/Sponsored
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { NO_FROM } from '@aztec/aztec.js/account';
 import { getAztecNodeUrl, getTimeouts } from '../config/config.js';
-import { GasSettings } from '@aztec/stdlib/gas';
+import { GasSettings, Gas } from '@aztec/stdlib/gas';
+import { getNonNullifiedL1ToL2MessageWitness } from '@aztec/stdlib/messaging';
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000000n;
@@ -70,6 +72,29 @@ async function main() {
     const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
     const timeouts = getTimeouts();
 
+    // A bridged L1->L2 message only becomes consumable once the sequencer has synced
+    // the L1 deposit and progressed enough L2 blocks. Progress blocks (by deploying
+    // arbitrary contracts) until the claim's message is available before claiming.
+    const feeJuiceAddress = nodeInfo.protocolContractAddresses.feeJuice;
+    const waitForClaimReady = async (claimToCheck: { messageHash: string, claimSecret: Fr }) => {
+        const isReady = async () => !!(await getNonNullifiedL1ToL2MessageWitness(
+            node,
+            feeJuiceAddress,
+            Fr.fromHexString(claimToCheck.messageHash),
+            claimToCheck.claimSecret,
+        ).catch(() => undefined));
+        for (let attempt = 0; attempt < 10 && !(await isReady()); attempt++) {
+            await PodRacingContract.deploy(wallet, account1.address).send({
+                from: account1.address,
+                fee: { paymentMethod },
+                wait: { timeout: timeouts.deployTimeout }
+            });
+        }
+        if (!(await isReady())) {
+            throw new Error('L1->L2 message did not become available after progressing blocks');
+        }
+    };
+
     // Two arbitrary txs to make the L1 message available on L2
     // Simulate before sending to surface revert reasons
     const podRacingDeploy = PodRacingContract.deploy(wallet, account1.address);
@@ -90,9 +115,10 @@ async function main() {
 
     // Claim Fee Juice & Pay Fees yourself
 
+    await waitForClaimReady(claim);
     const claimAndPay = new FeeJuicePaymentMethodWithClaim(account2.address, claim);
     const deployMethod = await account2.getDeployMethod();
-    await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: claimAndPay }, wait: { timeout: timeouts.deployTimeout } });
+    await deployMethod.send({ from: NO_FROM, fee: { paymentMethod: claimAndPay }, wait: { timeout: timeouts.deployTimeout } });
     logger.info(`New account at ${account2.address} deployed using claimed funds for fees.`)
 
     // Pay fees yourself
@@ -135,25 +161,25 @@ async function main() {
         fee: { paymentMethod },
         wait: { timeout: timeouts.txTimeout }
     });
-    const bananaBalanceResult = await bananaCoin.methods.balance_of_private(account2.address).simulate({
+    const { result: bananaBalance } = await bananaCoin.methods.balance_of_private(account2.address).simulate({
         from: account2.address
     });
 
-    logger.info(`BananaCoin balance of newWallet is ${bananaBalanceResult.result ?? bananaBalanceResult}`)
+    logger.info(`BananaCoin balance of newWallet is ${bananaBalance}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
     await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact);
     const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet);
 
+    await waitForClaimReady(fpcClaim);
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address, wait: { timeout: timeouts.txTimeout } });
 
-    const fpcBalance = await feeJuice.methods.balance_of_public(fpc.address).simulate({
+    logger.info(`Fpc fee juice balance ${(await feeJuice.methods.balance_of_public(fpc.address).simulate({
         from: account2.address
-    });
-    logger.info(`Fpc fee juice balance ${fpcBalance.result ?? fpcBalance}`);
+    })).result}`);
 
     const maxFeesPerGas = (await node.getCurrentMinFees()).mul(1.5);
-    const gasSettings = GasSettings.default({ maxFeesPerGas });
+    const gasSettings = GasSettings.fallback({ gasLimits: Gas.from(nodeInfo.txsLimits.gas), maxFeesPerGas });
 
     const privateFee = new PrivateFeePaymentMethod(fpc.address, account2.address, wallet, gasSettings);
     await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).simulate({ from: account2.address });
