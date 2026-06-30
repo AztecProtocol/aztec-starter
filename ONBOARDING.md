@@ -9,7 +9,7 @@ This guide takes you from "reading code in a browser" to "deploying contracts" â
 * **Phases 1-2** need only a browser (read code, compile in a Codespace)
 * **Phases 3-6** need local tools (deploy, interact, extend, advanced topics)
 
-**Aztec version pinned in this repo:** `5.0.0-rc.1` (check `Nargo.toml` and `package.json` for source of truth)
+**Aztec version pinned in this repo:** `5.0.0-rc.2` (check `Nargo.toml` and `package.json` for source of truth)
 
 **Links:**
 
@@ -280,7 +280,7 @@ pub struct Race {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/race.nr#L7-L41" target="_blank" rel="noopener noreferrer">Source code: /src/race.nr#Lrace-struct</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/race.nr#L7-L41" target="_blank" rel="noopener noreferrer">Source code: /src/race.nr#Lrace-struct</a></sub></sup>
 
 Key methods:
 
@@ -332,7 +332,7 @@ fn play_round(
         .at(game_id)
         .at(player)
         .insert(GameRoundNote::new(track1, track2, track3, track4, track5, round, player))
-        .deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        .deliver(MessageDelivery::onchain_constrained());
 
     // Enqueue a public function call to update the round counter
     // This reveals that a round was played, but not the point allocation
@@ -438,7 +438,7 @@ pub struct GameRoundNote {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/game_round_note.nr#L3-L29" target="_blank" rel="noopener noreferrer">Source code: /src/game_round_note.nr#Lgame-round-note</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/game_round_note.nr#L3-L29" target="_blank" rel="noopener noreferrer">Source code: /src/game_round_note.nr#Lgame-round-note</a></sub></sup>
 
 The `#[note]` macro makes this a private state primitive. Each note stores one round's point allocation and the owner's address. Only the owner can read it.
 
@@ -522,7 +522,7 @@ The `.devcontainer/` configures:
 
 * **Base image:** Ubuntu 24.04 with Node.js v22.15.0
 * **Docker-in-Docker** for running the Aztec local network
-* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/5.0.0-rc.1" | VERSION="5.0.0-rc.1" bash -s`
+* **Aztec CLI** installed via `curl -fsSL "https://install.aztec.network/5.0.0-rc.2" | VERSION="5.0.0-rc.2" bash -s`
 * **VS Code extension:** `noir-lang.vscode-noir` for Noir syntax highlighting
 * **Dependencies:** `yarn install` runs automatically
 
@@ -582,7 +582,7 @@ unconstrained fn test_initializer() {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/pod_racing.nr#L9-L20" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-initializer</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/pod_racing.nr#L9-L20" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-initializer</a></sub></sup>
 
 The `unconstrained` keyword means this test runs outside the ZK circuit (it's a test, not a provable function). `utils::setup()` deploys a fresh contract and returns the environment, contract address, and admin.
 
@@ -607,7 +607,7 @@ unconstrained fn test_fail_play_round_too_many_points() {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/pod_racing.nr#L140-L157" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-fail-too-many-points</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/pod_racing.nr#L140-L157" target="_blank" rel="noopener noreferrer">Source code: /src/test/pod_racing.nr#Ltest-fail-too-many-points</a></sub></sup>
 
 The `#[test(should_fail)]` attribute is like Foundry's `vm.expectRevert()`.
 
@@ -642,7 +642,7 @@ pub unconstrained fn max_allocation() -> (u8, u8, u8, u8, u8) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/helpers.nr#L18-L39" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lallocation-strategies</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/helpers.nr#L18-L39" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lallocation-strategies</a></sub></sup>
 
 And higher-level helpers:
 
@@ -690,7 +690,7 @@ pub unconstrained fn play_all_rounds_with_strategy(
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/helpers.nr#L41-L83" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lsetup-helpers</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/helpers.nr#L41-L83" target="_blank" rel="noopener noreferrer">Source code: /src/test/helpers.nr#Lsetup-helpers</a></sub></sup>
 
 #### Test setup (`src/test/utils.nr`)
 
@@ -711,7 +711,7 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 }
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/test/utils.nr#L7-L22" target="_blank" rel="noopener noreferrer">Source code: /src/test/utils.nr#Ltest-setup</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/src/test/utils.nr#L7-L22" target="_blank" rel="noopener noreferrer">Source code: /src/test/utils.nr#Ltest-setup</a></sub></sup>
 
 **Ethereum analogies:**
 
@@ -733,7 +733,7 @@ pub unconstrained fn setup() -> (TestEnvironment, AztecAddress, AztecAddress) {
 **Aztec toolkit:**
 
 ```bash
-export VERSION=5.0.0-rc.1
+export VERSION=5.0.0-rc.2
 curl -fsSL "https://install.aztec.network/${VERSION}" | VERSION="${VERSION}" bash -s
 ```
 
@@ -862,15 +862,14 @@ const deployRequest = PodRacingContract.deploy(wallet, address);
 await deployRequest.simulate({
     from: address,
 });
-const { contract: podRacingContract, receipt: deployReceipt } = await deployRequest.send({
+const { contract: podRacingContract, instance } = await deployRequest.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: timeouts.deployTimeout }
 });
-const instance = deployReceipt.instance;
 ```
 
-<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/deploy_contract.ts#L44-L55" target="_blank" rel="noopener noreferrer">Source code: /scripts/deploy_contract.ts#Ldeploy-contract</a></sub></sup>
+<sup><sub><a href="https://github.com/AztecProtocol/aztec-starter/blob/main/scripts/deploy_contract.ts#L44-L54" target="_blank" rel="noopener noreferrer">Source code: /scripts/deploy_contract.ts#Ldeploy-contract</a></sub></sup>
 
 > **Important:** Always call `.simulate()` before `.send()`. Simulation runs the transaction locally and surfaces revert reasons immediately. Without it, a failing transaction hangs until timeout with an opaque error.
 

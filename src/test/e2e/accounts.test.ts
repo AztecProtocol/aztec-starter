@@ -15,6 +15,7 @@ import { AztecAddress } from "@aztec/aztec.js/addresses";
 import { NO_FROM } from "@aztec/aztec.js/account";
 import { type Logger, createLogger } from "@aztec/foundation/log";
 import { type ContractInstanceWithAddress, getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { getNonNullifiedL1ToL2MessageWitness } from "@aztec/stdlib/messaging";
 import { Fr } from "@aztec/aztec.js/fields";
 import { GrumpkinScalar } from "@aztec/foundation/curves/grumpkin";
 import { ContractDeployer } from "@aztec/aztec.js/deployment";
@@ -116,22 +117,35 @@ describe("Accounts", () => {
         }
         console.log(`Total claims created: ${claims.length}`);
 
-        // arbitrary transactions to progress 2 blocks, and have fee juice on Aztec ready to claim
-        console.log('Deploying first PodRacingContract to progress blocks...');
-        await PodRacingContract.deploy(wallet, ownerAccount.address).send({
-            from: ownerAccount.address,
-            fee: { paymentMethod: sponsoredPaymentMethod },
-            wait: { timeout: getTimeouts().deployTimeout }
-        });
-        console.log('First PodRacingContract deployed');
+        // The bridged L1->L2 messages only become consumable once the sequencer has
+        // synced the L1 deposits and progressed enough L2 blocks. Progress blocks (by
+        // deploying arbitrary contracts) until every claim's message is available on L2.
+        const messagesAvailable = async () => {
+            for (const claim of claims) {
+                const witness = await getNonNullifiedL1ToL2MessageWitness(
+                    node,
+                    feeJuiceAddress,
+                    Fr.fromHexString(claim.messageHash),
+                    claim.claimSecret,
+                ).catch(() => undefined);
+                if (!witness) return false;
+            }
+            return true;
+        };
 
-        console.log('Deploying second PodRacingContract to progress blocks...');
-        await PodRacingContract.deploy(wallet, ownerAccount.address).send({
-            from: ownerAccount.address,
-            fee: { paymentMethod: sponsoredPaymentMethod },
-            wait: { timeout: getTimeouts().deployTimeout }
-        });
-        console.log('Second PodRacingContract deployed');
+        console.log('Progressing blocks until L1->L2 messages are available...');
+        for (let attempt = 0; attempt < 10 && !(await messagesAvailable()); attempt++) {
+            console.log(`Deploying PodRacingContract to progress blocks (attempt ${attempt + 1})...`);
+            await PodRacingContract.deploy(wallet, ownerAccount.address).send({
+                from: ownerAccount.address,
+                fee: { paymentMethod: sponsoredPaymentMethod },
+                wait: { timeout: getTimeouts().deployTimeout }
+            });
+        }
+        if (!(await messagesAvailable())) {
+            throw new Error('L1->L2 messages did not become available after progressing blocks');
+        }
+        console.log('L1->L2 messages available on L2');
 
         // Now deploy random accounts using FeeJuicePaymentMethodWithClaim (which claims and pays in one tx)
         console.log('Starting account deployments with FeeJuicePaymentMethodWithClaim...');
